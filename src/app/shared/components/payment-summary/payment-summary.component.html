@@ -1,0 +1,34 @@
+<div class="bg-white rounded-2xl shadow-md p-6 border border-gray-200">
+  <h2 class="text-2xl font-semibold text-gray-800 mb-4 flex items-center">
+    📄 Resumen del pago
+  </h2>
+
+  <p class="text-lg mb-2">
+    <strong>Plan:</strong> {{ selectedPlan?.name }} — {{ selectedPlan?.price }} ₽/mes
+  </p>
+  <p class="text-lg mb-2">
+    <strong>Dispositivos:</strong> {{ selectedPlan?.devices }}
+  </p>
+
+  <p class="text-lg mb-2">
+    <strong>Método de pago:</strong> {{ paymentMethod?.name }}
+  </p>
+
+  <div class="mt-4">
+    <h3 class="text-lg font-semibold mb-2">🌍 Países:</h3>
+    <ul class="list-disc list-inside">
+      @for (c of selectedCountries; track c.id) {
+        <li>{{ c.flag }} {{ c.countryName }} ({{ c.currencyCode }})</li>
+      }
+    </ul>
+  </div>
+
+  <div class="mt-6 flex justify-end">
+    <button
+      (click)="generatePDF()"
+      class="px-5 py-3 bg-indigo-600 text-white rounded-xl shadow hover:bg-indigo-700 transition"
+    >
+      📥 Generar PDF de pago
+    </button>
+  </div>
+</div>

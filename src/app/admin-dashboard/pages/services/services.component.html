@@ -1,0 +1,522 @@
+<!-- ====== Planes: Gestión ====== -->
+
+<!-- Stats -->
+<section class="container mx-auto max-w-7xl px-2 md:px-4 mt-4">
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+    <div class="stat bg-base-100/80 border rounded-xl shadow-sm">
+      <div class="stat-figure text-primary">
+        <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+          stroke-width="2">
+          <path d="M6 3h12v4H6zM6 9h12v12H6z" />
+        </svg>
+      </div>
+      <div class="stat-title">Servicios</div>
+      <div class="stat-value text-2xl">3</div>
+      <div class="stat-desc">desde modelo</div>
+    </div>
+
+    <div class="stat bg-base-100/80 border rounded-xl shadow-sm">
+      <div class="stat-figure text-success">
+        <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+          stroke-width="2">
+          <path d="M5 13l4 4L19 7" />
+        </svg>
+      </div>
+      <div class="stat-title">Activos</div>
+      <div class="stat-value text-2xl">2</div>
+      <div class="stat-desc">en producción</div>
+    </div>
+
+    <div class="stat bg-base-100/80 border rounded-xl shadow-sm">
+      <div class="stat-figure text-warning">
+        <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+          stroke-width="2">
+          <circle cx="12" cy="12" r="10" />
+          <path d="M12 8v5M12 16h.01" />
+        </svg>
+      </div>
+      <div class="stat-title">Inactivos</div>
+      <div class="stat-value text-2xl">1</div>
+      <div class="stat-desc">ocultos</div>
+    </div>
+  </div>
+</section>
+
+<!-- Action bar -->
+<section class="container mx-auto max-w-7xl px-2 md:px-4 mt-4">
+  <div class="bg-base-100 border rounded-xl p-3 md:p-4 shadow-sm">
+    <div class="flex flex-wrap items-center gap-3">
+      <label class="input input-bordered flex items-center gap-2 w-full sm:w-[28rem]" aria-label="Buscar planes">
+        <svg class="h-5 w-5 opacity-70" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+          stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8" />
+          <path d="m21 21-4.3-4.3" />
+        </svg>
+        <input id="search-plans" type="text" placeholder="Buscar por nombre, ID o monto" />
+      </label>
+
+      <div class="dropdown">
+        <button tabindex="0" class="btn btn-sm md:btn-md">Estado</button>
+        <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-56 z-[60]">
+          <li><a>Todos</a></li>
+          <li><a>Activos</a></li>
+          <li><a>Inactivos</a></li>
+        </ul>
+      </div>
+
+      <div class="dropdown">
+        <button tabindex="0" class="btn btn-ghost btn-sm md:btn-md">Orden</button>
+        <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-48 z-[60]">
+          <li><a>Recientes</a></li>
+          <li><a>Antiguos</a></li>
+          <li><a>Monto ↑</a></li>
+          <li><a>Monto ↓</a></li>
+        </ul>
+      </div>
+
+      <div class="ml-auto flex items-center gap-2">
+        <div class="tooltip" data-tip="Seleccionar todo">
+          <input type="checkbox" class="checkbox checkbox-sm" aria-label="Seleccionar todo" />
+        </div>
+
+        <div class="dropdown dropdown-end">
+          <button tabindex="0" class="btn btn-ghost btn-sm md:btn-md">Acciones</button>
+          <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-64 z-[60]">
+            <li><a>Activar</a></li>
+            <li><a>Desactivar</a></li>
+            <li><a>Exportar CSV</a></li>
+            <li><a class="text-error">Eliminar</a></li>
+          </ul>
+        </div>
+
+        <!-- Botón Agregar Servicio -->
+        <button class="btn btn-primary btn-sm md:btn-md" type="button"
+          onclick="document.getElementById('add_service')?.showModal()">
+          <svg class="h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+            stroke="currentColor" stroke-width="2">
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+          Agregar Servicio
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Tabla -->
+<section class="container mx-auto max-w-7xl px-2 md:px-4 mt-4">
+  <div class="bg-base-100 border rounded-xl shadow-sm overflow-x-auto">
+    <table class="table table-sm w-full">
+      <thead>
+        <tr>
+          <th class="w-8"><input type="checkbox" class="checkbox checkbox-xs" aria-label="Seleccionar todas" /></th>
+          <th>Plan</th>
+          <th class="hidden xl:table-cell">Descripción</th>
+          <th>País</th>
+          <th>Estado</th>
+          <th class="hidden 2xl:table-cell">Creado</th>
+          <th class="hidden 2xl:table-cell">Actualizado</th>
+          <th class="text-right w-48">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (p of ListServices(); track p.id) {
+        <tr class="hover">
+          <!-- checkbox fila -->
+          <td>
+            <input type="checkbox" class="checkbox checkbox-xs" [attr.aria-label]="'Seleccionar servicio ' + p.sortName" />
+          </td>
+
+          <!-- Plan + ID -->
+          <td>
+            <div class="flex items-center gap-3">
+              <div class="avatar placeholder">
+                <div class="bg-primary/10 text-primary w-10 h-10 rounded-xl flex items-center justify-center">
+                  {{ (p.sortName || '').slice(0,1).toUpperCase() || 'P' }}
+                </div>
+              </div>
+              <div>
+                <div class="font-medium leading-tight">{{ p.sortName || '—' }}</div>
+                <div class="text-[11px] opacity-70 break-all">ID: {{ p.id || '—' }}</div>
+              </div>
+            </div>
+          </td>
+
+          <!-- Descripción -->
+          <td class="hidden xl:table-cell break-words">{{ p.Description || '—' }}</td>
+
+          <!-- País -->
+          <td>
+            @if(p.country) {
+              <div class="flex items-center gap-1">
+                <span class="text-lg">{{ p.country.flag }}</span>
+                <span>{{ p.country.countryName }}</span>
+              </div>
+            } @else {
+              —
+            }
+          </td>
+
+          <!-- Estado -->
+          <td>
+            @if(p.state) {
+              <span class="badge badge-success">Activo</span>
+            } @else {
+              <span class="badge badge-ghost">Inactivo</span>
+            }
+          </td>
+
+          <!-- Fechas -->
+          <td class="hidden 2xl:table-cell">{{ p.createdAt | date:'dd MMM yyyy · HH:mm' }}</td>
+          <td class="hidden 2xl:table-cell">{{ p.updateAt | date:'dd MMM yyyy · HH:mm' }}</td>
+
+          <!-- Acciones -->
+          <td class="text-right">
+            <div class="flex items-center justify-end gap-1.5">
+              <div class="dropdown dropdown-end">
+                <button class="btn btn-ghost btn-xs">Gestionar</button>
+                <ul class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-44 z-[60]">
+                  <li><a (click)="openViewModal(p)">Ver</a></li>
+                  <li><a (click)="openEditModal(p)">Editar</a></li>
+                  <li><a (click)="toggleState(p)">@if(p.state) {Desactivar} @else {Activar}</a></li>
+                </ul>
+              </div>
+              <button class="btn btn-ghost btn-xs text-error" type="button" (click)="openDeleteModal(p)">
+                <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor" stroke-width="2">
+                  <path d="M3 6h18" />
+                  <path d="M8 6v14a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V6" />
+                  <path d="M10 11v6M14 11v6" />
+                  <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
+                </svg>
+              </button>
+            </div>
+          </td>
+        </tr>
+        } @empty {
+        <tr>
+          <td colspan="8" class="text-center py-10 text-sm opacity-70">No hay Servicios.</td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Paginación -->
+  <div class="mt-3 flex items-center justify-between">
+    <p class="text-sm opacity-70">Mostrando 1–1 de 1</p>
+    <nav class="join">
+      <button class="btn btn-xs join-item" disabled>«</button>
+      <button class="btn btn-xs join-item btn-active" aria-current="page">1</button>
+      <button class="btn btn-xs join-item" disabled>»</button>
+    </nav>
+  </div>
+</section>
+
+
+<!-- ====== MODALES ====== -->
+
+<!-- Ver servicio -->
+<dialog id="view_service" class="modal">
+  <div class="modal-box w-11/12 max-w-4xl">
+    <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+        aria-label="Cerrar">✕</button></form>
+    <h3 class="text-lg font-bold">Detalle del servicio</h3>
+
+    <div class="grid gap-4 md:grid-cols-3 mt-3">
+      <div class="md:col-span-2 card border bg-base-200/60">
+        <div class="card-body p-4">
+          <h4 class="card-title text-sm">Información</h4>
+          <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+            <span class="opacity-70">ID:</span><span>pl-0001</span>
+            <span class="opacity-70">Nombre:</span><span>Básico</span>
+            <span class="opacity-70">Activo:</span><span>Sí</span>
+            <span class="opacity-70">Monto:</span><span>USD 9.99</span>
+            <span class="opacity-70">Límite de dispositivos:</span><span>2</span>
+            <span class="opacity-70">Creado:</span><span>10 Ago 2025 · 12:00</span>
+            <span class="opacity-70">Actualizado:</span><span>10 Ago 2025 · 12:00</span>
+          </div>
+
+          <div class="mt-3">
+            <h5 class="text-sm font-semibold">HTML (vista previa)</h5>
+            <div class="rounded-lg border bg-base-100 p-3 text-sm overflow-auto">
+              &lt;p&gt;Hasta 2 dispositivos&lt;/p&gt;
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card border bg-base-200/60">
+        <div class="card-body p-4">
+          <h4 class="card-title text-sm">Estado</h4>
+          <div class="flex flex-wrap gap-2">
+            <span class="badge badge-success">Activo</span>
+            <span class="badge badge-ghost">Plan de entrada</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-action">
+      <button class="btn" type="button" onclick="document.getElementById('edit_service')?.showModal()">Editar</button>
+      <button class="btn btn-error btn-outline" type="button"
+        onclick="document.getElementById('delete_service')?.showModal()">Eliminar</button>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
+</dialog>
+
+<!-- Agregar servicio -->
+<!-- <dialog id="add_service" class="modal">
+  <div class="modal-box max-w-3xl">
+    <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button></form>
+    <h3 class="text-lg font-bold">Nuevo servicio</h3>
+    <p class="text-sm opacity-70 mb-3">Registra un servicio con su precio, límite y contenido HTML.</p>
+
+    <div class="grid gap-3 md:grid-cols-2">
+
+      <label class="input input-bordered w-full md:col-span-2"><input type="text" placeholder="Nombre del servicio" class="w-full" required /></label>
+
+      <label class="input input-bordered w-full">
+        <input type="number" step="0.01" min="0" placeholder="Monto (USD)" class="w-full" required />
+      </label>
+
+      <label class="input input-bordered w-full">
+        <input type="number" step="1" min="0" placeholder="Límite de dispositivos" class="w-full" required />
+      </label>
+
+      <label class="label cursor-pointer justify-start gap-3 md:col-span-2">
+        <input type="checkbox" class="toggle" aria-label="Activo" />
+        <span>Activo</span>
+      </label>
+
+      <label class="textarea textarea-bordered w-full md:col-span-2">
+        <textarea class="w-full" rows="5" placeholder="HTML del servicio (opcional)"></textarea>
+      </label>
+    </div>
+
+    <div class="modal-action">
+      <button class="btn btn-ghost" type="button">Cancelar</button>
+      <button class="btn btn-primary" type="button">Crear</button>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
+</dialog> -->
+<dialog id="add_service" class="modal">
+  <div class="modal-box max-w-3xl">
+    <!-- Cerrar -->
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button>
+    </form>
+
+    <!-- Encabezado -->
+    <h3 class="text-lg font-bold">Nuevo servicio</h3>
+    <p class="text-sm opacity-70 mb-3">Registra un servicio con su precio, límite y contenido HTML.</p>
+
+    <!-- Formulario reactivo -->
+    <form class="grid gap-3 md:grid-cols-2" [formGroup]="serviceForm" (ngSubmit)="onSubmit()" novalidate
+      autocomplete="on">
+
+
+      <!-- Nombre corto de servicio -->
+      <div class="w-full md:col-span-2">
+        <label for="sortName" class="block text-sm font-medium text-gray-700 mb-1">
+          Nombre corto de Servicio
+        </label>
+        <div
+          class="flex items-center border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-blue-500">
+          <!-- ícono etiqueta/nombre -->
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" viewBox="0 0 24 24"
+            fill="sortName" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h10v10H7z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 12h3" />
+          </svg>
+
+          <input type="text" id="sortName" placeholder="Nombre corto de servicio"
+            class="w-full outline-none text-gray-700 placeholder-gray-400" formControlName="sortName" required
+            minlength="2" aria-label="Nombre corto de servicio" />
+        </div>
+
+        @if (serviceForm.get('sortName')?.touched && serviceForm.get('sortName')?.invalid) {
+        <p class="text-red-500 text-sm mt-1 md:col-span-2">
+          @if (serviceForm.get('sortName')?.errors?.['required']) { Ingrese el nombre corto de servicio. }
+          @if (serviceForm.get('sortName')?.errors?.['minlength']) { Debe tener al menos 2 caracteres. }
+        </p>
+        }
+      </div>
+
+      <!-- Nombre extenso de servicio -->
+      <div class="w-full md:col-span-2">
+        <label for="longName" class="block text-sm font-medium text-gray-700 mb-1">
+          Nombre extenso de Servicio
+        </label>
+        <div
+          class="flex items-center border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-blue-500">
+          <!-- ícono etiqueta/nombre -->
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" viewBox="0 0 24 24"
+            fill="longName" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h10v10H7z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 12h3" />
+          </svg>
+
+          <input type="text" id="longName" placeholder="Nombre extenso de servicio"
+            class="w-full outline-none text-gray-700 placeholder-gray-400" formControlName="longName" required
+            minlength="2" aria-label="Nombre extenso de servicio" />
+        </div>
+
+        @if (serviceForm.get('longName')?.touched && serviceForm.get('longName')?.invalid) {
+        <p class="text-red-500 text-sm mt-1 md:col-span-2">
+          @if (serviceForm.get('longName')?.errors?.['required']) { Ingrese el nombre extenso de servicio. }
+          @if (serviceForm.get('longName')?.errors?.['minlength']) { Debe tener al menos 2 caracteres. }
+        </p>
+        }
+      </div>
+
+      <!-- Descripcion del servicio -->
+      <div class="w-full md:col-span-2">
+        <label for="Description" class="block text-sm font-medium text-gray-700 mb-1">
+          Description
+        </label>
+        <div
+          class="flex items-center border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-blue-500">
+          <!-- ícono etiqueta/nombre -->
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" viewBox="0 0 24 24"
+            fill="Description" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h10v10H7z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 12h3" />
+          </svg>
+
+          <input type="text" id="Description" placeholder="Descripción del servicio"
+            class="w-full outline-none text-gray-700 placeholder-gray-400" formControlName="Description" required
+            minlength="2" aria-label="Descripción del servicio" />
+        </div>
+
+        @if (serviceForm.get('Description')?.touched && serviceForm.get('Description')?.invalid) {
+        <p class="text-red-500 text-sm mt-1 md:col-span-2">
+          @if (serviceForm.get('Description')?.errors?.['required']) { Ingrese el nombre extenso de servicio. }
+          @if (serviceForm.get('Description')?.errors?.['minlength']) { Debe tener al menos 2 caracteres. }
+        </p>
+        }
+      </div>
+
+      <!-- País -->
+      <div class="w-full">
+        <label class="block text-sm font-medium text-gray-700 mb-1">País</label>
+        <div class="flex items-center border border-gray-300 rounded-lg px-3 py-2
+             focus-within:ring-2 focus-within:ring-blue-500 bg-white">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" fill="none"
+            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15 15 0 0 1 4 10 15 15 0 0 1-4 10 15 15 0 0 1-4-10 15 15 0 0 1 4-10z"></path>
+          </svg>
+          <select formControlName="country" required class="w-full outline-none text-gray-700 bg-transparent">
+            <option value="" disabled selected hidden>Selecciona tu país</option>
+            @for (item of this.ListCountries(); track item.countryName; let idx = $index) {
+            <option [value]="item.id">{{ item.countryName }}</option>
+            }
+          </select>
+        </div>
+        @if (serviceForm.get('country')?.touched && serviceForm.get('country')?.invalid) {
+        <p class="text-red-500 text-sm mt-1">Seleccione un país.</p>
+        }
+      </div>
+
+
+      <!-- Activo -->
+      <div class="w-full md:col-span-2">
+        <label class="label cursor-pointer justify-start gap-3">
+          <input type="checkbox" class="toggle" formControlName="state" aria-label="Activo" />
+          <span class="text-gray-700">Activo</span>
+        </label>
+      </div>
+
+
+
+      <!-- Acciones -->
+      <div class="modal-action md:col-span-2">
+        <button class="btn btn-ghost" type="button" (click)="onCancel()">Cancelar</button>
+        <button class="btn btn-primary" type="submit" [disabled]="serviceForm.invalid">Crear</button>
+      </div>
+    </form>
+
+  </div>
+
+  <form method="dialog" class="modal-backdrop">
+    <button aria-label="Cerrar">close</button>
+  </form>
+</dialog>
+
+
+<!-- Editar servicio -->
+<dialog id="edit_service" class="modal">
+  <div class="modal-box max-w-3xl">
+    <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+        aria-label="Cerrar">✕</button></form>
+    <h3 class="text-lg font-bold">Editar servicio</h3>
+
+    <div class="grid gap-3 md:grid-cols-2 mt-2">
+      <label class="input input-bordered w-full md:col-span-2"><input type="text" value="pl-0001" class="w-full"
+          disabled /></label>
+
+      <label class="input input-bordered w-full md:col-span-2"><input type="text" value="Básico"
+          class="w-full" /></label>
+
+      <label class="input input-bordered w-full">
+        <input type="number" step="0.01" min="0" value="9.99" class="w-full" />
+      </label>
+
+      <label class="input input-bordered w-full">
+        <input type="number" step="1" min="0" value="2" class="w-full" />
+      </label>
+
+      <label class="label cursor-pointer justify-start gap-3 md:col-span-2">
+        <input type="checkbox" class="toggle" checked aria-label="Activo" />
+        <span>Activo</span>
+      </label>
+
+      <label class="textarea textarea-bordered w-full md:col-span-2">
+        <textarea class="w-full" rows="5">&lt;p&gt;Hasta 2 dispositivos&lt;/p&gt;</textarea>
+      </label>
+
+      <div class="grid grid-cols-2 gap-2 md:col-span-2">
+        <label class="input input-bordered w-full">
+          <input type="text" value="10 Ago 2025 · 12:00" class="w-full" disabled />
+        </label>
+        <label class="input input-bordered w-full">
+          <input type="text" value="10 Ago 2025 · 12:00" class="w-full" disabled />
+        </label>
+      </div>
+    </div>
+
+    <div class="modal-action">
+      <button class="btn btn-ghost" type="button">Cancelar</button>
+      <button class="btn btn-primary" type="button">Guardar</button>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
+</dialog>
+
+<!-- Eliminar servicio -->
+<dialog id="delete_service" class="modal">
+  <div class="modal-box">
+    <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button></form>
+    <h3 class="text-lg font-bold text-error">Eliminar servicio</h3>
+    <p class="py-2">Esta acción es permanente. ¿Deseas continuar?</p>
+    <div class="modal-action">
+      <button class="btn" type="button">Cancelar</button>
+      <button class="btn btn-error" type="button">Eliminar</button>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button>close</button></form>
+</dialog>
+
+<!-- Atajo: Ctrl/Cmd + K enfoca búsqueda -->
+<script>
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+      const input = document.getElementById('search-plans');
+      if (input) { e.preventDefault(); input.focus(); }
+    }
+  });
+</script>

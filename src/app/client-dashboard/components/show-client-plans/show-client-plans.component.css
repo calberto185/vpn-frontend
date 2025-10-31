@@ -1,0 +1,39 @@
+/* Contenedor de steps relativo para mantener posición */
+.steps-container {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Cada step individual */
+.step {
+  position: absolute;
+  width: 100%;
+  top: 0;
+  left: 0;
+  transition: transform 0.5s ease, opacity 0.5s ease;
+  opacity: 0;
+  pointer-events: none; /* para que solo el activo sea interactivo */
+}
+
+/* Step activo */
+.step.active {
+  transform: translateX(0);
+  opacity: 1;
+  pointer-events: auto;
+  z-index: 10;
+}
+
+/* Animaciones de entrada y salida */
+.step.enter-left { transform: translateX(-100%); opacity: 0; }
+.step.enter-right { transform: translateX(100%); opacity: 0; }
+.step.exit-left { transform: translateX(-100%); opacity: 0; z-index: 5; }
+.step.exit-right { transform: translateX(100%); opacity: 0; z-index: 5; }
+
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fade-in 0.25s ease-out;
+}

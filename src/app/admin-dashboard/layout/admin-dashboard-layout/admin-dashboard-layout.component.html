@@ -1,0 +1,174 @@
+<div class="drawer lg:drawer-open">
+  <input id="sidebar" type="checkbox" class="drawer-toggle" />
+
+  <!-- CONTENT -->
+  <div class="drawer-content flex min-h-screen flex-col bg-base-100">
+
+    <!-- NAVBAR (sticky) -->
+    <header class="navbar bg-base-100/80 backdrop-blur border-b sticky top-0 z-50">
+      <div class="container mx-auto max-w-7xl px-3 md:px-4 w-full flex items-center gap-2">
+        <!-- Hamburguesa SOLO móvil, dentro del flujo -->
+        <label for="sidebar"
+               class="btn btn-ghost btn-square lg:hidden"
+               aria-label="Abrir menú">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+               stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+          </svg>
+        </label>
+
+        <!-- Brand -->
+        <a class="btn btn-ghost h-auto min-h-0 px-1 md:px-2 text-xl md:text-2xl font-extrabold tracking-tight">
+          <span class="mr-1">VPN</span><span class="text-primary">CarlosVM</span>
+        </a>
+
+        <div class="divider divider-horizontal mx-1 hidden sm:flex"></div>
+        <span class="badge badge-primary badge-outline hidden sm:inline-flex">{{this.user()?.role}}</span>
+
+        <!-- acciones a la derecha -->
+        <div class="ml-auto flex items-center gap-1 md:gap-2">
+          <label class="input input-bordered hidden md:flex items-center gap-2 w-64">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input id="global-search" type="text" placeholder="Buscar… (⌘/Ctrl + K)" />
+          </label>
+
+
+          <div class="dropdown dropdown-end">
+        <label class="swap swap-rotate ml-2">
+          <input type="checkbox" aria-label="Cambiar tema" (change)="changeTheme()">
+          <svg class="swap-on h-6 w-6 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M160 256a96 96 0 1096-96 96.11 96.11 0 00-96 96z"/><path d="M256 48a24 24 0 0124 24v32a24 24 0 01-48 0V72a24 24 0 0124-24zm0 328a24 24 0 00-24 24v32a24 24 0 0048 0v-32a24 24 0 00-24-24zM394.35 117.65a24 24 0 00-33.94 0l-22.63 22.63a24 24 0 1033.94 33.94l22.63-22.63a24 24 0 000-33.94zM117.65 394.35a24 24 0 000 33.94l22.63 22.63a24 24 0 0033.94-33.94l-22.63-22.63a24 24 0 00-33.94 0zM464 232h-32a24 24 0 000 48h32a24 24 0 000-48zM80 232H48a24 24 0 000 48h32a24 24 0 000-48zM394.35 394.35a24 24 0 010 33.94l-22.63 22.63a24 24 0 01-33.94-33.94l22.63-22.63a24 24 0 0133.94 0zM117.65 117.65a24 24 0 0133.94 0l22.63 22.63a24 24 0 11-33.94 33.94l-22.63-22.63a24 24 0 010-33.94z"/></svg>
+          <svg
+              class="swap-off h-6 w-6 fill-current"
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </label>
+      </div>
+
+          <button class="btn btn-ghost btn-circle" aria-label="Notificaciones">
+            <div class="indicator">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2"><path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 1 0-12 0v3.2a2 2 0 0 1-.6 1.4L4 17h5"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+              <span class="badge badge-primary badge-xs indicator-item"></span>
+            </div>
+          </button>
+
+          <div class="dropdown dropdown-end">
+            <label tabindex="0" class="btn btn-ghost btn-circle avatar">
+              <div class="w-8 md:w-9 rounded-full">
+                <img src="https://i.pravatar.cc/100?img=13" alt="Admin" />
+              </div>
+            </label>
+            <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[60] p-2 shadow bg-base-100 rounded-box w-56">
+              <li><a>Mi perfil</a></li>
+              <li><a>Preferencias</a></li>
+              <li><a class="text-error" (click)="logout()">Salir</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN -->
+    <main class="p-4 md:p-6">
+      <section class="container mx-auto max-w-7xl px-2 md:px-4">
+        <router-outlet></router-outlet>
+      </section>
+
+      <footer class="mt-10 py-8 text-center text-sm text-base-content/70">
+        © 2025 VPN CarlosVM · Panel de Administración
+      </footer>
+    </main>
+  </div>
+
+  <!-- SIDEBAR (fixed dentro del drawer) -->
+      <div class="drawer-side">
+        <label for="sidebar" class="drawer-overlay" aria-label="Cerrar menú"></label>
+
+        <aside class="h-full w-64 bg-base-200 border-r sticky top-0">
+          <!-- Encabezado del sidebar (oculto en lg, ya lo muestra el navbar) -->
+          <div class="border-b p-4 text-center lg:hidden">
+            <a class="btn btn-ghost h-auto min-h-0 p-0 text-xl font-extrabold tracking-tight">
+              VPN<span class="text-primary">CarlosVM</span>
+            </a>
+          </div>
+
+          <nav class="menu p-4 text-base-content" role="navigation" aria-label="Navegación principal">
+            <ul>
+              <li><a routerLink="/panel/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0 7-7 7 7M5 10v10h14V10"/></svg>Dashboard</a></li>
+              <li><a routerLink="/panel/users" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87M15 10a4 4 0 11-8 0 4 4 0 018 0z"/></svg>Usuarios</a></li>
+              <li><a routerLink="/panel/devices" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-7 4h8M4 6h16v12H4z"/></svg>Dispositivos</a></li>
+              <li><a routerLink="/panel/certificates" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 6l7 4-7 4-7-4 7-4z"/><path d="M12 14l7-4v8l-7 4-7-4v-8l7 4z"/></svg>Certificados</a></li>
+              <li><a routerLink="/panel/payments" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8a3 3 0 100 6m0-11v2m0 12v2M6 12h12"/></svg>Pagos</a></li>
+              <li><a routerLink="/panel/activity" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2h6v2m-3-2V7m9 4a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Actividad</a></li>
+              <!-- <li><a routerLink="/panel/settings" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.325 4.317l.369-2.211a1 1 0 011.992 0l.369 2.211a8.003 8.003 0 014.39 2.538l2.06-.864a1 1 0 011.302.596l.75 2.06a1 1 0 01-.596 1.302l-2.06.75a8.06 8.06 0 010 4.74l2.06.75a1 1 0 01.596 1.302l-.75 2.06a1 1 0 01-1.302.596l-2.06-.864a8.003 8.003 0 01-4.39 2.538l-.369 2.211a1 1 0 01-1.992 0l-.369-2.211a8.003 8.003 0 01-4.39-2.538l-2.06.864a1 1 0 01-1.302-.596l-.75-2.06a1 1 0 01.596-1.302l2.06-.75a8.06 8.06 0 010-4.74l-2.06-.75a1 1 0 01-.596-1.302l.75-2.06a1 1 0 011.302-.596l2.06.864a8.003 8.003 0 014.39-2.538z"/><circle cx="12" cy="12" r="3"/></svg>Settings</a></li> -->
+
+              <!-- Settings con submenú -->
+              <li>
+                <details>
+                  <summary>
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path d="M10.325 4.317l.369-2.211a1 1 0 011.992 0l.369 2.211a8.003 8.003 0 014.39 2.538l2.06-.864a1 1 0 011.302.596l.75 2.06a1 1 0 01-.596 1.302l-2.06.75a8.06 8.06 0 010 4.74l2.06.75a1 1 0 01.596 1.302l-.75 2.06a1 1 0 01-1.302.596l-2.06-.864a8.003 8.003 0 01-4.39 2.538l-.369 2.211a1 1 0 01-1.992 0l-.369-2.211a8.003 8.003 0 01-4.39-2.538l-2.06.864a1 1 0 01-1.302-.596l-.75-2.06a1 1 0 01.596-1.302l2.06-.75a8.06 8.06 0 010-4.74l-2.06-.75a1 1 0 01-.596-1.302l.75-2.06a1 1 0 011.302-.596l2.06.864a8.003 8.003 0 014.39-2.538z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                    Settings
+                  </summary>
+                  <ul>
+                    <li><a routerLink="/panel/settings/servers" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4h16v4H4V4m0 6h16v4H4v-4m0 6h16v4H4v-4"/></svg>Servidores</a></li>
+                    <li><a routerLink="/panel/settings/countries" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+                      <!-- <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 6v12m6-6H6"/></svg> -->
+                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="9"/>
+                        <path d="M2.5 12h19"/><path d="M12 2.5v19"/>
+                        <path d="M4.5 7.5c2.2 1.2 4.8 1.8 7.5 1.8s5.3-.6 7.5-1.8"/>
+                        <path d="M4.5 16.5c2.2-1.2 4.8-1.8 7.5-1.8s5.3.6 7.5 1.8"/>
+                      </svg>
+                      Paises</a></li>
+                    <li><a routerLink="/panel/settings/plans" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+                      <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M4 7h16M4 12h16M4 17h16"/></svg>Planes</a></li>
+                    <li><a routerLink="/panel/settings/bank-account" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
+                                   <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.325 4.317l.369-2.211a1 1 0 011.992 0l.369 2.211a8.003 8.003 0 014.39 2.538l2.06-.864a1 1 0 011.302.596l.75 2.06a1 1 0 01-.596 1.302l-2.06.75a8.06 8.06 0 010 4.74l2.06.75a1 1 0 01.596 1.302l-.75 2.06a1 1 0 01-1.302.596l-2.06-.864a8.003 8.003 0 01-4.39 2.538l-.369 2.211a1 1 0 01-1.992 0l-.369-2.211a8.003 8.003 0 01-4.39-2.538l-2.06.864a1 1 0 01-1.302-.596l-.75-2.06a1 1 0 01.596-1.302l2.06-.75a8.06 8.06 0 010-4.74l-2.06-.75a1 1 0 01-.596-1.302l.75-2.06a1 1 0 011.302-.596l2.06.864a8.003 8.003 0 014.39-2.538z"/><circle cx="12" cy="12" r="3"/></svg>Cuentas Bancarias</a></li>
+                    <li><a routerLink="/panel/settings/services" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
+                                   <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.325 4.317l.369-2.211a1 1 0 011.992 0l.369 2.211a8.003 8.003 0 014.39 2.538l2.06-.864a1 1 0 011.302.596l.75 2.06a1 1 0 01-.596 1.302l-2.06.75a8.06 8.06 0 010 4.74l2.06.75a1 1 0 01.596 1.302l-.75 2.06a1 1 0 01-1.302.596l-2.06-.864a8.003 8.003 0 01-4.39 2.538l-.369 2.211a1 1 0 01-1.992 0l-.369-2.211a8.003 8.003 0 01-4.39-2.538l-2.06.864a1 1 0 01-1.302-.596l-.75-2.06a1 1 0 01.596-1.302l2.06-.75a8.06 8.06 0 010-4.74l-2.06-.75a1 1 0 01-.596-1.302l.75-2.06a1 1 0 011.302-.596l2.06.864a8.003 8.003 0 014.39-2.538z"/><circle cx="12" cy="12" r="3"/></svg>Servicios</a></li>
+                    <li><a routerLink="/panel/settings/terms" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
+                                   <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.325 4.317l.369-2.211a1 1 0 011.992 0l.369 2.211a8.003 8.003 0 014.39 2.538l2.06-.864a1 1 0 011.302.596l.75 2.06a1 1 0 01-.596 1.302l-2.06.75a8.06 8.06 0 010 4.74l2.06.75a1 1 0 01.596 1.302l-.75 2.06a1 1 0 01-1.302.596l-2.06-.864a8.003 8.003 0 01-4.39 2.538l-.369 2.211a1 1 0 01-1.992 0l-.369-2.211a8.003 8.003 0 01-4.39-2.538l-2.06.864a1 1 0 01-1.302-.596l-.75-2.06a1 1 0 01.596-1.302l2.06-.75a8.06 8.06 0 010-4.74l-2.06-.75a1 1 0 01-.596-1.302l.75-2.06a1 1 0 011.302-.596l2.06.864a8.003 8.003 0 014.39-2.538z"/><circle cx="12" cy="12" r="3"/></svg>Terminos</a></li>
+                    <li><a routerLink="/panel/settings/apps" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
+                                   <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.325 4.317l.369-2.211a1 1 0 011.992 0l.369 2.211a8.003 8.003 0 014.39 2.538l2.06-.864a1 1 0 011.302.596l.75 2.06a1 1 0 01-.596 1.302l-2.06.75a8.06 8.06 0 010 4.74l2.06.75a1 1 0 01.596 1.302l-.75 2.06a1 1 0 01-1.302.596l-2.06-.864a8.003 8.003 0 01-4.39 2.538l-.369 2.211a1 1 0 01-1.992 0l-.369-2.211a8.003 8.003 0 01-4.39-2.538l-2.06.864a1 1 0 01-1.302-.596l-.75-2.06a1 1 0 01.596-1.302l2.06-.75a8.06 8.06 0 010-4.74l-2.06-.75a1 1 0 01-.596-1.302l.75-2.06a1 1 0 011.302-.596l2.06.864a8.003 8.003 0 014.39-2.538z"/><circle cx="12" cy="12" r="3"/></svg>Apps</a></li>
+
+                  </ul>
+                </details>
+              </li>
+
+            </ul>
+          </nav>
+        </aside>
+      </div>
+</div>
+
+<!-- Atajo global: Ctrl/Cmd + K -->
+<script>
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+      const input = document.getElementById('global-search');
+      if (input) { e.preventDefault(); input.focus(); }
+    }
+  });
+</script>

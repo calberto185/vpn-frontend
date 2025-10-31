@@ -1,0 +1,217 @@
+  <div class="mx-auto max-w-6xl p-4 md:p-8">
+    <div class="mb-6 flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-semibold tracking-tight">Editar Perfil</h1>
+        <p class="mt-1 text-sm text-gray-500">Gestiona tus datos personales como teléfonos, servicios y su plan.</p>
+      </div>
+      <div class="hidden text-xs text-gray-500 md:block">ID: <span class="font-mono">{{ value?.id || '—' }}</span></div>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="grid grid-cols-1 gap-6 md:grid-cols-12">
+      <!-- Left: avatar & estados (sticky) -->
+      <aside class="md:col-span-4 space-y-6 md:sticky md:top-6 self-start">
+        <!-- Avatar Card -->
+        <section class="rounded-2xl border border-gray-200/80 bg-white p-5 shadow-sm">
+          <h2 class="mb-3 text-sm font-semibold tracking-tight">Foto</h2>
+          <div class="flex items-center gap-4">
+            <img [src]="avatarUrl()" alt="avatar" class="size-24 rounded-xl object-cover bg-gray-100 ring-1 ring-gray-200" />
+            <div class="flex-1">
+              <label class="block text-xs font-medium text-gray-600">Subir imagen</label>
+              <input type="file" accept="image/*" (change)="handleFile($event)" class="mt-1 block w-full text-sm file:mr-4 file:rounded-xl file:border file:border-gray-200 file:bg-gray-50 file:px-3 file:py-2 file:text-gray-700 hover:file:bg-gray-100" />
+              <button type="button" (click)="clearPicture()" class="mt-2 inline-flex items-center text-xs font-medium text-red-600 hover:underline">Quitar</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Estados Card -->
+        <!-- <section class="rounded-2xl border border-gray-200/80 bg-white p-5 shadow-sm">
+          <h2 class="mb-4 text-sm font-semibold tracking-tight">Estados</h2>
+          <div class="space-y-4">
+            <div class="grid grid-cols-1 gap-2">
+              <label class="flex items-center justify-between gap-4">
+                <span class="text-sm">Verificado</span>
+                <input type="checkbox" formControlName="verified" class="size-4 rounded border-gray-300" />
+              </label>
+              <input class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/10" type="datetime-local" [value]="dateLocal(form.value.verifiedAt)" (change)="setDate('verifiedAt', $event)" />
+            </div>
+
+            <div class="grid grid-cols-1 gap-2">
+              <label class="flex items-center justify-between gap-4">
+                <span class="text-sm">Bloqueado</span>
+                <input type="checkbox" formControlName="bloqued" class="size-4 rounded border-gray-300" />
+              </label>
+              <input class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/10" type="datetime-local" [value]="dateLocal(form.value.bloquedAt)" (change)="setDate('bloquedAt', $event)" />
+            </div>
+
+            <div class="grid grid-cols-1 gap-2">
+              <label class="flex items-center justify-between gap-4">
+                <span class="text-sm">Suspendido</span>
+                <input type="checkbox" formControlName="suspend" class="size-4 rounded border-gray-300" />
+              </label>
+              <input class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/10" type="datetime-local" [value]="dateLocal(form.value.suspendAt)" (change)="setDate('suspendAt', $event)" />
+            </div>
+
+            <div class="grid grid-cols-1 gap-2">
+              <label class="flex items-center justify-between gap-4">
+                <span class="text-sm">En servicio</span>
+                <input type="checkbox" formControlName="onService" class="size-4 rounded border-gray-300" />
+              </label>
+              <input class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/10" type="datetime-local" [value]="dateLocal(form.value.onServiceAt)" (change)="setDate('onServiceAt', $event)" />
+            </div>
+          </div>
+        </section> -->
+      </aside>
+
+      <!-- Right: main form -->
+      <section class="md:col-span-8 space-y-6">
+        <!-- Datos principales -->
+        <section class="rounded-2xl border border-gray-200/80 bg-white p-5 shadow-sm">
+          <h2 class="mb-4 text-sm font-semibold tracking-tight">Datos personales</h2>
+          <div class="grid gap-4 md:grid-cols-2">
+            <div>
+              <label class="text-xs font-medium text-gray-600">Nombres</label>
+              <input class="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 shadow-sm focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/10" formControlName="firstNames" placeholder="Carlos" />
+            </div>
+            <div>
+              <label class="text-xs font-medium text-gray-600">Apellidos</label>
+              <input class="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 shadow-sm focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/10" formControlName="lastNames" placeholder="Pérez" />
+            </div>
+            <div>
+              <label class="text-xs font-medium text-gray-600">Email</label>
+              <input class="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 shadow-sm focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/10" type="email" formControlName="email" />
+            </div>
+            <div>
+              <label class="text-xs font-medium text-gray-600">País</label>
+              <input class="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 shadow-sm focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/10" formControlName="country" />
+            </div>
+            <div>
+              <label class="text-xs font-medium text-gray-600">DNI</label>
+              <input class="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 shadow-sm focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/10" formControlName="dni" />
+            </div>
+            <!-- <div>
+              <label class="text-xs font-medium text-gray-600">Rol</label>
+              <select class="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 shadow-sm focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/10" formControlName="role">
+                <option value="standar">standar</option>
+                <option value="admin">admin</option>
+                <option value="user">user</option>
+                <option value="manager">manager</option>
+              </select>
+            </div> -->
+            <!-- <div>
+              <label class="text-xs font-medium text-gray-600">¿Admin?</label>
+              <select class="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 shadow-sm focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/10" formControlName="isAdmin">
+                <option [ngValue]="true">Sí</option>
+                <option [ngValue]="false">No</option>
+              </select>
+            </div> -->
+            <!-- <div>
+              <label class="text-xs font-medium text-gray-600">Estado</label>
+              <select class="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 shadow-sm focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/10" formControlName="state">
+                <option value="Pendiente">Pendiente</option>
+                <option value="Aprobado">Aprobado</option>
+                <option value="Rechazado">Rechazado</option>
+              </select>
+            </div> -->
+            <!-- <div>
+              <label class="text-xs font-medium text-gray-600">Monto</label>
+              <input class="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 shadow-sm focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/10" type="number" formControlName="amount" />
+            </div>
+            <div>
+              <label class="text-xs font-medium text-gray-600">Símbolo Moneda</label>
+              <input class="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 shadow-sm focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/10" formControlName="coinSymbol" placeholder="S/ | $ | €" />
+            </div> -->
+          </div>
+
+          <!-- <div class="mt-5">
+            <label class="text-xs font-medium text-gray-600">Observaciones</label>
+            <textarea class="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 shadow-sm focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/10" rows="4" formControlName="observations" placeholder="Notas internas, requisitos, etc."></textarea>
+          </div> -->
+        </section>
+
+        <!-- Teléfonos -->
+        <section class="rounded-2xl border border-gray-200/80 bg-white p-5 shadow-sm">
+          <div class="mb-3 flex items-center justify-between">
+            <h2 class="text-sm font-semibold tracking-tight">Teléfonos</h2>
+            <button type="button" (click)="addTelephone()" class="rounded-xl bg-gray-900 px-3 py-2 text-sm font-medium text-white hover:opacity-90">Añadir</button>
+          </div>
+          <div class="space-y-2" *ngIf="telephones.controls.length; else noTels">
+            <div class="flex items-center gap-2" *ngFor="let ctrl of telephones.controls; let i = index">
+              <input class="flex-1 rounded-xl border border-gray-200 bg-white px-3 py-2.5 shadow-sm focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/10" [formControl]="ctrl" placeholder="+51 999 999 999" />
+              <button type="button" (click)="removeTelephone(i)" class="text-sm font-medium text-red-600 hover:underline">Quitar</button>
+            </div>
+          </div>
+          <ng-template #noTels>
+            <p class="text-sm text-gray-500">Sin teléfonos…</p>
+          </ng-template>
+        </section>
+
+        <!-- Servicios -->
+        <section class="rounded-2xl border border-gray-200/80 bg-white p-5 shadow-sm">
+          <div class="mb-3 flex items-center justify-between">
+            <h2 class="text-sm font-semibold tracking-tight">Servicios</h2>
+            <button type="button" (click)="addService()" class="rounded-xl bg-gray-900 px-3 py-2 text-sm font-medium text-white hover:opacity-90">Añadir</button>
+          </div>
+          <div class="space-y-2" *ngIf="servicesArr.controls.length; else noServices">
+            <div class="flex items-center gap-2" *ngFor="let ctrl of servicesArr.controls; let i = index">
+              <input class="flex-1 rounded-xl border border-gray-200 bg-white px-3 py-2.5 shadow-sm focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/10" [formControl]="ctrl" placeholder="Nombre del servicio" />
+              <button type="button" (click)="removeService(i)" class="text-sm font-medium text-red-600 hover:underline">Quitar</button>
+            </div>
+          </div>
+          <ng-template #noServices>
+            <p class="text-sm text-gray-500">Sin servicios…</p>
+          </ng-template>
+        </section>
+
+        <!-- Plan actual -->
+        <section class="rounded-2xl border border-gray-200/80 bg-white p-5 shadow-sm">
+          <div class="mb-4 flex items-center justify-between">
+            <h2 class="text-sm font-semibold tracking-tight">Plan actual</h2>
+            <span class="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700" *ngIf="form.get('plan.state')?.value">Activo</span>
+          </div>
+          <div formGroupName="plan" class="grid gap-4 md:grid-cols-2">
+            <div>
+              <label class="text-xs font-medium text-gray-600">Nombre</label>
+              <input class="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 shadow-sm focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/10" formControlName="name" />
+            </div>
+            <div>
+              <label class="text-xs font-medium text-gray-600">Plan ID</label>
+              <input class="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 shadow-sm focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/10" formControlName="plan_id" />
+            </div>
+            <div>
+              <label class="text-xs font-medium text-gray-600">Dispositivos</label>
+              <input class="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 shadow-sm focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/10" type="number" formControlName="devicesLimit" />
+            </div>
+            <div>
+              <label class="text-xs font-medium text-gray-600">Monto</label>
+              <input class="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 shadow-sm focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/10" type="number" formControlName="amount" />
+            </div>
+            <div>
+              <label class="text-xs font-medium text-gray-600">Moneda</label>
+              <input class="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 shadow-sm focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/10" formControlName="coinSymbol" />
+            </div>
+            <div>
+              <label class="text-xs font-medium text-gray-600">Activo</label>
+              <select class="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 shadow-sm focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/10" formControlName="state">
+                <option [ngValue]="true">Sí</option>
+                <option [ngValue]="false">No</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-xs font-medium text-gray-600">Inicio</label>
+              <input class="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 shadow-sm focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/10" type="datetime-local" [value]="dateLocal(form.get('plan.startedAt')?.value)" (change)="setNestedDate('plan','startedAt',$event)" />
+            </div>
+            <div>
+              <label class="text-xs font-medium text-gray-600">Fin</label>
+              <input class="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 shadow-sm focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/10" type="datetime-local" [value]="dateLocal(form.get('plan.endedAt')?.value)" (change)="setNestedDate('plan','endedAt',$event)" />
+            </div>
+          </div>
+        </section>
+
+        <!-- Actions -->
+        <div class="flex items-center justify-end gap-3">
+          <button type="button" (click)="reset()" class="rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium hover:bg-gray-50">Restablecer</button>
+          <button type="submit" [disabled]="form.invalid || form.pristine" class="rounded-xl bg-gray-900 px-4 py-2 text-sm font-medium text-white shadow-sm hover:opacity-90 disabled:opacity-50">Guardar cambios</button>
+        </div>
+      </section>
+    </form>
+  </div>

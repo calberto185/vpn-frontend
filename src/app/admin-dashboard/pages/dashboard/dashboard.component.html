@@ -1,0 +1,383 @@
+
+      <!-- BREADCRUMB + TITULAR -->
+      <section class="container mx-auto max-w-7xl px-2 md:px-4">
+        <div class="breadcrumbs text-sm pt-2"><ul><li><a>Panel</a></li><li aria-current="page">Dashboard</li></ul></div>
+        <div class="mt-2 flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">Resumen global</h1>
+            <p class="text-base-content/70">Estado de usuarios, servidores, dispositivos, pagos y certificados.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <a href="#/dashboard/users" class="btn btn-outline">Ir a Usuarios</a>
+            <a href="#/dashboard/servers" class="btn btn-outline">Ir a Servidores</a>
+            <a href="#/dashboard/payments" class="btn btn-outline">Ir a Pagos</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- KPIs -->
+      <section class="container mx-auto max-w-7xl px-2 md:px-4 mt-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+          <div class="stat bg-base-100/80 border rounded-xl shadow-sm">
+            <div class="stat-figure text-primary">
+              <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <div class="stat-title">Usuarios</div>
+            <div class="stat-value text-3xl">1,284</div>
+            <div class="stat-desc">+86 este mes</div>
+          </div>
+
+          <div class="stat bg-base-100/80 border rounded-xl shadow-sm">
+            <div class="stat-figure text-success">
+              <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M2 20h.01M7 20h.01M12 20h.01M17 20h.01M22 20h.01"/></svg>
+            </div>
+            <div class="stat-title">Dispositivos activos</div>
+            <div class="stat-value text-3xl">876</div>
+            <div class="stat-desc">+5.3% semanal</div>
+          </div>
+
+          <div class="stat bg-base-100/80 border rounded-xl shadow-sm">
+            <div class="stat-figure text-warning">
+              <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 3h18v18H3z"/><path d="M9 9h6v6H9z"/></svg>
+            </div>
+            <div class="stat-title">Sesiones 24h</div>
+            <div class="stat-value text-3xl">312</div>
+            <div class="stat-desc">85.7% online</div>
+          </div>
+
+          <div class="stat bg-base-100/80 border rounded-xl shadow-sm">
+            <div class="stat-figure text-info">
+              <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 8c-1.657 0-3 1.343-3 3 0 .5.134.965.364 1.364l-.364.636H6v6h12v-6h-3l-.364-.636c.23-.399.364-.864.364-1.364 0-1.657-1.343-3-3-3z"/></svg>
+            </div>
+            <div class="stat-title">Ingresos (30d)</div>
+            <div class="stat-value text-3xl">$4,920</div>
+            <div class="stat-desc">+12% respecto al mes</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SALUD & MINI GRÁFICAS -->
+      <section class="container mx-auto max-w-7xl px-2 md:px-4 mt-4 grid grid-cols-1 lg:grid-cols-3 gap-3">
+        <!-- Salud del sistema -->
+        <div class="card bg-base-100 border shadow-sm">
+          <div class="card-body">
+            <div class="flex items-center justify-between">
+              <h2 class="card-title text-base">Salud de servidores</h2>
+              <span class="badge badge-success">OK</span>
+            </div>
+            <div class="mt-2 grid grid-cols-2 gap-3 text-sm">
+              <div class="p-3 rounded-lg border bg-base-200/60">
+                <div class="flex items-center justify-between">
+                  <span>vpn-eu-1</span><span class="badge badge-success">UP</span>
+                </div>
+                <div class="mt-2">
+                  <!-- sparkline -->
+                  <svg viewBox="0 0 100 24" class="w-full h-8">
+                    <polyline fill="none" stroke="currentColor" stroke-width="2" points="0,18 15,10 30,12 45,8 60,12 75,6 90,10 100,7"></polyline>
+                  </svg>
+                </div>
+                <p class="text-xs opacity-70">Carga 35% · Lat 42ms</p>
+              </div>
+              <div class="p-3 rounded-lg border bg-base-200/60">
+                <div class="flex items-center justify-between">
+                  <span>vpn-us-1</span><span class="badge badge-success">UP</span>
+                </div>
+                <div class="mt-2">
+                  <svg viewBox="0 0 100 24" class="w-full h-8">
+                    <polyline fill="none" stroke="currentColor" stroke-width="2" points="0,14 12,12 24,8 36,10 48,6 60,10 72,9 84,7 100,6"></polyline>
+                  </svg>
+                </div>
+                <p class="text-xs opacity-70">Carga 28% · Lat 55ms</p>
+              </div>
+            </div>
+            <div class="mt-3">
+              <button class="btn btn-outline btn-sm" onclick="document.getElementById('add_server')?.showModal()">Agregar servidor</button>
+              <a href="#/dashboard/servers" class="btn btn-ghost btn-sm">Ver todos</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tráfico -->
+        <div class="card bg-base-100 border shadow-sm">
+          <div class="card-body">
+            <div class="flex items-center justify-between">
+              <h2 class="card-title text-base">Tráfico (Gb · 24h)</h2>
+              <span class="badge">+8%</span>
+            </div>
+            <div class="mt-2">
+              <svg viewBox="0 0 100 40" class="w-full h-24">
+                <defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="currentColor" stop-opacity="0.35"/><stop offset="100%" stop-color="currentColor" stop-opacity="0"/></linearGradient></defs>
+                <path d="M0,30 L10,28 L20,25 L30,24 L40,20 L50,18 L60,16 L70,14 L80,17 L90,15 L100,12 L100,40 L0,40 Z" fill="url(#g1)"></path>
+                <polyline fill="none" stroke="currentColor" stroke-width="2" points="0,30 10,28 20,25 30,24 40,20 50,18 60,16 70,14 80,17 90,15 100,12"></polyline>
+              </svg>
+            </div>
+            <p class="text-xs opacity-70">Pico 12:00 · 380 Mb/s</p>
+          </div>
+        </div>
+
+        <!-- Pagos -->
+        <div class="card bg-base-100 border shadow-sm">
+          <div class="card-body">
+            <div class="flex items-center justify-between">
+              <h2 class="card-title text-base">Pagos</h2>
+              <span class="badge badge-warning">4 pendientes</span>
+            </div>
+            <ul class="mt-2 text-sm space-y-2">
+              <li class="flex items-center justify-between">
+                <span>#P-1024 · $12 · carlos</span><span class="badge badge-ghost">Verificando</span>
+              </li>
+              <li class="flex items-center justify-between">
+                <span>#P-1025 · $24 · ana</span><span class="badge badge-warning">Pendiente</span>
+              </li>
+              <li class="flex items-center justify-between">
+                <span>#P-1026 · $12 · luis</span><span class="badge badge-success">Aceptado</span>
+              </li>
+            </ul>
+            <div class="mt-3">
+              <a href="#/dashboard/payments" class="btn btn-ghost btn-sm">Ver pagos</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TABLAS RESUMEN -->
+      <section class="container mx-auto max-w-7xl px-2 md:px-4 mt-4 grid grid-cols-1 xl:grid-cols-2 gap-3">
+        <!-- Últimos usuarios -->
+        <div class="bg-base-100 border rounded-xl shadow-sm overflow-x-auto">
+          <div class="flex items-center justify-between p-4 pb-2">
+            <h3 class="font-semibold">Últimos usuarios</h3>
+            <button class="btn btn-primary btn-sm" onclick="document.getElementById('add_user')?.showModal()">
+              <svg class="h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+              Agregar
+            </button>
+          </div>
+          <table class="table table-sm">
+            <thead><tr><th>Usuario</th><th class="hidden md:table-cell">Email</th><th>Estado</th><th class="text-right">Acciones</th></tr></thead>
+            <tbody>
+              <tr class="hover">
+                <td>
+                  <div class="flex items-center gap-3">
+                    <div class="avatar"><div class="w-10 rounded-xl"><img src="https://i.pravatar.cc/100?img=5" alt="Ana"/></div></div>
+                    <div><div class="font-medium">Ana Rojas</div><div class="text-xs opacity-70">pe-000132</div></div>
+                  </div>
+                </td>
+                <td class="hidden md:table-cell">ana.rojas____mail.com</td>
+                <td><span class="badge badge-success">Activo</span></td>
+                <td class="text-right">
+                  <div class="join">
+                    <button class="btn btn-ghost btn-xs join-item" onclick="document.getElementById('view_user')?.showModal()">Ver</button>
+                    <button class="btn btn-ghost btn-xs join-item" onclick="document.getElementById('edit_user')?.showModal()">Editar</button>
+                  </div>
+                </td>
+              </tr>
+              <tr class="hover">
+                <td>
+                  <div class="flex items-center gap-3">
+                    <div class="avatar"><div class="w-10 rounded-xl"><img src="https://i.pravatar.cc/100?img=22" alt="Luis"/></div></div>
+                    <div><div class="font-medium">Luis Farfán</div><div class="text-xs opacity-70">pe-000219</div></div>
+                  </div>
+                </td>
+                <td class="hidden md:table-cell">luis.farfan____mail.com</td>
+                <td><span class="badge">Inactivo</span></td>
+                <td class="text-right">
+                  <div class="join">
+                    <button class="btn btn-ghost btn-xs join-item" onclick="document.getElementById('view_user')?.showModal()">Ver</button>
+                    <button class="btn btn-ghost btn-xs join-item" onclick="document.getElementById('edit_user')?.showModal()">Editar</button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="p-3 pt-0 text-right">
+            <a href="#/dashboard/users" class="link link-hover text-sm">Ver todos los usuarios →</a>
+          </div>
+        </div>
+
+        <!-- Últimas operaciones (Pagos / Certs / Dispositivos) -->
+        <div class="bg-base-100 border rounded-xl shadow-sm overflow-x-auto">
+          <div class="p-4 pb-2 flex items-center justify-between">
+            <h3 class="font-semibold">Actividad reciente</h3>
+            <span class="badge">Últimas 24h</span>
+          </div>
+          <ul class="menu p-2">
+            <li>
+              <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-3">
+                  <span class="badge badge-success">Pago</span>
+                  <span>#P-1026 aceptado · $12</span>
+                </div>
+                <span class="text-xs opacity-70">hace 12m</span>
+              </div>
+            </li>
+            <li>
+              <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-3">
+                  <span class="badge badge-info">Cert</span>
+                  <span>Emitido c-0001 (personal)</span>
+                </div>
+                <span class="text-xs opacity-70">hace 28m</span>
+              </div>
+            </li>
+            <li>
+              <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-3">
+                  <span class="badge badge-warning">Srv</span>
+                  <span>vpn-eu-1 actualizado</span>
+                </div>
+                <span class="text-xs opacity-70">hace 1h</span>
+              </div>
+            </li>
+            <li>
+              <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-3">
+                  <span class="badge">Dev</span>
+                  <span>Nuevo dispositivo para Ana</span>
+                </div>
+                <span class="text-xs opacity-70">hace 2h</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- RESÚMENES: Dispositivos / Pagos / Certificados -->
+      <section class="container mx-auto max-w-7xl px-2 md:px-4 mt-4 grid grid-cols-1 lg:grid-cols-3 gap-3">
+        <!-- Dispositivos -->
+        <div class="card bg-base-100 border shadow-sm">
+          <div class="card-body">
+            <div class="flex items-center justify-between">
+              <h3 class="card-title text-base">Dispositivos</h3>
+              <span class="badge">876 activos</span>
+            </div>
+            <table class="table table-xs">
+              <thead><tr><th>Usuario</th><th>Device</th><th class="text-right">Estado</th></tr></thead>
+              <tbody>
+                <tr><td>Ana</td><td>iPhone 14</td><td class="text-right"><span class="badge badge-success">OK</span></td></tr>
+                <tr><td>Luis</td><td>MacBook</td><td class="text-right"><span class="badge">Suspend</span></td></tr>
+              </tbody>
+            </table>
+            <div class="card-actions justify-end">
+              <a class="btn btn-ghost btn-sm" href="#/dashboard/devices">Ver dispositivos</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pagos -->
+        <div class="card bg-base-100 border shadow-sm">
+          <div class="card-body">
+            <div class="flex items-center justify-between">
+              <h3 class="card-title text-base">Pagos</h3>
+              <span class="badge badge-warning">Pend: 4</span>
+            </div>
+            <table class="table table-xs">
+              <thead><tr><th>ID</th><th>Monto</th><th class="text-right">Estado</th></tr></thead>
+              <tbody>
+                <tr><td>#P-1025</td><td>$24</td><td class="text-right"><span class="badge badge-warning">Pendiente</span></td></tr>
+                <tr><td>#P-1026</td><td>$12</td><td class="text-right"><span class="badge badge-success">Aceptado</span></td></tr>
+              </tbody>
+            </table>
+            <div class="card-actions justify-end">
+              <a class="btn btn-ghost btn-sm" href="#/dashboard/payments">Ver pagos</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Certificados -->
+        <div class="card bg-base-100 border shadow-sm">
+          <div class="card-body">
+            <div class="flex items-center justify-between">
+              <h3 class="card-title text-base">Certificados .ovpn</h3>
+              <span class="badge">Activos 1,102</span>
+            </div>
+            <table class="table table-xs">
+              <thead><tr><th>Cert</th><th>Usuario</th><th class="text-right">Expira</th></tr></thead>
+              <tbody>
+                <tr><td>c-0001</td><td>carlos</td><td class="text-right"><span class="badge badge-ghost">29d</span></td></tr>
+                <tr><td>c-0002</td><td>ana</td><td class="text-right"><span class="badge badge-warning">5d</span></td></tr>
+              </tbody>
+            </table>
+            <div class="card-actions justify-end">
+              <a class="btn btn-ghost btn-sm" href="#/dashboard/certificates">Ver certificados</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- QUICK ACTIONS -->
+      <section class="container mx-auto max-w-7xl px-2 md:px-4 mt-4">
+        <div class="bg-base-100 border rounded-xl shadow-sm p-4">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="font-semibold">Acciones rápidas</span>
+            <div class="divider divider-horizontal"></div>
+            <button class="btn btn-outline btn-sm" onclick="document.getElementById('add_user')?.showModal()">Nuevo usuario</button>
+            <button class="btn btn-outline btn-sm" onclick="document.getElementById('add_server')?.showModal()">Nuevo servidor</button>
+            <a class="btn btn-outline btn-sm" href="#/dashboard/certificates">Emitir certificado</a>
+            <a class="btn btn-outline btn-sm" href="#/dashboard/payments">Registrar pago</a>
+          </div>
+        </div>
+      </section>
+
+
+
+
+<!-- MODALES RÁPIDOS -->
+<dialog id="add_user" class="modal">
+  <div class="modal-box max-w-2xl">
+    <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button></form>
+    <h3 class="text-lg font-bold">Nuevo usuario</h3>
+    <p class="text-sm opacity-70 mb-3">Crea una cuenta y asigna un rol inicial.</p>
+    <div class="grid gap-3 md:grid-cols-2">
+      <label class="input input-bordered w-full"><input type="text" placeholder="Nombres" class="w-full" /></label>
+      <label class="input input-bordered w-full"><input type="text" placeholder="Apellidos" class="w-full" /></label>
+      <label class="input input-bordered w-full md:col-span-2"><input type="email" placeholder="Email" class="w-full" /></label>
+      <label class="input input-bordered w-full md:col-span-2"><input type="password" placeholder="Contraseña temporal" class="w-full" /></label>
+      <label class="select select-bordered w-full md:col-span-2">
+        <select class="w-full" aria-label="Rol">
+          <option selected>standar</option>
+          <option>soporte</option>
+          <option>admin</option>
+        </select>
+      </label>
+    </div>
+    <div class="modal-action">
+      <button class="btn btn-ghost" type="button">Cancelar</button>
+      <button class="btn btn-primary" type="button">Crear</button>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button>close</button></form>
+</dialog>
+
+<dialog id="add_server" class="modal">
+  <div class="modal-box max-w-2xl">
+    <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button></form>
+    <h3 class="text-lg font-bold">Nuevo servidor</h3>
+    <p class="text-sm opacity-70 mb-3">Registra un servidor SSH para OpenVPN/WireGuard.</p>
+    <div class="grid gap-3 md:grid-cols-2">
+      <label class="input input-bordered w-full"><input type="text" placeholder="Nombre" class="w-full" /></label>
+      <label class="input input-bordered w-full"><input type="text" placeholder="Ubicación (región)" class="w-full" /></label>
+      <label class="input input-bordered w-full"><input type="text" placeholder="IP" class="w-full" /></label>
+      <label class="input input-bordered w-full"><input type="number" placeholder="Puerto SSH (22)" value="22" class="w-full" /></label>
+      <label class="input input-bordered w-full"><input type="text" placeholder="Usuario SSH" class="w-full" /></label>
+      <label class="input input-bordered w-full md:col-span-2"><input type="text" placeholder="Ruta a llave privada" class="w-full" /></label>
+      <label class="label cursor-pointer justify-start gap-3 md:col-span-2">
+        <input type="checkbox" class="toggle toggle-success" checked />
+        <span>Activo</span>
+      </label>
+    </div>
+    <div class="modal-action">
+      <button class="btn btn-ghost" type="button">Cancelar</button>
+      <button class="btn btn-primary" type="button">Guardar</button>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button>close</button></form>
+</dialog>
+
+<!-- Atajo: Ctrl/Cmd + K enfoca búsqueda -->
+<script>
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+      const input = document.getElementById('global-search');
+      if (input) { e.preventDefault(); input.focus(); }
+    }
+  });
+</script>

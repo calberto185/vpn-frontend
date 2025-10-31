@@ -1,0 +1,1099 @@
+<section class="container mx-auto max-w-6xl px-4 py-24">
+
+  <!-- BARRA DE PROGRESO -->
+  <div class="flex justify-between mb-8">
+    @for (step of [1,2,3,4,5]; track step) {
+    <div class="flex-1 text-center">
+      <div class="w-10 h-10 mx-auto rounded-full text-white flex items-center justify-center mb-2"
+        [class.bg-blue-600]="currentStep === step" [class.bg-gray-300]="currentStep !== step">
+        {{ step }}
+      </div>
+      <div class="text-sm font-medium" [class.text-blue-600]="currentStep === step">
+        @if (step === 1) { Países } @else if( step === 2 ) { Plan } @else if( step === 3 ) { Metodos de Pago } @else if(
+        step === 4 ) { Resumen } @else { Finalizacion }
+      </div>
+    </div>
+    }
+  </div>
+
+
+  <!-- STEP 1: Países -->
+  @if (currentStep === 1) {
+  <!-- Título de países -->
+  <div class="text-center max-w-2xl mx-auto my-8">
+    <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight text-gray-900">Conexión en General</h2>
+    <p class="mt-4 text-gray-600">Tu eliges como conectarte, por continente o por pais!.</p>
+  </div>
+
+  <div class="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 place-items-center">
+
+    <!-- 🌍 Vista de Continentes -->
+    @if(!this.showCountries()) {
+    @for (continente of this.ListContinents(); track continente.name) {
+    <div class="cursor-pointer border rounded-lg p-5 flex flex-col items-center justify-center transition duration-300
+                        hover:shadow-lg hover:bg-gray-50" [class.border-blue-500]="continente.isActive"
+      [class.bg-blue-50]="continente.isActive" [class.shadow-md]="continente.isActive"
+      [class.border-gray-200]="!continente.isActive" (click)="seleccionarContinente(continente)">
+      <div class="text-4xl mb-2">{{ continente.flag }}</div>
+      <div class="font-semibold text-gray-900">{{ continente.displayName }}</div>
+      <div class="text-sm text-gray-500">{{ continente.descripcion }}</div>
+      <div class="text-xs text-gray-400">{{ continente.idiomas }}</div>
+    </div>
+    }
+    }
+
+    <div class="cursor-pointer rounded-xl flex flex-col items-center justify-center
+         transition-all duration-200 shadow-sm hover:shadow-md active:scale-95
+         select-none border border-gray-200/30 w-32 h-32 text-center" (click)="verPaises()"
+      [class.text-gray-400]="!showCountries()" [class.hover\:bg-gray-200]="!showCountries()"
+      [class.bg-blue-100]="showCountries()" [class.text-blue-600]="showCountries()"
+      [class.hover\:bg-blue-200]="showCountries()">
+      @if (!showCountries()) {
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor"
+        class="w-6 h-6 mb-2 transition-transform duration-200">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+      </svg>
+      } @else {
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor"
+        class="w-6 h-6 mb-2 transition-transform duration-200">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+      </svg>
+      }
+
+      <div class="text-sm font-semibold tracking-wide">
+        {{ showCountries() ? 'Ver Continentes' : 'Ver Países' }}
+      </div>
+    </div>
+
+
+
+  </div>
+  @if(!this.showCountries()) {
+
+  <div class="w-full my-8">
+    <div class="w-full border-l-4 border-gray-300 pl-4 text-sm text-gray-400">
+      <p class="mt-1 text-gray-400">
+        Esta conexión es de tipo <strong>general</strong>, diseñada para brindarte acceso a diversas plataformas en toda
+        <strong>América</strong>,
+        como <strong>ChatGPT, Netflix, YouTube, Spotify, Disney+, Amazon Prime Video, Hulu, Google Services, Facebook,
+          Instagram, TikTok, X (Twitter)</strong>, por
+        <strong>mencionar algunos</strong>. Su alcance <strong>no se restringe a un país en particular</strong>,
+        ofreciendo una experiencia fluida,
+        estable y sin límites geográficos.
+      </p>
+    </div>
+  </div>
+  }
+
+
+
+  <!-- 🌍 Vista de Paises -->
+  @if(this.showCountries()) {
+
+  <div class="w-full h-px my-4 bg-gradient-to-r from-blue-400 via-gray-300 to-indigo-500" role="separator"
+    aria-orientation="horizontal"></div>
+
+
+  <div class="text-center max-w-2xl mx-auto my-8">
+    <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight text-gray-900">Países</h2>
+    <p class="mt-4 text-gray-600">Elige a que pais(es) deseas conectarte en específico!</p>
+  </div>
+
+  <div class="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+    @for (country of ListCountries(); track country.id) {
+    <div (click)="toggleSelection(country)" [class.border-blue-500]="country.isActive"
+      [class.bg-blue-50]="country.isActive" [class.shadow-md]="country.isActive" class="cursor-pointer border border-gray-200 rounded-lg p-5 flex flex-col items-center justify-center
+                      transition duration-300 hover:shadow-lg hover:bg-gray-50">
+      <div class="text-4xl mb-2">{{ country.flag }}</div>
+      <div class="font-semibold text-gray-900">{{ country.countryName }}</div>
+      <div class="text-sm text-gray-500">{{ country.currencyName }} ({{ country.currencySymbol }})</div>
+      <div class="text-xs text-gray-400">{{ country.languageName }}</div>
+    </div>
+    }
+  </div>
+  <div class="w-full my-8">
+    <div class="w-full border-l-4 border-gray-300 pl-4 text-sm text-gray-400">
+      <p class="font-medium text-gray-300">Nota:</p>
+      <p class="mt-1 text-gray-400">
+        El costo de conexión varía según el país, ya que se trata de un servicio exclusivo.
+        Para conocer los detalles, por favor comunícate con el área de administración.
+      </p>
+    </div>
+  </div>
+
+
+  }
+  @if(this.showCountries()) {
+  <div class="flex justify-end mt-6">
+    <button (click)="confirmarPago()" [disabled]="false"
+      class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+      Contactar Administrador
+    </button>
+  </div>
+  } @else {
+  <div class="flex justify-end mt-6">
+    <button (click)="nextStep()" [disabled]="!selectedCountries()" class="px-6 py-2 rounded-lg transition text-white"
+      [class.bg-blue-600]="selectedCountries()" [class.hover\:bg-blue-700]="selectedCountries()"
+      [class.bg-gray-300]="!selectedCountries()" [class.text-gray-500]="!selectedCountries()"
+      [class.cursor-not-allowed]="!selectedCountries()">
+      Siguiente
+    </button>
+  </div>
+  }
+  }
+
+  <!-- STEP 2: Plan -->
+  @if (currentStep === 2) {
+  <!-- Título de planes -->
+  <div class="text-center max-w-2xl mx-auto mb-8">
+    <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight text-gray-900">Planes y precios</h2>
+    <p class="mt-4 text-gray-600">Sin contratos. Cancela cuando quieras.</p>
+  </div>
+
+  <!-- Vista de Planes por Continente -->
+  @if(!!this.SelectedContinent().id) {
+   <div class="grid gap-8 md:grid-cols-3 max-w-7xl mx-auto px-6 py-10">
+    @for (plan of ShowListPlans(); track plan.id) {
+    <label [for]="'plan-' + plan.id" class="relative block cursor-pointer" [class.opacity-50]="!plan.active"
+      [class.cursor-not-allowed]="!plan.active">
+
+      <article class="group relative bg-gradient-to-b from-white to-gray-50 rounded-2xl border border-gray-100
+                transition-all duration-300 ease-in-out overflow-hidden flex flex-col justify-between
+                hover:shadow-2xl hover:-translate-y-1.5 h-[420px] p-8" [class.bg-blue-50]="selectedPlan.id === plan.id"
+        [class.border-blue-400]="selectedPlan.id === plan.id" [class.ring-2]="selectedPlan.id === plan.id"
+        [class.ring-blue-500]="selectedPlan.id === plan.id" [class.shadow-blue-100]="selectedPlan.id === plan.id">
+        <!-- Radio oculto -->
+        <input type="radio" [id]="'plan-' + plan.id" [name]="plan_RadioGroupName" [value]="plan"
+          [disabled]="!plan.active" [(ngModel)]="selectedPlan" (change)="onSelectPlan()" class="hidden" />
+
+        <!-- Etiqueta o suffix -->
+        <div class="absolute top-4 right-4 text-xs font-semibold px-3 py-1 rounded-full shadow-sm transition-all duration-300
+                 bg-blue-100 text-blue-800 group-hover:bg-blue-600 group-hover:text-white"
+          [class.bg-blue-600]="selectedPlan.id === plan.id" [class.text-white]="selectedPlan.id === plan.id">
+          {{ plan.title_suffix }}
+        </div>
+
+        <!-- Cinta destacada opcional -->
+        @if (plan.title_suffix?.toLowerCase() === 'popular' || plan.featured) {
+        <div
+          class="absolute top-4 left-4 bg-blue-600 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-md">
+          Más popular
+        </div>
+        }
+
+        <div class="flex flex-col h-full justify-between">
+          <!-- Cabecera -->
+          <header class="mb-4">
+            <h3 class="text-2xl font-extrabold transition-colors duration-300"
+              [class.text-blue-700]="selectedPlan.id === plan.id" [class.text-gray-900]="selectedPlan.id !== plan.id">
+              {{ plan.title_name }}
+            </h3>
+            <p class="mt-1 text-sm uppercase tracking-wide font-medium transition-colors duration-300"
+              [class.text-blue-500]="selectedPlan.id === plan.id" [class.text-gray-500]="selectedPlan.id !== plan.id">
+              {{ plan.title_prefix }}
+            </p>
+          </header>
+
+          <!-- Precio -->
+          <div class="mb-4 transition-colors duration-300">
+            @if (plan.price > 0) {
+            <div class="text-4xl font-extrabold flex items-baseline gap-1 transition-colors duration-300"
+              [class.text-blue-700]="selectedPlan.id === plan.id" [class.text-gray-900]="selectedPlan.id !== plan.id">
+              <span>{{ plan.currencySymbol }}</span>{{ plan.price }}
+              <span class="text-base font-medium ml-1 transition-colors duration-300"
+                [class.text-blue-400]="selectedPlan.id === plan.id" [class.text-gray-500]="selectedPlan.id !== plan.id">
+                / {{ plan.kind }}
+              </span>
+            </div>
+            } @else {
+            <div class="text-4xl font-extrabold transition-colors duration-300"
+              [class.text-blue-700]="selectedPlan.id === plan.id" [class.text-gray-900]="selectedPlan.id !== plan.id">
+              A medida
+            </div>
+            }
+            <p class="mt-2 text-sm text-gray-600 line-clamp-2">{{ plan.description }}</p>
+          </div>
+
+
+          <!-- Características -->
+          <ul class="space-y-3 text-sm flex-1">
+            @for (feature of plan.features; track $index) {
+            <li class="flex items-start gap-3">
+              <div class="bg-green-100 text-green-700 rounded-full p-1 flex items-center justify-center w-5 h-5 mt-0.5">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <span class="text-gray-700 leading-snug" [innerHTML]="feature"></span>
+            </li>
+            }
+          </ul>
+        </div>
+      </article>
+    </label>
+    }
+  </div>
+  }
+
+
+  <!-- Vista de Planes por Pais -->
+  @if(!this.SelectedContinent().id) {
+   <div class="grid gap-8 md:grid-cols-3 max-w-7xl mx-auto px-6 py-10">
+    @for (plan of ShowListPlans(); track plan.id) {
+    <label [for]="'plan-' + plan.id" class="relative block cursor-pointer" [class.opacity-50]="!plan.active"
+      [class.cursor-not-allowed]="!plan.active">
+
+      <article class="group relative bg-gradient-to-b from-white to-gray-50 rounded-2xl border border-gray-100
+                transition-all duration-300 ease-in-out overflow-hidden flex flex-col justify-between
+                hover:shadow-2xl hover:-translate-y-1.5 h-[420px] p-8" [class.bg-blue-50]="selectedPlan.id === plan.id"
+        [class.border-blue-400]="selectedPlan.id === plan.id" [class.ring-2]="selectedPlan.id === plan.id"
+        [class.ring-blue-500]="selectedPlan.id === plan.id" [class.shadow-blue-100]="selectedPlan.id === plan.id">
+        <!-- Radio oculto -->
+        <input type="radio" [id]="'plan-' + plan.id" [name]="plan_RadioGroupName" [value]="plan"
+          [disabled]="!plan.active" [(ngModel)]="selectedPlan" (change)="onSelectPlan()" class="hidden" />
+
+        <!-- Etiqueta o suffix -->
+        <div class="absolute top-4 right-4 text-xs font-semibold px-3 py-1 rounded-full shadow-sm transition-all duration-300
+                 bg-blue-100 text-blue-800 group-hover:bg-blue-600 group-hover:text-white"
+          [class.bg-blue-600]="selectedPlan.id === plan.id" [class.text-white]="selectedPlan.id === plan.id">
+          {{ plan.title_suffix }}
+        </div>
+
+        <!-- Cinta destacada opcional -->
+        @if (plan.title_suffix?.toLowerCase() === 'popular' || plan.featured) {
+        <div
+          class="absolute top-4 left-4 bg-blue-600 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-md">
+          Más popular
+        </div>
+        }
+
+        <div class="flex flex-col h-full justify-between">
+          <!-- Cabecera -->
+          <header class="mb-4">
+            <h3 class="text-2xl font-extrabold transition-colors duration-300"
+              [class.text-blue-700]="selectedPlan.id === plan.id" [class.text-gray-900]="selectedPlan.id !== plan.id">
+              {{ plan.title_name }}
+            </h3>
+            <p class="mt-1 text-sm uppercase tracking-wide font-medium transition-colors duration-300"
+              [class.text-blue-500]="selectedPlan.id === plan.id" [class.text-gray-500]="selectedPlan.id !== plan.id">
+              {{ plan.title_prefix }}
+            </p>
+          </header>
+
+          <!-- Precio -->
+          <div class="mb-4 transition-colors duration-300">
+            @if (plan.price > 0) {
+            <div class="text-4xl font-extrabold flex items-baseline gap-1 transition-colors duration-300"
+              [class.text-blue-700]="selectedPlan.id === plan.id" [class.text-gray-900]="selectedPlan.id !== plan.id">
+              <span>{{ plan.currencySymbol }}</span>{{ plan.price }}
+              <span class="text-base font-medium ml-1 transition-colors duration-300"
+                [class.text-blue-400]="selectedPlan.id === plan.id" [class.text-gray-500]="selectedPlan.id !== plan.id">
+                / {{ plan.kind }}
+              </span>
+            </div>
+            } @else {
+            <div class="text-4xl font-extrabold transition-colors duration-300"
+              [class.text-blue-700]="selectedPlan.id === plan.id" [class.text-gray-900]="selectedPlan.id !== plan.id">
+              A medida
+            </div>
+            }
+            <p class="mt-2 text-sm text-gray-600 line-clamp-2">{{ plan.description }}</p>
+          </div>
+
+
+          <!-- Características -->
+          <ul class="space-y-3 text-sm flex-1">
+            @for (feature of plan.features; track $index) {
+            <li class="flex items-start gap-3">
+              <div class="bg-green-100 text-green-700 rounded-full p-1 flex items-center justify-center w-5 h-5 mt-0.5">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <span class="text-gray-700 leading-snug" [innerHTML]="feature"></span>
+            </li>
+            }
+          </ul>
+        </div>
+      </article>
+    </label>
+    }
+  </div>
+  }
+
+
+  <div class="flex justify-between mt-6">
+    <button (click)="prevStep()" class="px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition">
+      Atrás
+    </button>
+    <button (click)="nextStep()" [disabled]="!selectedPlan.id" class="px-6 py-2 rounded-lg transition text-white"
+      [class.bg-blue-600]="selectedPlan.id" [class.hover\:bg-blue-700]="selectedPlan.id"
+      [class.bg-gray-300]="!selectedPlan.id" [class.text-gray-500]="!selectedPlan.id"
+      [class.cursor-not-allowed]="!selectedPlan.id">
+      Siguiente
+    </button>
+  </div>
+  }
+
+  <!-- STEP 3: Metodos de Pago -->
+  @if (currentStep === 3) {
+  <!-- Título de países -->
+  <div class="text-center max-w-2xl mx-auto my-8">
+    <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight text-gray-900">Métodos de Pago</h2>
+    <p class="mt-4 text-gray-600">Selecciona el método de pago que mejor te convenga</p>
+  </div>
+
+
+  <div class="grid gap-6 md:grid-cols-3 lg:gap-8 max-w-7xl mx-auto px-4 py-6">
+    @for (bank of ListBankAccount(); track bank.id) {
+    <label [for]="'bank-' + bank.id" class="cursor-pointer block" [class.opacity-50]="!bank.active"
+      [class.cursor-not-allowed]="!bank.active">
+
+      <article class="bg-white rounded-2xl hover:bg-gray-50 transition-all duration-200 hover:-translate-y-1
+               flex flex-col justify-between p-6 h-[350px] border border-gray-100 hover:shadow-md"
+        [class.bg-blue-50]="selectedBank.id === bank.id" [class.ring-2]="selectedBank.id === bank.id"
+        [class.ring-blue-500]="selectedBank.id === bank.id">
+
+        <input type="radio" [id]="'bank-' + bank.id" [name]="bankAccount_RadioGroupName" [value]="bank"
+          [disabled]="!bank.active" [(ngModel)]="selectedBank" class="hidden">
+
+        <div class="flex flex-col h-full justify-between">
+          <!-- Encabezado -->
+          <header class="flex items-start justify-between mb-4">
+            <div class="flex items-center gap-2">
+              <span class="text-3xl">{{ bank.country.flag }}</span>
+              <div>
+                <h3 class="text-lg font-semibold text-gray-900">{{ bank.name }}</h3>
+                <p class="text-xs text-gray-500 uppercase tracking-wide">
+                  {{ bank.typeAccount }}
+                </p>
+              </div>
+            </div>
+            @if(bank.active) {
+            <span class="text-xs font-medium px-2 py-1 rounded-md bg-green-50 text-green-700">Activa</span>
+            } @else if (!bank.active) {
+            <span class="text-xs font-medium px-2 py-1 rounded-md bg-gray-100 text-gray-500">Inactiva</span>
+            }
+          </header>
+
+          <!-- Información principal -->
+          <div class="space-y-2 text-sm text-gray-700 flex-1">
+            <div class="flex justify-between">
+              <span class="text-gray-500">Número:</span>
+              <span class="font-medium">{{ bank.number }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-500">Cuenta:</span>
+              <span class="font-medium">{{ bank.cardAccount }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-500">País:</span>
+              <span class="font-medium">{{ bank.country.countryName }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-500">Moneda:</span>
+              <span class="font-medium">
+                {{ bank.country.currencyName }} ({{ bank.country.currencySymbol }})
+              </span>
+            </div>
+          </div>
+
+          <!-- Nota -->
+          <footer class="mt-4 pt-3 border-t border-gray-100">
+            <p class="text-xs text-gray-500 italic line-clamp-2">{{ bank.note }}</p>
+          </footer>
+        </div>
+      </article>
+    </label>
+    }
+  </div>
+
+
+  <div class="flex justify-between mt-6">
+    <button (click)="prevStep()" class="px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition">
+      Atrás
+    </button>
+    <button (click)="nextStep()" [disabled]="!selectedBank.id" class="px-6 py-2 rounded-lg transition text-white"
+      [class.bg-blue-600]="selectedBank.id" [class.hover\:bg-blue-700]="selectedBank.id"
+      [class.bg-gray-300]="!selectedBank.id" [class.text-gray-500]="!selectedBank.id"
+      [class.cursor-not-allowed]="!selectedBank.id">
+      Siguiente
+    </button>
+  </div>
+  }
+
+  <!-- STEP 4: Resumen -->
+  @if (currentStep === 4) {
+
+  <!-- Título de planes -->
+  <div class="text-center max-w-2xl mx-auto mb-8">
+    <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight text-gray-900">Resumen</h2>
+    <p class="mt-4 text-gray-600">Sin contratos. Cancela cuando quieras.</p>
+  </div>
+  <div class="space-y-8 max-w-4xl mx-auto">
+
+
+    <!-- RESUMEN FINAL DE COMPRA -->
+    <section class="grid gap-8 md:grid-cols-2 mt-12 max-w-7xl mx-auto px-6">
+
+      <!-- 🧾 PLAN SELECCIONADO (col 1, fila 1) -->
+      <div
+        class="bg-white p-6 rounded-2xl shadow-md border border-gray-100 relative overflow-hidden transition-all duration-300 hover:shadow-lg">
+        <!-- Borde superior decorativo -->
+        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-600"></div>
+
+        <!-- Título -->
+        <h3 class="text-2xl font-semibold mb-5 text-gray-800 border-b pb-3 flex items-center gap-2">
+          🧾 <span>Plan seleccionado</span>
+        </h3>
+
+        @if (selectedPlan.id) {
+        <div class="space-y-5">
+          <!-- Encabezado con nombre, precio y dispositivos -->
+          <div
+            class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-100">
+            <div>
+              <h4 class="text-xl font-bold text-blue-700 leading-tight">
+                {{ selectedPlan.title_prefix }} {{ selectedPlan.title_name }}
+              </h4>
+              <p class="text-gray-500 text-sm mt-1">Plan activo seleccionado</p>
+            </div>
+
+            <div class="flex flex-col sm:items-end gap-2">
+              <p class="text-4xl font-extrabold text-green-600 leading-none">
+                @if (selectedPlan.price > 0) {
+                {{ selectedPlan.currencySymbol }}{{ selectedPlan.price | number:'1.0-2' }}
+                <span class="text-base text-gray font-medium">/ {{selectedPlan.kind}}</span>
+                } @else {
+                <span class="italic text-gray text-lg">A medida</span>
+                }
+              </p>
+
+              <!-- Dispositivos destacados -->
+              @if (selectedPlan.limitDevices) {
+              <div
+                class="flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-green px-4 py-2 rounded-lg shadow-sm text-sm font-semibold">
+                💻 <span>{{ selectedPlan.limitDevices }} dispositivos</span>
+              </div>
+              }
+            </div>
+          </div>
+
+          <!-- Descripción -->
+          <p class="text-gray-600 text-sm leading-relaxed border-l-4 border-blue-500 pl-3 bg-blue-50/40 rounded">
+            {{ selectedPlan.description }}
+          </p>
+
+          <!-- Características -->
+          <div>
+            <h5 class="text-sm font-semibold text-gray-800 mb-2 uppercase tracking-wide">
+              Incluye:
+            </h5>
+            <ul class="list-disc list-inside text-sm text-gray-700 space-y-1">
+              @for (f of selectedPlan.features; track f) {
+              <li [innerHTML]="f" class="leading-snug"></li>
+              }
+            </ul>
+          </div>
+        </div>
+        } @else {
+        <div class="flex flex-col items-center justify-center text-center py-6 text-gray-500">
+          <span class="text-4xl mb-2">📄</span>
+          <p class="italic">No se seleccionó ningún plan</p>
+        </div>
+        }
+      </div>
+
+
+
+      <!-- 💳 MÉTODO DE PAGO (col 2, ocupa fila 1 y 2) -->
+      <div
+        class="bg-white p-6 rounded-2xl shadow-md border border-gray-100 relative overflow-hidden transition-all duration-300 hover:shadow-lg md:row-span-2">
+        <!-- Borde superior con gradiente -->
+        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-600 via-green-500 to-teal-400"></div>
+
+        <!-- Título -->
+        <h3 class="text-2xl font-semibold mb-4 text-gray-800 border-b pb-3 flex items-center gap-2">
+          💳 <span>Método de pago</span>
+        </h3>
+
+        <!-- Si hay banco seleccionado -->
+        @if (selectedBank.id) {
+        <div class="space-y-4 text-gray-700">
+          <!-- Datos del banco -->
+          <div class="bg-emerald-50 border border-emerald-100 rounded-xl p-4 shadow-sm">
+            <p class="text-xl font-bold text-emerald-700 mb-1">
+              {{ selectedBank.name }}
+            </p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-1 gap-x-6 gap-y-2 text-sm">
+              <p>
+                <strong>N° Cuenta:</strong>
+                <span class="font-medium text-gray-800">{{ selectedBank.number }}</span>
+              </p>
+              <p><strong>Tipo:</strong> {{ selectedBank.typeAccount }}</p>
+              <p>
+                <strong>Moneda:</strong>
+                {{ selectedBank.country.currencyName }}
+                ({{ selectedBank.country.currencySymbol }})
+              </p>
+              <p><strong>País:</strong> {{ selectedBank.country.countryName }}</p>
+              <p><strong>Banco:</strong> {{ selectedBank.cardAccount }}</p>
+            </div>
+
+            @if (selectedBank.note) {
+            <p class="mt-3 text-xs italic text-gray-600 border-t pt-2 leading-snug">
+              💬 {{ selectedBank.note }}
+            </p>
+            }
+          </div>
+
+          <!-- Instrucciones -->
+          <div class="mt-4 border-t pt-4 text-sm text-gray-700 leading-relaxed">
+            <p class="flex items-center gap-2">
+              💡
+              <span>Realiza la transferencia exacta al número de cuenta indicado.</span>
+            </p>
+
+            <p class="mt-3 font-medium">
+              Una vez realizado el pago, sube el comprobante en la sección de
+              <strong>“Evidencia de pago”</strong>.
+            </p>
+          </div>
+
+          <!-- 🔹 Campo para número de meses -->
+          <div class="mt-4 border-t pt-4">
+            <label class="block text-sm font-semibold text-gray-700 mb-3">
+              📅 Pagar por:
+            </label>
+
+            <div class="flex items-center gap-4">
+              <!-- Botón disminuir -->
+              <button type="button" (click)="decreaseMonths()"
+                class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 active:scale-95 transition">
+                ➖
+              </button>
+
+              <!-- Valor actual (solo lectura) -->
+              <div
+                class="w-16 text-center font-bold text-lg bg-gray-50 border border-gray-200 rounded-lg py-2 shadow-inner select-none">
+                {{ monthsToPay() }}
+              </div>
+
+              <!-- Botón aumentar -->
+              <button type="button" (click)="increaseMonths()"
+                class="w-10 h-10 flex items-center justify-center rounded-full bg-emerald-500 text-white hover:bg-emerald-600 active:scale-95 transition">
+                ➕
+              </button>
+
+              <span class="text-gray-600 text-sm">{{selectedPlan.kind}}</span>
+            </div>
+          </div>
+
+
+          <!-- Total a pagar -->
+          <div
+            class="mt-5 bg-gradient-to-r from-emerald-600 to-green-500 rounded-xl px-5 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between shadow-md text-black">
+            <p class="text-lg font-semibold flex items-center gap-2">
+              💰 <span>Total a pagar</span>
+            </p>
+
+            @if (selectedPlan.price > 0) {
+            <p class="text-2xl font-bold tracking-wide text-black drop-shadow-sm">
+              {{ selectedPlan.currencySymbol
+              }}{{ this.totalToPay() | number:'1.0-2' }}
+            </p>
+            } @else {
+            <p class="italic text-emerald-100">Cotización personalizada</p>
+            }
+          </div>
+        </div>
+        } @else {
+        <!-- Estado vacío -->
+        <div class="flex flex-col items-center justify-center text-center py-6 text-gray-500">
+          <span class="text-4xl mb-2">🏦</span>
+          <p class="italic">No se seleccionó ningún método de pago</p>
+        </div>
+        }
+      </div>
+
+
+
+
+
+
+
+
+
+
+      <!-- 🌍 PAÍSES SELECCIONADOS (col 1, fila 2) -->
+      <div
+        class="bg-white p-6 rounded-2xl shadow-md border border-gray-100 relative overflow-hidden transition-all duration-300 hover:shadow-lg">
+        <!-- Borde superior animado -->
+        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-500"></div>
+
+        <!-- Título -->
+        <h3 class="text-2xl font-semibold mb-4 text-gray-800 border-b pb-3 flex items-center gap-2">
+          🌍 <span>Países seleccionados</span>
+        </h3>
+
+        <!-- Lista de países -->
+        @if (selectedCountries().length > 0) {
+        <ul class="divide-y divide-gray-100">
+          @for (c of selectedCountries(); track c.id) {
+          <li class="flex items-center justify-between py-3 px-2 rounded-lg transition hover:bg-blue-50">
+            <div class="flex items-center gap-3">
+              <span class="text-xl">{{ c.flag }}</span>
+              <div>
+                <p class="font-medium text-gray-800">{{ c.countryName }}</p>
+                <p class="text-xs text-gray-500">{{ c.currencyName }} ({{ c.currencyCode }})</p>
+              </div>
+            </div>
+
+            <div class="bg-blue-100 text-blue-600 text-xs font-semibold px-3 py-1 rounded-full border border-blue-200">
+              VPN Activa
+            </div>
+          </li>
+          }
+        </ul>
+        } @else {
+        <div class="flex flex-col items-center justify-center text-center py-6 text-gray-500">
+          <span class="text-4xl mb-2">🌐</span>
+          <p class="italic">No se seleccionó ningún país</p>
+        </div>
+        }
+      </div>
+
+
+
+
+
+      <!-- ⚖️ TÉRMINOS Y CONDICIONES (fila 3, ocupa 2 columnas) -->
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 md:col-span-2">
+        <h3 class="text-2xl font-semibold mb-4 text-gray-800 border-b pb-2 flex items-center">
+          ⚖️ Términos y Condiciones
+        </h3>
+
+        <p class="text-sm text-gray-600">
+          Antes de confirmar el pago, revisa los términos del servicio VPN.
+        </p>
+
+        <button type="button" (click)="showTerms = true" class="mt-4 inline-flex items-center gap-2 px-5 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium
+             hover:bg-blue-700 transition focus:outline-none focus:ring-2 focus:ring-blue-400">
+          Ver términos y condiciones
+        </button>
+
+        <div class="flex items-center gap-2 mt-5">
+          <input type="checkbox" id="acceptTerms" [(ngModel)]="acceptedTerms"
+            class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
+          <label for="acceptTerms" class="text-sm text-gray-700 cursor-pointer">
+            Acepto los términos y condiciones del servicio VPN
+          </label>
+        </div>
+      </div>
+
+      <!-- 📎 EVIDENCIA DE PAGO (fila 4, ocupa 2 columnas) -->
+      <div class="p-6 rounded-2xl shadow-sm border transition-all duration-300 md:col-span-2"
+        [class.bg-white]="!selectedFile" [class.bg-green-50]="selectedFile" [class.border-gray-200]="!selectedFile"
+        [class.border-green-400]="selectedFile">
+        <h3 class="text-2xl font-semibold mb-4 text-gray-800 border-b pb-2 flex items-center">
+          📎 Evidencia de pago
+        </h3>
+
+        <p class="text-sm text-gray-600 mb-3">
+          Sube una <strong>captura o comprobante</strong> del pago realizado (imagen o PDF).
+        </p>
+
+        <div class="relative group">
+          <input type="file" id="paymentProof" (change)="onUploadProof($event)" accept="image/*,application/pdf" class="block w-full text-sm text-gray-700 border border-gray-300 rounded-lg cursor-pointer
+             focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400
+             file:mr-4 file:py-2 file:px-4 file:rounded-md
+             file:border-0 file:text-sm file:font-semibold
+             file:bg-blue-600 file:text-white
+             hover:file:bg-blue-700 transition" />
+        </div>
+
+        @if (selectedFile) {
+        <div class="mt-3 flex items-center gap-2 text-sm text-green-600 font-medium animate-fade-in">
+          <span class="inline-block w-2 h-2 bg-green-500 rounded-full"></span>
+          Archivo seleccionado: {{ selectedFile.name }}
+        </div>
+        }
+      </div>
+
+
+      <!-- 🔘 BOTÓN FINAL (al final, centrado en toda la fila) -->
+      <!-- <div class="md:col-span-2 flex justify-end mt-4">
+        <button (click)="confirmarPago()" [disabled]="!acceptedTerms || !selectedBank.id"
+        class="px-8 py-3 rounded-xl font-semibold transition text-white text-base
+             shadow-md focus:outline-none focus:ring-2 focus:ring-offset-1"
+          [class.bg-blue-600]="acceptedTerms && selectedBank.id"
+          [class.hover\:bg-blue-700]="acceptedTerms && selectedBank.id"
+          [class.bg-gray-300]="!acceptedTerms || !selectedBank.id"
+          [class.cursor-not-allowed]="!acceptedTerms || !selectedBank.id">
+          Confirmar pago
+        </button>
+      </div> -->
+
+      <!-- MODAL DE TÉRMINOS -->
+      @if (showTerms) {
+      <div class="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+        <div class="bg-white w-full max-w-2xl mx-4 rounded-2xl shadow-xl overflow-hidden animate-fadeIn">
+          <!-- <div class="p-6 border-b flex justify-between items-center">
+            <h3 class="text-xl font-semibold text-gray-800">⚖️ Términos y Condiciones del Servicio VPN</h3>
+            <button (click)="showTerms = false"
+              class="text-gray-500 hover:text-gray-700 text-2xl leading-none">&times;</button>
+          </div>
+
+          <div class="p-6 max-h-[60vh] overflow-y-auto text-sm text-gray-700 space-y-3 leading-relaxed">
+            <p>Al realizar el pago, confirmas que entiendes y aceptas las siguientes condiciones:</p>
+            <ul class="list-disc list-inside space-y-2">
+              <li>El acceso es personal, exclusivo y no transferible.</li>
+              <li>El proveedor garantiza una política estricta de <strong>no registro de tráfico</strong> (“no logs”).
+              </li>
+              <li>El uso del servicio con fines ilegales o abusivos resultará en suspensión inmediata.</li>
+              <li>Las velocidades pueden variar según tu proveedor o ubicación.</li>
+              <li>La asistencia técnica se brinda solo por los canales oficiales.</li>
+              <li>Los certificados generados son únicos y vinculados al usuario registrado.</li>
+              <li>El reembolso solo aplica por fallas graves no corregidas.</li>
+              <li>El proveedor puede actualizar la red o políticas sin previo aviso.</li>
+              <li>El usuario debe cumplir las leyes locales donde utiliza la VPN.</li>
+              <li>El proveedor no se hace responsable por errores, problemas y/o cantidad en el proceso de pago.</li>
+            </ul>
+          </div> -->
+          <div class="w-full max-w-3xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden border">
+            @if (this.Terms()) {
+            <!-- Header -->
+            <div class="p-6 border-b flex justify-between items-center bg-gray-50">
+              <div class="flex items-center gap-2">
+                <span class="text-2xl">⚖️</span>
+                <h3 class="text-xl font-semibold text-gray-800">
+                  {{ this.Terms().title }}
+                </h3>
+              </div>
+              <button (click)="showTerms = false"
+                class="text-gray-500 hover:text-gray-700 text-2xl leading-none transition-colors" title="Cerrar">
+                &times;
+              </button>
+            </div>
+
+            <!-- Descripción -->
+            <div class="p-6 text-sm text-gray-700 leading-relaxed">
+              <p class="mb-3">
+                {{ this.Terms().description }}
+              </p>
+
+              <p class="text-xs text-gray-500">
+                País:
+                <span class="font-medium">{{ this.Terms().country?.flag }} {{ this.Terms().country?.countryName
+                  }}</span> ·
+                Idioma:
+                <span class="font-medium">{{ this.Terms().country?.languageName }}</span> ·
+                Moneda:
+                <span class="font-medium">
+                  {{ this.Terms().country?.currencyName }} ({{ this.Terms().country?.currencySymbol }})
+                </span>
+              </p>
+            </div>
+
+            <!-- Detalles -->
+            <div class="p-6 border-t max-h-[60vh] overflow-y-auto space-y-5 text-sm">
+              @for (item of this.Terms().details; track item["section"]) {
+              <div class="border-b pb-3">
+                <h4 class="font-semibold text-gray-800 mb-1">
+                  {{ item["section"] }}
+                </h4>
+                <p class="text-gray-600 leading-relaxed">
+                  {{ item["content"] }}
+                </p>
+              </div>
+              }
+            </div>
+
+            <!-- Footer -->
+            <div class="p-4 border-t bg-gray-50 text-xs text-gray-500 flex justify-between items-center">
+              <span>Última actualización: {{ this.Terms().updatedAt | date: 'mediumDate' }}</span>
+              <span [class.text-green-600]="this.Terms().active" [class.text-red-500]="!this.Terms().active">
+                {{ this.Terms().active ? 'Activo' : 'Inactivo' }}
+              </span>
+            </div>
+            } @else {
+            <div class="text-center text-gray-500 py-8">
+              Cargando términos y condiciones...
+            </div>
+            }
+          </div>
+
+          <div class="p-4 border-t bg-gray-50 flex justify-end">
+            <button (click)="showTerms = false"
+              class="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 text-sm font-medium transition">
+              Cerrar
+            </button>
+          </div>
+        </div>
+      </div>
+      }
+      @if (this.showVoucher()) {
+      <div class="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+        <div class="bg-white w-full max-w-2xl mx-4 rounded-2xl shadow-xl overflow-hidden animate-fadeIn">
+          <div class="p-6 border-b flex justify-between items-center">
+            <h3 class="text-xl font-semibold text-gray-800">⚖️ Voucher del Servicio VPN</h3>
+            <button (click)="this.showVoucher.set(false)"
+              class="text-gray-500 hover:text-gray-700 text-2xl leading-none">&times;</button>
+          </div>
+
+          <div class="p-6 max-h-[60vh] overflow-y-auto text-sm text-gray-700 space-y-3 leading-relaxed">
+            <p>Al realizar el pago, confirmas que entiendes y aceptas las siguientes condiciones:</p>
+            <app-payment-summary [selectedPlan]="this.selectedPlan" [selectedCountries]="this.selectedCountries()"
+              [paymentMethod]="this.selectedBank"></app-payment-summary>
+          </div>
+
+          <div class="p-4 border-t bg-gray-50 flex justify-end">
+            <button (click)="this.showVoucher.set(false)"
+              class="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 text-sm font-medium transition">
+              Cerrar
+            </button>
+          </div>
+        </div>
+      </div>
+      }
+
+    </section>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div class="flex justify-between mt-6">
+      <button (click)="prevStep()" class="px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition">
+        Atrás
+      </button>
+      <button (click)="confirmarPago()" [disabled]="!acceptedTerms || !selectedBank.id"
+        [class.bg-blue-600]="acceptedTerms && selectedBank.id"
+        [class.hover\:bg-blue-700]="acceptedTerms && selectedBank.id"
+        [class.bg-gray-300]="!acceptedTerms || !selectedBank.id"
+        [class.cursor-not-allowed]="!acceptedTerms || !selectedBank.id"
+        class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+        Confirmar Pago
+      </button>
+    </div>
+  </div>
+  }
+  <!-- STEP 4: Resumen -->
+  @if (currentStep === 5) {
+
+  <!-- Título de planes -->
+  <div class="text-center max-w-2xl mx-auto mb-8">
+    <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight text-gray-900">Resumen</h2>
+    <p class="mt-4 text-gray-600">Sin contratos. Cancela cuando quieras.</p>
+  </div>
+  <div class="space-y-8 max-w-4xl mx-auto">
+
+
+    <!-- RESUMEN FINAL DE COMPRA -->
+    <section class="grid gap-8 md:grid-cols-2 mt-12 max-w-7xl mx-auto px-6">
+
+
+
+
+
+
+
+
+
+
+
+      <!-- 🔘 BOTÓN FINAL (al final, centrado en toda la fila) -->
+      <!-- <div class="md:col-span-2 flex justify-end mt-4">
+        <button (click)="confirmarPago()" [disabled]="!acceptedTerms || !selectedBank.id"
+        class="px-8 py-3 rounded-xl font-semibold transition text-white text-base
+             shadow-md focus:outline-none focus:ring-2 focus:ring-offset-1"
+          [class.bg-blue-600]="acceptedTerms && selectedBank.id"
+          [class.hover\:bg-blue-700]="acceptedTerms && selectedBank.id"
+          [class.bg-gray-300]="!acceptedTerms || !selectedBank.id"
+          [class.cursor-not-allowed]="!acceptedTerms || !selectedBank.id">
+          Confirmar pago
+        </button>
+      </div> -->
+
+      <!-- MODAL DE TÉRMINOS -->
+      @if (showTerms) {
+      <div class="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+        <div class="bg-white w-full max-w-2xl mx-4 rounded-2xl shadow-xl overflow-hidden animate-fadeIn">
+          <!-- <div class="p-6 border-b flex justify-between items-center">
+            <h3 class="text-xl font-semibold text-gray-800">⚖️ Términos y Condiciones del Servicio VPN</h3>
+            <button (click)="showTerms = false"
+              class="text-gray-500 hover:text-gray-700 text-2xl leading-none">&times;</button>
+          </div>
+
+          <div class="p-6 max-h-[60vh] overflow-y-auto text-sm text-gray-700 space-y-3 leading-relaxed">
+            <p>Al realizar el pago, confirmas que entiendes y aceptas las siguientes condiciones:</p>
+            <ul class="list-disc list-inside space-y-2">
+              <li>El acceso es personal, exclusivo y no transferible.</li>
+              <li>El proveedor garantiza una política estricta de <strong>no registro de tráfico</strong> (“no logs”).
+              </li>
+              <li>El uso del servicio con fines ilegales o abusivos resultará en suspensión inmediata.</li>
+              <li>Las velocidades pueden variar según tu proveedor o ubicación.</li>
+              <li>La asistencia técnica se brinda solo por los canales oficiales.</li>
+              <li>Los certificados generados son únicos y vinculados al usuario registrado.</li>
+              <li>El reembolso solo aplica por fallas graves no corregidas.</li>
+              <li>El proveedor puede actualizar la red o políticas sin previo aviso.</li>
+              <li>El usuario debe cumplir las leyes locales donde utiliza la VPN.</li>
+              <li>El proveedor no se hace responsable por errores, problemas y/o cantidad en el proceso de pago.</li>
+            </ul>
+          </div> -->
+          <div class="w-full max-w-3xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden border">
+            @if (this.Terms()) {
+            <!-- Header -->
+            <div class="p-6 border-b flex justify-between items-center bg-gray-50">
+              <div class="flex items-center gap-2">
+                <span class="text-2xl">⚖️</span>
+                <h3 class="text-xl font-semibold text-gray-800">
+                  {{ this.Terms().title }}
+                </h3>
+              </div>
+              <button (click)="showTerms = false"
+                class="text-gray-500 hover:text-gray-700 text-2xl leading-none transition-colors" title="Cerrar">
+                &times;
+              </button>
+            </div>
+
+            <!-- Descripción -->
+            <div class="p-6 text-sm text-gray-700 leading-relaxed">
+              <p class="mb-3">
+                {{ this.Terms().description }}
+              </p>
+
+              <p class="text-xs text-gray-500">
+                País:
+                <span class="font-medium">{{ this.Terms().country?.flag }} {{ this.Terms().country?.countryName
+                  }}</span> ·
+                Idioma:
+                <span class="font-medium">{{ this.Terms().country?.languageName }}</span> ·
+                Moneda:
+                <span class="font-medium">
+                  {{ this.Terms().country?.currencyName }} ({{ this.Terms().country?.currencySymbol }})
+                </span>
+              </p>
+            </div>
+
+            <!-- Detalles -->
+            <div class="p-6 border-t max-h-[60vh] overflow-y-auto space-y-5 text-sm">
+              @for (item of this.Terms().details; track item["section"]) {
+              <div class="border-b pb-3">
+                <h4 class="font-semibold text-gray-800 mb-1">
+                  {{ item["section"] }}
+                </h4>
+                <p class="text-gray-600 leading-relaxed">
+                  {{ item["content"] }}
+                </p>
+              </div>
+              }
+            </div>
+
+            <!-- Footer -->
+            <div class="p-4 border-t bg-gray-50 text-xs text-gray-500 flex justify-between items-center">
+              <span>Última actualización: {{ this.Terms().updatedAt | date: 'mediumDate' }}</span>
+              <span [class.text-green-600]="this.Terms().active" [class.text-red-500]="!this.Terms().active">
+                {{ this.Terms().active ? 'Activo' : 'Inactivo' }}
+              </span>
+            </div>
+            } @else {
+            <div class="text-center text-gray-500 py-8">
+              Cargando términos y condiciones...
+            </div>
+            }
+          </div>
+
+          <div class="p-4 border-t bg-gray-50 flex justify-end">
+            <button (click)="showTerms = false"
+              class="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 text-sm font-medium transition">
+              Cerrar
+            </button>
+          </div>
+        </div>
+      </div>
+      }
+      @if (this.showVoucher()) {
+      <div class="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+        <div class="bg-white w-full max-w-2xl mx-4 rounded-2xl shadow-xl overflow-hidden animate-fadeIn">
+          <div class="p-6 border-b flex justify-between items-center">
+            <h3 class="text-xl font-semibold text-gray-800">⚖️ Voucher del Servicio VPN</h3>
+            <button (click)="this.showVoucher.set(false)"
+              class="text-gray-500 hover:text-gray-700 text-2xl leading-none">&times;</button>
+          </div>
+
+          <div class="p-6 max-h-[60vh] overflow-y-auto text-sm text-gray-700 space-y-3 leading-relaxed">
+            <p>Al realizar el pago, confirmas que entiendes y aceptas las siguientes condiciones:</p>
+            <app-payment-summary [selectedPlan]="this.selectedPlan" [selectedCountries]="this.selectedCountries()"
+              [paymentMethod]="this.selectedBank"></app-payment-summary>
+          </div>
+
+          <div class="p-4 border-t bg-gray-50 flex justify-end">
+            <button (click)="this.showVoucher.set(false)"
+              class="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 text-sm font-medium transition">
+              Cerrar
+            </button>
+          </div>
+        </div>
+      </div>
+      }
+
+    </section>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div class="flex justify-between mt-6">
+      <button (click)="prevStep()" class="px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition">
+        Atrás
+      </button>
+      <button (click)="confirmarPago()" [disabled]="!acceptedTerms || !selectedBank.id"
+        [class.bg-blue-600]="acceptedTerms && selectedBank.id"
+        [class.hover\:bg-blue-700]="acceptedTerms && selectedBank.id"
+        [class.bg-gray-300]="!acceptedTerms || !selectedBank.id"
+        [class.cursor-not-allowed]="!acceptedTerms || !selectedBank.id"
+        class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+        Confirmar Pago
+      </button>
+    </div>
+  </div>
+  }
+</section>

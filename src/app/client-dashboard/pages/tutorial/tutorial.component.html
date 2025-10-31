@@ -1,0 +1,202 @@
+
+  <section class="mx-auto max-w-5xl p-4 md:p-10">
+    <!-- Hero -->
+    <header class="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+      <h1 class="text-3xl font-semibold tracking-tight">Guía rápida para conectarte a la VPN</h1>
+      <p class="mt-2 text-gray-600">Sigue estos pasos: crea tu cuenta, elige un plan, agrega dispositivos, descarga tus credenciales <code class="rounded bg-gray-100 px-1">.ovpn</code>, impórtalas y conéctate.</p>
+      <div class="mt-4 flex flex-wrap gap-3 text-sm text-gray-600">
+        <a class="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 hover:bg-gray-100" [href]="portalUrl" target="_blank">Ir al portal</a>
+        <a class="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 hover:bg-gray-100" [href]="downloadsUrl" target="_blank">Descargas</a>
+        <a class="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 hover:bg-gray-100" [href]="'mailto:' + supportEmail">Contactar soporte</a>
+      </div>
+    </header>
+
+    <!-- Paso 1: Crear cuenta -->
+    <article class="mt-8 grid gap-6 md:grid-cols-12">
+      <figure class="md:col-span-5 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+        <img [src]="svg('signup')" alt="Pantalla de registro" class="w-full" />
+      </figure>
+      <div class="md:col-span-7 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+        <h2 class="text-xl font-semibold">1) Crea tu cuenta</h2>
+        <ol class="mt-2 list-decimal space-y-2 pl-5 text-gray-700">
+          <li>Visita <a class="underline" [href]="portalUrl" target="_blank">{{ portalUrl }}</a> y pulsa <strong>Crear cuenta</strong>.</li>
+          <li>Ingresa tus datos: nombres, apellidos, correo y una contraseña segura.</li>
+          <li>Revisa tu bandeja y haz clic en el <strong>enlace de verificación</strong>.</li>
+          <li>Inicia sesión con tu correo y contraseña.</li>
+        </ol>
+        <p class="mt-3 text-sm text-gray-500">Tip: usa una contraseña con 12+ caracteres y activa 2FA si está disponible.</p>
+      </div>
+    </article>
+
+    <!-- Paso 2: Elegir plan -->
+    <article class="mt-4 grid gap-6 md:grid-cols-12">
+      <div class="md:col-span-7 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm order-2 md:order-1">
+        <h2 class="text-xl font-semibold">2) Elige tu plan</h2>
+        <ol class="mt-2 list-decimal space-y-2 pl-5 text-gray-700">
+          <li>En el panel, abre <strong>Planes</strong>.</li>
+          <li>Compara <em>límite de dispositivos</em>, <em>ancho de banda</em> y <em>precio</em>.</li>
+          <li>Pulsa <strong>Suscribirme</strong> y completa el pago (si aplica).</li>
+        </ol>
+        <p class="mt-3 text-sm text-gray-500">Podrás cambiar de plan más adelante sin perder tus dispositivos.</p>
+      </div>
+      <figure class="md:col-span-5 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm order-1 md:order-2">
+        <img [src]="svg('plans')" alt="Selección de plan" class="w-full" />
+      </figure>
+    </article>
+
+    <!-- Paso 3: Agregar dispositivos -->
+    <article class="mt-4 grid gap-6 md:grid-cols-12">
+      <figure class="md:col-span-5 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+        <img [src]="svg('devices')" alt="Agregar dispositivos" class="w-full" />
+      </figure>
+      <div class="md:col-span-7 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+        <h2 class="text-xl font-semibold">3) Agrega tus dispositivos</h2>
+        <ol class="mt-2 list-decimal space-y-2 pl-5 text-gray-700">
+          <li>Entra a <strong>Dispositivos</strong> → <strong>Agregar dispositivo</strong>.</li>
+          <li>Asigna un nombre (ej.: <em>Mac oficina</em>, <em>Android personal</em>).</li>
+          <li>Guarda. El portal generará las credenciales para ese dispositivo.</li>
+        </ol>
+        <p class="mt-3 text-sm text-gray-500">Cada dispositivo tiene su archivo <code>.ovpn</code> único. No lo compartas.</p>
+      </div>
+    </article>
+
+    <!-- Paso 4: Descargar .ovpn -->
+    <article class="mt-4 grid gap-6 md:grid-cols-12">
+      <div class="md:col-span-7 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm order-2 md:order-1">
+        <h2 class="text-xl font-semibold">4) Descarga las credenciales <code>.ovpn</code></h2>
+        <ol class="mt-2 list-decimal space-y-2 pl-5 text-gray-700">
+          <li>En <strong>Dispositivos</strong>, ubica el equipo y pulsa <strong>Descargar .ovpn</strong>.</li>
+          <li>Guarda el archivo en un lugar seguro.</li>
+          <li>(Opcional) Protege el archivo con contraseña del sistema o bóveda.</li>
+        </ol>
+        <p class="mt-3 text-sm text-gray-500">Si tu plan lo permite, también podrás descargar un <em>paquete ZIP</em> con certificados y el <code>.ovpn</code>.</p>
+      </div>
+      <figure class="md:col-span-5 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm order-1 md:order-2">
+        <img [src]="svg('download')" alt="Descargar archivo .ovpn" class="w-full" />
+      </figure>
+    </article>
+
+    <!-- Paso 5: Importar .ovpn (según sistema) -->
+    <article class="mt-4 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+      <div class="flex flex-wrap items-center gap-2">
+        <h2 class="text-xl font-semibold">5) Importa el archivo .ovpn</h2>
+        <nav class="ml-auto flex gap-2 text-sm">
+          <button *ngFor="let o of osList" (click)="os.set(o)" class="rounded-xl border px-2.5 py-1.5" [class.bg-gray-900]="os()===o" [class.text-white]="os()===o">{{ o | titlecase }}</button>
+        </nav>
+      </div>
+
+      <!-- WINDOWS -->
+      <div *ngIf="os()==='windows'" class="mt-3 grid gap-4 md:grid-cols-12">
+        <figure class="md:col-span-5">
+          <img [src]="svg('import')" alt="OpenVPN Connect - Importar" class="w-full" />
+        </figure>
+        <div class="md:col-span-7">
+          <ol class="list-decimal space-y-2 pl-5 text-gray-700">
+            <li>Descarga <strong>OpenVPN Connect</strong> desde Microsoft Store o <a class="underline" [href]="downloadsUrl" target="_blank">Descargas</a>.</li>
+            <li>Ábrelo y pulsa <strong>Import Profile</strong> → <strong>File</strong>.</li>
+            <li>Selecciona tu archivo <code>.ovpn</code> y confirma.</li>
+            <li>Guarda el perfil y verifica que aparezca en la lista.</li>
+          </ol>
+        </div>
+      </div>
+
+      <!-- MACOS -->
+      <div *ngIf="os()==='macos'" class="mt-3 grid gap-4 md:grid-cols-12">
+        <figure class="md:col-span-5">
+          <img [src]="svg('import')" alt="OpenVPN Connect - Importar" class="w-full" />
+        </figure>
+        <div class="md:col-span-7">
+          <ol class="list-decimal space-y-2 pl-5 text-gray-700">
+            <li>Instala <strong>OpenVPN Connect</strong> para macOS.</li>
+            <li>Abre la app y arrastra tu archivo <code>.ovpn</code> o ve a <em>Import Profile</em>.</li>
+            <li>Confirma y revisa que el perfil quede guardado.</li>
+          </ol>
+        </div>
+      </div>
+
+      <!-- ANDROID -->
+      <div *ngIf="os()==='android'" class="mt-3 grid gap-4 md:grid-cols-12">
+        <figure class="md:col-span-5">
+          <img [src]="svg('phone')" alt="Android - Importar OVPN" class="w-full" />
+        </figure>
+        <div class="md:col-span-7">
+          <ol class="list-decimal space-y-2 pl-5 text-gray-700">
+            <li>Instala <strong>OpenVPN Connect</strong> desde Google Play.</li>
+            <li>Envía el archivo <code>.ovpn</code> a tu teléfono (Drive, correo o USB).</li>
+            <li>En la app, pulsa <strong>OVPN Profile</strong> y elige el archivo.</li>
+            <li>Asigna un nombre al perfil y guarda.</li>
+          </ol>
+        </div>
+      </div>
+
+      <!-- iOS -->
+      <div *ngIf="os()==='ios'" class="mt-3 grid gap-4 md:grid-cols-12">
+        <figure class="md:col-span-5">
+          <img [src]="svg('phone')" alt="iOS - Importar OVPN" class="w-full" />
+        </figure>
+        <div class="md:col-span-7">
+          <ol class="list-decimal space-y-2 pl-5 text-gray-700">
+            <li>Instala <strong>OpenVPN Connect</strong> desde App Store.</li>
+            <li>Envíate el <code>.ovpn</code> por correo o Archivos (iCloud/Drive).</li>
+            <li>Toca el archivo y elige <em>Copiar a OpenVPN</em>.</li>
+            <li>Importa y guarda el perfil.</li>
+          </ol>
+        </div>
+      </div>
+
+      <!-- LINUX -->
+      <div *ngIf="os()==='linux'" class="mt-3 grid gap-4 md:grid-cols-12">
+        <figure class="md:col-span-5">
+          <img [src]="svg('terminal')" alt="Linux - Terminal" class="w-full" />
+        </figure>
+        <div class="md:col-span-7">
+          <ol class="list-decimal space-y-2 pl-5 text-gray-700">
+            <li>Instala OpenVPN: <code class="rounded bg-gray-100 px-1">sudo apt install openvpn</code> (Debian/Ubuntu) o usa tu gestor de paquetes.</li>
+            <li>Conecta por terminal: <code class="rounded bg-gray-100 px-1">sudo openvpn --config ./perfil.ovpn</code>.</li>
+            <li>O usa tu administrador de redes (NetworkManager) para importar el <code>.ovpn</code>.</li>
+          </ol>
+        </div>
+      </div>
+    </article>
+
+    <!-- Paso 6: Conectar a la VPN -->
+    <article class="mt-4 grid gap-6 md:grid-cols-12">
+      <figure class="md:col-span-5 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+        <img [src]="svg('connect')" alt="Conectar a la VPN" class="w-full" />
+      </figure>
+      <div class="md:col-span-7 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+        <h2 class="text-xl font-semibold">6) Conéctate</h2>
+        <ol class="mt-2 list-decimal space-y-2 pl-5 text-gray-700">
+          <li>Abre tu app de OpenVPN y selecciona el perfil importado.</li>
+          <li>Pulsa <strong>Connect</strong>. Acepta la solicitud de VPN del sistema.</li>
+          <li>Espera a ver el estado <strong>Connected</strong>.</li>
+        </ol>
+        <p class="mt-3 text-sm text-gray-500">Para desconectarte, vuelve a la app y pulsa <strong>Disconnect</strong>.</p>
+      </div>
+    </article>
+
+    <!-- Verificación y Troubleshooting -->
+    <article class="mt-4 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+      <h2 class="text-xl font-semibold">Verifica y soluciona problemas</h2>
+      <div class="mt-2 grid gap-6 md:grid-cols-2">
+        <div>
+          <h3 class="font-medium">Comprobar conexión</h3>
+          <ul class="mt-2 list-disc pl-5 text-gray-700">
+            <li>Abre <em>Mi IP</em> en el navegador: debería cambiar a la IP de {{ companyName }}.</li>
+            <li>Accede a un recurso interno (intranet, Git, base de datos) que requiera VPN.</li>
+            <li>Haz ping a una IP interna autorizada.</li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="font-medium">Si algo falla</h3>
+          <ul class="mt-2 list-disc pl-5 text-gray-700">
+            <li><strong>Perfil inválido:</strong> descarga otra vez el <code>.ovpn</code> desde <a class="underline" [href]="downloadsUrl" target="_blank">Descargas</a>.</li>
+            <li><strong>Credenciales revocadas:</strong> borra el perfil y genera uno nuevo en <em>Dispositivos</em>.</li>
+            <li><strong>Restricción de firewall:</strong> prueba otra red o habilita puertos/UDP 1194 (o el que use tu servidor).</li>
+            <li><strong>DNS interno:</strong> tras conectar, reinicia el navegador o vacía caché DNS.</li>
+          </ul>
+        </div>
+      </div>
+      <p class="mt-4 text-sm text-gray-500">¿Necesitas ayuda? Escríbenos a <a class="underline" [href]="'mailto:' + supportEmail">{{ supportEmail }}</a>.</p>
+    </article>
+  </section>

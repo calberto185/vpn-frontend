@@ -1,0 +1,599 @@
+<!-- ====== Dispositivos: Gestión ====== -->
+
+<!-- Stats -->
+<section class="container mx-auto max-w-7xl px-2 md:px-4 mt-4">
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+    <div class="stat bg-base-100/80 border rounded-xl shadow-sm">
+      <div class="stat-figure text-primary">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 7h18M3 17h18M6 3h12v18H6z"/>
+        </svg>
+      </div>
+      <div class="stat-title">Dispositivos</div>
+      <div class="stat-value text-2xl">{{this.ListDevices().length}}</div>
+      <div class="stat-desc">desde modelo</div>
+    </div>
+
+    <div class="stat bg-base-100/80 border rounded-xl shadow-sm">
+      <div class="stat-figure text-success">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M5 13l4 4L19 7"/>
+        </svg>
+      </div>
+      <div class="stat-title">Activos</div>
+      <div class="stat-value text-2xl">0</div>
+      <div class="stat-desc">con certificado válido</div>
+    </div>
+
+    <div class="stat bg-base-100/80 border rounded-xl shadow-sm">
+      <div class="stat-figure text-error">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><path d="M12 8v5M12 16h.01"/>
+        </svg>
+      </div>
+      <div class="stat-title">Revocados</div>
+      <div class="stat-value text-2xl">0</div>
+      <div class="stat-desc">últimos 30 días</div>
+    </div>
+  </div>
+</section>
+
+<!-- Action bar -->
+<section class="container mx-auto max-w-7xl px-2 md:px-4 mt-4">
+  <div class="bg-base-100 border rounded-xl p-3 md:p-4 shadow-sm">
+    <div class="flex flex-wrap items-center gap-3">
+      <label class="input input-bordered flex items-center gap-2 w-full sm:w-[28rem]" aria-label="Buscar dispositivos">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+        </svg>
+        <input id="search-devices" type="text" placeholder="Buscar por usuario, dispositivo, ID o certificado" />
+      </label>
+
+      <div class="dropdown">
+        <button tabindex="0" class="btn btn-sm md:btn-md">Estado</button>
+        <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-48 z-[60]">
+          <li><a>Todos</a></li>
+          <li><a>Activos</a></li>
+          <li><a>Suspendidos</a></li>
+          <li><a>Revocados</a></li>
+          <li><a>Inactivos</a></li>
+        </ul>
+      </div>
+
+      <div class="dropdown">
+        <button tabindex="0" class="btn btn-ghost btn-sm md:btn-md">Certificado</button>
+        <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-48 z-[60]">
+          <li><a>Todos</a></li>
+          <li><a>Con certificado</a></li>
+          <li><a>Sin certificado</a></li>
+        </ul>
+      </div>
+
+      <div class="ml-auto flex items-center gap-2">
+        <div class="tooltip" data-tip="Seleccionar todo">
+          <input type="checkbox" class="checkbox checkbox-sm" aria-label="Seleccionar todo" />
+        </div>
+
+        <div class="dropdown dropdown-end">
+          <button tabindex="0" class="btn btn-ghost btn-sm md:btn-md">Acciones</button>
+          <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-64 z-[60]">
+            <li><a>Activar</a></li>
+            <li><a>Desactivar</a></li>
+            <li><a>Suspender</a></li>
+            <li><a>Reactivar</a></li>
+            <li><a>Revocar certificado</a></li>
+            <li><a>Regenerar certificado…</a></li>
+            <li><a>Exportar CSV</a></li>
+            <li><a class="text-error">Eliminar</a></li>
+          </ul>
+        </div>
+
+        <!-- Botón Agregar dispositivo -->
+        <button class="btn btn-primary btn-sm md:btn-md" type="button"
+                onclick="document.getElementById('add_device')?.showModal()">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          Agregar dispositivo
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Tabla -->
+<section class="container mx-auto max-w-7xl px-2 md:px-4 mt-4">
+  <div class="bg-base-100 border rounded-xl shadow-sm overflow-x-auto">
+    <table class="table table-sm w-full">
+      <thead>
+        <tr>
+          <th class="w-8"><input type="checkbox" class="checkbox checkbox-xs" aria-label="Seleccionar todas" /></th>
+          <th>Dispositivo</th>
+          <th class="hidden lg:table-cell">Usuario</th>
+          <th class="hidden xl:table-cell">Certificado</th>
+          <th>Estado</th>
+          <th class="hidden 2xl:table-cell">Creado</th>
+          <th class="hidden 2xl:table-cell">Actualizado</th>
+          <th class="text-right w-44">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Fila ejemplo (desde tu modelo) -->
+        <!-- <tr class="hover">
+          <td><input type="checkbox" class="checkbox checkbox-xs" aria-label="Seleccionar Pixel 7 de carlos" /></td>
+
+          <td>
+            <div class="flex items-center gap-3">
+              <div class="avatar placeholder">
+                <div class="bg-primary/10 text-primary w-10 h-10 rounded-xl flex items-center justify-center">D</div>
+              </div>
+              <div>
+                <div class="font-medium leading-tight">Pixel 7</div>
+                <div class="text-[11px] opacity-70">ID: dev-0001</div>
+              </div>
+            </div>
+          </td>
+
+          <td class="hidden lg:table-cell">
+            <div class="leading-tight">
+              <div class="font-normal">carlos villar</div>
+              <div class="text-[11px] opacity-70 break-all">user_id: 3ec951c0-491f-4078-beff-4f658b8ea7a1</div>
+            </div>
+          </td>
+
+          <td class="hidden xl:table-cell">
+            <div class="text-[11px] opacity-80 break-all">cert-abc123...xyz789</div>
+          </td>
+
+          <td>
+            <div class="flex flex-wrap gap-1">
+              <span class="badge badge-ghost">Inactivo</span>
+              <span class="badge badge-ghost">No suspendido</span>
+              <span class="badge badge-ghost">No revocado</span>
+            </div>
+          </td>
+
+          <td class="hidden 2xl:table-cell">08 Ago 2025 · 22:10</td>
+          <td class="hidden 2xl:table-cell">01 Ene 1970 · 00:00</td>
+
+          <td class="text-right">
+            <div class="flex items-center justify-end gap-1.5">
+              <div class="tooltip" data-tip="Ver">
+                <button class="btn btn-ghost btn-xs" type="button" onclick="document.getElementById('view_device')?.showModal()">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </button>
+              </div>
+              <div class="tooltip" data-tip="Editar">
+                <button class="btn btn-ghost btn-xs" type="button" onclick="document.getElementById('edit_device')?.showModal()">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
+                  </svg>
+                </button>
+              </div>
+              <div class="tooltip" data-tip="Revocar">
+                <button class="btn btn-ghost btn-xs" type="button" onclick="document.getElementById('revoke_device')?.showModal()">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 6L6 18M6 6l12 12"/>
+                  </svg>
+                </button>
+              </div>
+              <div class="tooltip" data-tip="Eliminar">
+                <button class="btn btn-ghost btn-xs text-error" type="button" onclick="document.getElementById('delete_device')?.showModal()">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 6h18"/><path d="M8 6v14a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </td>
+        </tr> -->
+
+  @for (d of ListDevices(); track d.id) {
+    <tr class="hover">
+      <!-- checkbox fila -->
+      <td>
+        <input
+          type="checkbox"
+          class="checkbox checkbox-xs"
+          [attr.aria-label]="'Seleccionar ' + (d.device || 'dispositivo')"
+        />
+      </td>
+
+      <!-- Dispositivo -->
+      <td>
+        <div class="flex items-center gap-3">
+          <div class="avatar placeholder">
+            <div class="bg-primary/10 text-primary w-10 h-10 rounded-xl flex items-center justify-center">
+              {{ d.device?.[0] ? (d.device[0] | uppercase) : 'D' }}
+            </div>
+          </div>
+          <div>
+            <div class="font-medium leading-tight">
+              {{ d.device || '—' }}
+            </div>
+            <div class="text-[11px] opacity-70 break-all">
+              ID: {{ d.id }}
+            </div>
+          </div>
+        </div>
+      </td>
+
+      <!-- Usuario -->
+      <td class="hidden lg:table-cell">
+        <div class="leading-tight">
+          <div class="font-normal">
+            {{ userNameById(d.user_id) || '—' }}
+          </div>
+          <div class="text-[11px] opacity-70 break-all">
+            user_id: {{ d.user_id }}
+          </div>
+        </div>
+      </td>
+
+      <!-- Certificado -->
+      <td class="hidden xl:table-cell">
+        <div class="text-[11px] opacity-80 break-all">
+          @if (d.certificate?.length) {
+            {{ d.certificate }}
+          } @else {
+            —
+          }
+        </div>
+      </td>
+
+      <!-- Estado -->
+      <td>
+        <div class="flex flex-wrap gap-1">
+          <span class="badge" [class.badge-success]="d.active" [class.badge-ghost]="!d.active">
+            {{ d.active ? 'Activo' : 'Inactivo' }}
+          </span>
+
+          <span class="badge" [class.badge-warning]="d.suspend" [class.badge-ghost]="!d.suspend">
+            {{ d.suspend ? 'Suspendido' : 'No suspendido' }}
+          </span>
+
+          <span class="badge" [class.badge-error]="d.revoked" [class.badge-ghost]="!d.revoked">
+            {{ d.revoked ? 'Revocado' : 'No revocado' }}
+          </span>
+        </div>
+      </td>
+
+      <!-- Fechas -->
+      <td class="hidden 2xl:table-cell">
+        {{ d.createdAt | date:'dd MMM yyyy · HH:mm' }}
+      </td>
+      <td class="hidden 2xl:table-cell">
+        @if (!isEpoch(d.updatedAt)) {
+          {{ d.updatedAt | date:'dd MMM yyyy · HH:mm' }}
+        } @else {
+          —
+        }
+      </td>
+
+      <!-- Acciones -->
+      <td class="text-right">
+        <div class="flex items-center justify-end gap-1.5">
+          <div class="tooltip" data-tip="Ver">
+            <button class="btn btn-ghost btn-xs" type="button" >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+          <div class="tooltip" data-tip="Editar">
+            <button class="btn btn-ghost btn-xs" type="button" >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
+              </svg>
+            </button>
+          </div>
+          <div class="tooltip" data-tip="Revocar">
+            <button class="btn btn-ghost btn-xs" type="button" >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 6L6 18M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+          <div class="tooltip" data-tip="Eliminar">
+            <button class="btn btn-ghost btn-xs text-error" type="button" >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 6h18"/><path d="M8 6v14a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </td>
+    </tr>
+  } @empty {
+    <tr>
+      <td colspan="8" class="text-center py-10 text-sm opacity-70">
+        No hay dispositivos.
+      </td>
+    </tr>
+  }
+
+        <!-- /fila ejemplo -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Paginación -->
+  <div class="mt-3 flex items-center justify-between">
+    <p class="text-sm opacity-70">Mostrando 1–1 de 1</p>
+    <nav class="join">
+      <button class="btn btn-xs join-item" disabled>«</button>
+      <button class="btn btn-xs join-item btn-active" aria-current="page">1</button>
+      <button class="btn btn-xs join-item" disabled>»</button>
+    </nav>
+  </div>
+</section>
+
+<!-- ====== MODALES ====== -->
+
+<!-- Ver dispositivo -->
+<dialog id="view_device" class="modal">
+  <div class="modal-box w-11/12 max-w-3xl">
+    <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button></form>
+    <h3 class="text-lg font-bold">Detalle del dispositivo</h3>
+    <div class="grid gap-4 md:grid-cols-2 mt-3">
+      <div class="card border bg-base-200/60">
+        <div class="card-body p-4">
+          <h4 class="card-title text-sm">Información</h4>
+          <ul class="text-sm space-y-1">
+            <li><span class="opacity-70">ID:</span> dev-0001</li>
+            <li><span class="opacity-70">Dispositivo:</span> Pixel 7</li>
+            <li class="break-all"><span class="opacity-70">Usuario ID:</span> 3ec951c0-491f-4078-beff-4f658b8ea7a1</li>
+            <li><span class="opacity-70">Activo:</span> false</li>
+            <li><span class="opacity-70">Suspendido:</span> false</li>
+            <li><span class="opacity-70">Revocado:</span> false</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card border bg-base-200/60">
+        <div class="card-body p-4">
+          <h4 class="card-title text-sm">Certificado</h4>
+          <div class="text-xs break-all bg-base-100 border rounded p-2">
+            cert-abc123...xyz789
+          </div>
+          <ul class="text-sm space-y-1 mt-2">
+            <li><span class="opacity-70">Creado:</span> 08 Ago 2025 · 22:10</li>
+            <li><span class="opacity-70">Actualizado:</span> 01 Ene 1970 · 00:00</li>
+            <li><span class="opacity-70">Suspendido el:</span> —</li>
+            <li><span class="opacity-70">Revocado el:</span> —</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="modal-action">
+      <button class="btn" type="button" onclick="document.getElementById('edit_device')?.showModal()">Editar</button>
+      <button class="btn btn-error" type="button" onclick="document.getElementById('revoke_device')?.showModal()">Revocar</button>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
+</dialog>
+
+<!-- Agregar dispositivo -->
+<!-- <dialog id="add_device" class="modal">
+  <div class="modal-box max-w-2xl">
+    <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button></form>
+    <h3 class="text-lg font-bold">Nuevo dispositivo</h3>
+    <p class="text-sm opacity-70 mb-3">Registra un dispositivo y asigna su estado inicial.</p>
+    <div class="grid gap-3 md:grid-cols-2">
+      <label class="input input-bordered w-full md:col-span-2"><input type="text" placeholder="ID (auto o GUID)" class="w-full" /></label>
+      <label class="input input-bordered w-full md:col-span-2"><input type="text" placeholder="user_id (ID del usuario)" class="w-full" required /></label>
+      <label class="input input-bordered w-full md:col-span-2"><input type="text" placeholder="Dispositivo (ej. iPhone 14 / Pixel 7 / MacBook)" class="w-full" required /></label>
+      <label class="label cursor-pointer justify-start gap-3 md:col-span-2">
+        <input type="checkbox" class="toggle" aria-label="Activo" />
+        <span>Activo</span>
+      </label>
+      <label class="input input-bordered w-full md:col-span-2 break-all"><input type="text" placeholder="Certificado (ID o blob…)" class="w-full" /></label>
+      <div class="grid grid-cols-2 gap-3 md:col-span-2">
+        <label class="input input-bordered w-full"><input type="text" placeholder="Suspendido el (—)" class="w-full" disabled /></label>
+        <label class="input input-bordered w-full"><input type="text" placeholder="Revocado el (—)" class="w-full" disabled /></label>
+      </div>
+    </div>
+    <div class="modal-action">
+      <button class="btn btn-ghost" type="button">Cancelar</button>
+      <button class="btn btn-primary" type="button">Crear</button>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
+</dialog> -->
+<dialog id="add_device" class="modal">
+  <div class="modal-box max-w-2xl">
+
+    <!-- Botón de cierre -->
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button>
+    </form>
+
+    <!-- Encabezado -->
+    <h3 class="text-lg font-bold">Nuevo dispositivo</h3>
+    <p class="text-sm opacity-70 mb-3">Registra un dispositivo al cual deseas agregar la VPN.</p>
+
+    <!-- Formulario reactivo -->
+   <form
+  class="grid gap-3 md:grid-cols-2"
+  [formGroup]="deviceForm"
+  (ngSubmit)="onSubmit()"
+  novalidate
+  autocomplete="on"
+>
+  <!-- Nombre del dispositivo -->
+  <div class="form-control w-full md:col-span-2 validator">
+    <label class="label">
+      <span class="label-text">Nombre del dispositivo</span>
+    </label>
+    <div class="input input-bordered flex items-center w-full">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-5 w-5 opacity-70 shrink-0"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M4 8h16M4 12h16M4 16h16"
+        />
+      </svg>
+      <input
+        type="text"
+        class="grow bg-transparent outline-none"
+        placeholder="Ej. iPhone 14 / Pixel 7 / MacBook"
+        formControlName="device"
+        required
+      />
+    </div>
+    @if (deviceForm.get('device')?.touched && deviceForm.get('device')?.invalid) {
+      <p class="text-red-500 text-sm mt-1">
+        Ingrese el nombre del dispositivo.
+      </p>
+    }
+  </div>
+
+  <!-- Tipo de dispositivo -->
+  <div class="form-control w-full md:col-span-2 validator">
+    <label class="label">
+      <span class="label-text">Tipo de dispositivo</span>
+    </label>
+    <div class="input input-bordered flex items-center w-full">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-5 w-5 opacity-70 shrink-0"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M8 9l4 4 4-4"
+        />
+      </svg>
+      <select
+        class="grow bg-transparent outline-none"
+        formControlName="typeDevice"
+        aria-label="Tipo de dispositivo"
+        required
+      >
+        <option value="" disabled selected>Seleccione tipo</option>
+        <option value="movil">Móvil</option>
+        <option value="tablet">Tablet</option>
+        <option value="laptop">Laptop</option>
+        <option value="desktop">Desktop</option>
+        <option value="tv">TV</option>
+        <option value="router">Router</option>
+        <option value="others">Otros</option>
+      </select>
+    </div>
+    @if (deviceForm.get('typeDevice')?.touched && deviceForm.get('typeDevice')?.invalid) {
+      <p class="text-red-500 text-sm mt-1">
+        Seleccione un tipo de dispositivo.
+      </p>
+    }
+  </div>
+
+  <!-- Acciones -->
+  <div class="modal-action md:col-span-2">
+    <button class="btn btn-ghost" type="button" (click)="onCancel()">Cancelar</button>
+    <button class="btn btn-primary" type="submit" [disabled]="deviceForm.invalid">
+      Agregar dispositivo
+    </button>
+  </div>
+</form>
+
+
+  </div>
+
+  <form method="dialog" class="modal-backdrop">
+    <button aria-label="Cerrar">close</button>
+  </form>
+</dialog>
+
+
+
+
+<!-- Editar dispositivo -->
+<dialog id="edit_device" class="modal">
+  <div class="modal-box max-w-2xl">
+    <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button></form>
+    <h3 class="text-lg font-bold">Editar dispositivo</h3>
+    <div class="grid gap-3 md:grid-cols-2 mt-2">
+      <label class="input input-bordered w-full md:col-span-2"><input type="text" value="dev-0001" class="w-full" disabled /></label>
+      <label class="input input-bordered w-full md:col-span-2"><input type="text" value="3ec951c0-491f-4078-beff-4f658b8ea7a1" class="w-full" /></label>
+      <label class="input input-bordered w-full md:col-span-2"><input type="text" value="Pixel 7" class="w-full" /></label>
+      <label class="label cursor-pointer justify-start gap-3 md:col-span-2">
+        <input type="checkbox" class="toggle" aria-label="Activo" />
+        <span>Activo</span>
+      </label>
+      <label class="input input-bordered w-full md:col-span-2 break-all"><input type="text" value="cert-abc123...xyz789" class="w-full" /></label>
+      <div class="grid grid-cols-2 gap-3 md:col-span-2">
+        <label class="label cursor-pointer justify-start gap-3">
+          <input type="checkbox" class="toggle" aria-label="Suspendido" />
+          <span>Suspendido</span>
+        </label>
+        <label class="label cursor-pointer justify-start gap-3">
+          <input type="checkbox" class="toggle" aria-label="Revocado" />
+          <span>Revocado</span>
+        </label>
+      </div>
+      <div class="grid grid-cols-2 gap-3 md:col-span-2">
+        <label class="input input-bordered w-full"><input type="text" value="—" class="w-full" disabled /></label>
+        <label class="input input-bordered w-full"><input type="text" value="—" class="w-full" disabled /></label>
+      </div>
+      <div class="grid grid-cols-2 gap-3 md:col-span-2">
+        <label class="input input-bordered w-full"><input type="text" value="08 Ago 2025 · 22:10" class="w-full" disabled /></label>
+        <label class="input input-bordered w-full"><input type="text" value="01 Ene 1970 · 00:00" class="w-full" disabled /></label>
+      </div>
+    </div>
+    <div class="modal-action">
+      <button class="btn btn-ghost" type="button">Cancelar</button>
+      <button class="btn btn-primary" type="button">Guardar</button>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
+</dialog>
+
+<!-- Revocar certificado / dispositivo -->
+<dialog id="revoke_device" class="modal">
+  <div class="modal-box">
+    <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button></form>
+    <h3 class="text-lg font-bold text-warning">Revocar certificado</h3>
+    <p class="py-2">Esto marcará el dispositivo como <strong>revocado</strong> e invalidará su certificado. ¿Deseas continuar?</p>
+    <div class="modal-action">
+      <button class="btn" type="button">Cancelar</button>
+      <button class="btn btn-warning" type="button">Revocar</button>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
+</dialog>
+
+<!-- Eliminar dispositivo -->
+<dialog id="delete_device" class="modal">
+  <div class="modal-box">
+    <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button></form>
+    <h3 class="text-lg font-bold text-error">Eliminar dispositivo</h3>
+    <p class="py-2">Esta acción es permanente. ¿Deseas continuar?</p>
+    <div class="modal-action">
+      <button class="btn" type="button">Cancelar</button>
+      <button class="btn btn-error" type="button">Eliminar</button>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
+</dialog>
+
+<!-- Atajo: Ctrl/Cmd + K enfoca búsqueda -->
+<script>
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+      const input = document.getElementById('search-devices');
+      if (input) { e.preventDefault(); input.focus(); }
+    }
+  });
+</script>

@@ -1,0 +1,24 @@
+<section id="precios" class="container mx-auto max-w-6xl px-4 py-24">
+  <div class="text-center max-w-2xl mx-auto mb-12">
+    <h2 class="text-3xl md:text-4xl font-bold tracking-tight">Planes y precios</h2>
+    <p class="mt-3 text-base-content/70">Sin contratos. Cancela cuando quieras.</p>
+  </div>
+
+  <div class="grid items-stretch gap-6 lg:gap-8 md:grid-cols-3"  (click)="onContainerClick($event)">
+
+        <!-- @for (p of ListPlans(); track p.id) {
+
+          <div [innerHTML]="p.safeHtml"></div>
+        } -->
+
+
+  </div>
+
+
+  <div class="mt-10 flex items-center justify-center gap-4 text-sm text-base-content/60">
+    <span class="badge badge-ghost">Garantía 7 días</span>
+    <span class="badge badge-ghost">Pago seguro</span>
+    <span class="badge badge-ghost">Sin permanencia</span>
+    <span class="badge badge-ghost">América en General</span>
+  </div>
+</section>

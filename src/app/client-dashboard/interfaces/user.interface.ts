@@ -1,10 +1,11 @@
+import AdminTelephoneDto from './AdminTelephone.interface';
 import { CountryEntity } from './country.interface';
 import PlanClientDto from './planClient.interface';
 class UserEntity {
   id: string = "";
   firstNames: string = "";
   lastNames: string = "";
-  telephone: string[] = [];
+  telephone: AdminTelephoneDto[] = [];
   picture: string = "";
   role: string = "standar";
   isAdmin: boolean = false;
@@ -104,7 +105,7 @@ class UserEntity {
     if(!this.telephone) throw new Error('The telephone field is required!.');
     if(!this.email) throw new Error('The email field is required!.');
     if(!this.password) throw new Error('The password field is required!.');
-    if(!this.dni) throw new Error('The dni field is required!.');
+    // if(!this.dni) throw new Error('The dni field is required!.');
     if(!this.country) throw new Error('The dni field is required!.');
     return this;
   }

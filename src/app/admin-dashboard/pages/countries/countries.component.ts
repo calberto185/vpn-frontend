@@ -59,27 +59,35 @@ export class CountriesComponent  implements OnInit{
     })
   }
     onSubmit() {
-    // if(this.userForm.invalid) {
-    //   this.hasError.set("Formulario invalido");
-    //   setTimeout(() => {
-    //     this.hasError.set("");
-    //   }, 3000);
-    //   return;
-    // }
-    // const data = this.userForm.value;
-    // console.log("data: ", data)
-    // const dataToSave = new UserEntity();
-    // dataToSave.set(data);
-
-    // this.userService.register(dataToSave.get()).subscribe((resp) => {
-    //     if(resp?.error?.message) {
-    //       this.hasError.set(resp?.error?.message)
-    //       setTimeout(() => {
-    //       this.hasError.set("")
-    //       }, 4000);
-    //       return;
-    //     }
-    // });
+    if(this.userForm.invalid) {
+      this.hasError.set("Formulario invalido");
+      setTimeout(() => {
+        this.hasError.set("");
+      }, 3000);
+      return;
+    }
+    const data = this.userForm.value;
+    const existContinent = this.ListContinents().find(c => c.id === data.continent)
+    if(!existContinent) return;
+    const dataToSave = new CountryEntity();
+    dataToSave.set(data);
+    const continent = new ContinentEntity();
+    continent.set(existContinent)
+    dataToSave.continent = continent;
+console.log("dataToSave: ", dataToSave)
+    this.countryService.register(dataToSave.get()).subscribe((resp) => {
+        if(resp?.error?.message) {
+          this.hasError.set(resp?.error?.message)
+          setTimeout(() => {
+          this.hasError.set("")
+          }, 4000);
+          return;
+        }
+        this.fillListCountries();
+        this.onCancel();
+        this.userForm.reset();
+        // this.userForm.clearValidators();
+    });
 
   }
 onCancel() {

@@ -13,6 +13,7 @@ import serversEntity from '../../interfaces/servers.interface';
 import ServicesEntity from '../../interfaces/services.interface';
 import { ServicesService } from '../../services/services/services.service';
 import PlanClientServerDto from '../../interfaces/planClientServer.interface';
+import AdminTelephoneDto from '../../interfaces/AdminTelephone.interface';
 
 @Component({
   selector: 'app-users',
@@ -28,6 +29,9 @@ export class UsersComponent implements OnInit{
   ListServices = signal<ServicesEntity[]>([]);
   ListServers = signal<serversEntity[]>([]);
 
+  selectedCountry = signal(new CountryEntity());
+  toggleDropdown = signal(false);
+
   countryService = inject(CountriesService);
   userService = inject(UsersService);
   planService = inject(PlansService);
@@ -41,7 +45,7 @@ export class UsersComponent implements OnInit{
   userForm = this.fb.group({
     firstNames: ['', [Validators.required ]],
     lastNames: ['', [Validators.required ]],
-    dni: ['', [Validators.required ]],
+    // dni: ['', [Validators.required ]],
     phone: ['', [Validators.required ]],
     role: ['', [Validators.required ]],
     country: ['', [Validators.required ]],
@@ -102,7 +106,17 @@ export class UsersComponent implements OnInit{
     const {services, planes, servers, ...data} = this.userForm.value;
     const dataToSave = new UserEntity();
     dataToSave.set(data);
-    dataToSave.telephone = data.phone ? [data.phone] : []
+    // dataToSave.telephone = data.phone ? [data.phone] : []
+
+    const modelPhone = new AdminTelephoneDto();
+    modelPhone.countryCode = this.selectedCountry().countryCode;
+    modelPhone.countryName = this.selectedCountry().countryName;
+    modelPhone.flag = this.selectedCountry().flag;
+    modelPhone.phoneCode = this.selectedCountry().phoneCode;
+    modelPhone.isActive = true;
+    modelPhone.phone = data.phone || "";
+    modelPhone.whatsapp_id = modelPhone.phoneCode.replace("+","")+""+modelPhone.phone+"@c.us";
+    dataToSave.telephone = modelPhone?.phone ? [modelPhone] : []
 
     const exist_Country = this.ListCountries().find(f => f.id == data.country);
     const country = new CountryEntity();
@@ -182,5 +196,11 @@ getServiceNameById(id: string): string {
   const service = this.ListPlan().find(s => s.id === id);
   return service ? service.id : id;
 }
+
+
+  changeCountry(selected: CountryEntity | any) {
+    this.selectedCountry.set(selected);
+    this.toggleDropdown.set(false)
+  }
 
 }

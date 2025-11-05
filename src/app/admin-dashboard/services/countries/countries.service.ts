@@ -20,8 +20,8 @@ export class CountriesService {
   getAllCountries(): Observable<ResponseEntity<CountryEntity[]>> {
     return this.http.get<ResponseEntity<CountryEntity[]>>(baseUrl+'/countries');
   }
-  register(data: UserEntity): Observable<any> {
-    return this.http.post<ResponseEntity<UserEntity>>(baseUrl+'/countries', data);
+  register(data: CountryEntity): Observable<any> {
+    return this.http.post<ResponseEntity<CountryEntity>>(baseUrl+'/countries', data);
   }
 
   private handlerSuccess(resp: any) {

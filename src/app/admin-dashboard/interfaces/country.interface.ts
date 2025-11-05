@@ -53,7 +53,6 @@ export class CountryEntity {
     this.updatedAt = updatedAt ?? this.updatedAt;
   }
   get() {
-    if(!this.id) throw new Error('The id field is required!.');
     if(!this.countryName) throw new Error('The countryName field is required!.');
     if(!this.countryCode) throw new Error('The countryCode field is required!.');
     if(!this.languageName) throw new Error('The languageName field is required!.');

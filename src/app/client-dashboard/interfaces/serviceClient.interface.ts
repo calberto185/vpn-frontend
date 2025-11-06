@@ -15,6 +15,7 @@ class ServiceClientDto {
   plan = new PlanClientDto();
   plans = [];
   state = false;
+  visible = false;
   createdAt = new Date();
   updateAt = new Date(1);
 
@@ -33,6 +34,7 @@ class ServiceClientDto {
     plan,
     plans,
     state,
+    visible,
     createdAt,
     updateAt,
   }: ServiceClientDto) {
@@ -49,6 +51,7 @@ class ServiceClientDto {
     this.plan = plan ?? this.plan;
     this.plans = plans ?? this.plans;
     this.state = state ?? this.state;
+    this.visible = visible ?? this.visible;
     this.createdAt = createdAt ?? this.createdAt;
     this.updateAt = updateAt ?? this.updateAt;
   }

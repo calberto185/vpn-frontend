@@ -9,10 +9,11 @@ class serversEntity {
   password = "";
   privateKeyPath = "";
   active = false;
+  visible = false;
   createdAt = new Date();
   updatedAt = new Date();
   constructor() {}
-  set({id, name, host, port, countryName, countryCode, userName, password, privateKeyPath, active, createdAt, updatedAt}: serversEntity) {
+  set({id, name, host, port, countryName, countryCode, userName, password, privateKeyPath, active, visible, createdAt, updatedAt}: serversEntity) {
     this.id = id ?? this.id;
     this.name = name ?? this.name;
     this.host = host ?? this.host;
@@ -23,6 +24,7 @@ class serversEntity {
     this.password = password ?? this.password;
     this.privateKeyPath = privateKeyPath ?? this.privateKeyPath;
     this.active = active ?? this.active;
+    this.visible = visible ?? this.visible;
     this.createdAt = createdAt ?? this.createdAt;
     this.updatedAt = updatedAt ?? this.updatedAt;
   }

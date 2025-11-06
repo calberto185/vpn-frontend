@@ -13,6 +13,7 @@ class PlanEntity {
   kind = "";
   language = "";
   active = false;
+  visible = false;
   service = new ServicesEntity()
   currencyName = "";
   currencyCode = "";
@@ -37,6 +38,7 @@ class PlanEntity {
     kind,
     language,
     active,
+    visible,
     service,
     currencyName,
     currencyCode,
@@ -58,6 +60,7 @@ class PlanEntity {
     this.kind = kind ?? this.kind;
     this.language = language ?? this.language;
     this.active = active ?? this.active;
+    this.visible = visible ?? this.visible;
     this.service = service ?? this.service;
     this.currencyName = currencyName ?? this.currencyName;
     this.currencyCode = currencyCode ?? this.currencyCode;

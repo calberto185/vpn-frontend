@@ -5,6 +5,7 @@ class PlanClientServerDto {
   server_name = "";
   server_country = "";
   access_permmit = false;
+  visible = false;
   addAt = new Date();
   constructor() {}
   set({
@@ -13,6 +14,7 @@ class PlanClientServerDto {
     server_name,
     server_country,
     access_permmit,
+    visible,
     addAt,
   }: PlanClientServerDto) {
     this.server_id = server_id ?? this.server_id;
@@ -20,6 +22,7 @@ class PlanClientServerDto {
     this.server_name = server_name ?? this.server_name;
     this.server_country = server_country ?? this.server_country;
     this.access_permmit = access_permmit ?? this.access_permmit;
+    this.visible = visible ?? this.visible;
     this.addAt = addAt ?? this.addAt;
   }
   get() {

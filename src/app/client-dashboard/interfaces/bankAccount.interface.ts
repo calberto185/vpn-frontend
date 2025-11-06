@@ -8,6 +8,7 @@ class bankAccountEntity {
   typeAccount: string = "";
   country: CountryEntity = new CountryEntity();
   active: boolean = false;
+  visible: boolean = false;
   note: string = "";
   createdAt: Date = new Date();
   updatedAt: Date = new Date();
@@ -21,6 +22,7 @@ class bankAccountEntity {
     typeAccount,
     country,
     active,
+    visible,
     note,
     createdAt,
     updatedAt
@@ -32,6 +34,7 @@ class bankAccountEntity {
     this.typeAccount = typeAccount ?? this.typeAccount;
     this.country = country ?? this.country;
     this.active = active ?? this.active;
+    this.visible = visible ?? this.visible;
     this.note = note ?? this.note;
     this.createdAt = createdAt ?? this.createdAt;
     this.updatedAt = updatedAt ?? this.updatedAt;

@@ -16,6 +16,7 @@ class PlanClientDto {
   currencyFormat = "";
   kind = "";
   active = true;
+  visible = true;
   servers: PlanClientServerDto[] = []; // new planClientServer
   startedAt = new Date();
   endedAt = null;
@@ -36,6 +37,7 @@ class PlanClientDto {
     currencyFormat,
     kind,
     active,
+    visible,
     servers,
     startedAt,
     endedAt,
@@ -55,6 +57,7 @@ class PlanClientDto {
     this.currencyFormat = currencyFormat ?? this.currencyFormat;
     this.kind = kind ?? this.kind;
     this.active = active ?? this.active;
+    this.visible = visible ?? this.visible;
     this.servers = servers ?? this.servers;
     this.startedAt = startedAt ?? this.startedAt;
     this.endedAt = endedAt ?? this.endedAt;

@@ -10,6 +10,7 @@ class ServicesEntity {
   city = [];
   details = [];
   state = false;
+  visible = false;
   createdAt = new Date();
   updateAt = new Date(1);
 
@@ -24,6 +25,7 @@ class ServicesEntity {
     city,
     details,
     state,
+    visible,
     createdAt,
     updateAt,
   }: ServicesEntity) {
@@ -36,6 +38,7 @@ class ServicesEntity {
     this.city = city ?? this.city;
     this.details = details ?? this.details;
     this.state = state ?? this.state;
+    this.visible = visible ?? this.visible;
     this.createdAt = createdAt ?? this.createdAt;
     this.updateAt = updateAt ?? this.updateAt;
   }

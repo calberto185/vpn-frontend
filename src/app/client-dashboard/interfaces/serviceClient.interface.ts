@@ -53,7 +53,6 @@ class ServiceClientDto {
     this.updateAt = updateAt ?? this.updateAt;
   }
   get() {
-    if(!this.id) throw new Error('The id field is required!.');
     if(!this.sortName) throw new Error('The sortName field is required!.');
     if(!this.longName) throw new Error('The longName field is required!.');
     if(!this.country) throw new Error('The country field is required!.');

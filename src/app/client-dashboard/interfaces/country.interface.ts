@@ -13,6 +13,7 @@ export class CountryEntity {
   flag = "";
   phoneCode = "";
   isActive = false;
+  visible = false;
   continent = new ContinentEntity();
   createdAt = new Date();
   updatedAt = new Date(1);
@@ -32,6 +33,7 @@ export class CountryEntity {
     flag,
     phoneCode,
     isActive,
+    visible,
     continent,
     createdAt,
     updatedAt,
@@ -48,12 +50,12 @@ export class CountryEntity {
     this.flag = flag ?? this.flag;
     this.phoneCode = phoneCode ?? this.phoneCode;
     this.isActive = isActive ?? this.isActive;
+    this.visible = visible ?? this.visible;
     this.continent = continent ?? this.continent;
     this.createdAt = createdAt ?? this.createdAt;
     this.updatedAt = updatedAt ?? this.updatedAt;
   }
   get() {
-    if(!this.id) throw new Error('The id field is required!.');
     if(!this.countryName) throw new Error('The countryName field is required!.');
     if(!this.countryCode) throw new Error('The countryCode field is required!.');
     if(!this.languageName) throw new Error('The languageName field is required!.');

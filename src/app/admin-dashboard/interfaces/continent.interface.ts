@@ -5,7 +5,8 @@ export class ContinentEntity {
   flag = "";
   descripcion = "";
   idiomas = "";
-  isActive = true;
+  isActive = false;
+  visible = false;
   createdAt = new Date();
   updatedAt = new Date();
 
@@ -19,6 +20,7 @@ export class ContinentEntity {
     descripcion,
     idiomas,
     isActive,
+    visible,
     createdAt,
     updatedAt,
   }: ContinentEntity) {
@@ -29,11 +31,11 @@ export class ContinentEntity {
     this.descripcion = descripcion ?? this.descripcion;
     this.idiomas = idiomas ?? this.idiomas;
     this.isActive = isActive ?? this.isActive;
+    this.visible = visible ?? this.visible;
     this.createdAt = createdAt ?? this.createdAt;
     this.updatedAt = updatedAt ?? this.updatedAt;
   }
   get() {
-    if(!this.id) throw new Error('The id field is required!.');
     if(!this.name) throw new Error('The name field is required!.');
     if(!this.displayName) throw new Error('The displayName field is required!.');
     if(!this.flag) throw new Error('The flag field is required!.');

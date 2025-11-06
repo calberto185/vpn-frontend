@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, inject, NgZone, OnInit, signal } from '@angular/core';
+import { AfterViewInit, Component, DoCheck, inject, NgZone, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
@@ -13,7 +13,8 @@ import AdminTelephoneDto from '../../interfaces/AdminTelephone.interface';
   templateUrl: './register-page.component.html',
   styleUrl: './register-page.component.css'
 })
-export class RegisterPageComponent implements AfterViewInit, OnInit {
+export class RegisterPageComponent implements AfterViewInit, OnInit, DoCheck {
+
   fb = inject(FormBuilder);
   hasError = signal(false);
   isPosting = signal(false);
@@ -53,6 +54,12 @@ export class RegisterPageComponent implements AfterViewInit, OnInit {
         this.renderRecaptcha();
       }
     }, 100);
+  }
+   ngDoCheck(): void {
+    // if(!!this.toggleDropdown()) {
+
+    // this.toggleDropdown.set(false)
+    // }
   }
   fillListCountries() {
     this.authService.getAllCountries().subscribe((resp) => {

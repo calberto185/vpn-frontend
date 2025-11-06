@@ -54,6 +54,8 @@ export class UsersComponent implements OnInit{
     services: [''],
     planes: [''],
     servers: [''],
+    createdAt: [''],
+    observations: ['']
   })
 
   ngOnInit(): void {
@@ -103,7 +105,7 @@ export class UsersComponent implements OnInit{
       }, 3000);
       return;
     }
-    const {services, planes, servers, ...data} = this.userForm.value;
+    const {services, planes, servers, createdAt, ...data} = this.userForm.value;
     const dataToSave = new UserEntity();
     dataToSave.set(data);
     // dataToSave.telephone = data.phone ? [data.phone] : []
@@ -159,13 +161,13 @@ export class UsersComponent implements OnInit{
       planClient.currencySymbol = exist_plan.currencySymbol;
       planClient.kind = exist_plan.kind;
       planClient.limitDevices = exist_plan.limitDevices;
-      planClient.startedAt = new Date();
+      planClient.startedAt = new Date( createdAt || new Date());
       planClient.active = exist_plan.active;
       planClient.endedAt = null;
       if(!!_serversEntity.server_id) {
         _serversEntity.plan_id = exist_plan.id;
-      }
       planClient.servers = [_serversEntity];
+      }
     };
     dataToSave.services = [ planClient ];
 
@@ -184,6 +186,7 @@ export class UsersComponent implements OnInit{
       this.fillListUsers();
     });
     this.cerrarDialogo();
+    this.userForm.reset()
   }
 cerrarDialogo() {
   const dialogo: any = document.getElementById('add_user');

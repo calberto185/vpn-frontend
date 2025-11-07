@@ -30,6 +30,7 @@ export class PlansComponent implements OnInit{
   ngOnInit(): void {
     this.fillListPlans();
     this.fillListServices();
+    this.fillListCountries();
   }
 
 
@@ -43,10 +44,12 @@ export class PlansComponent implements OnInit{
       description: ['', Validators.required],
       button_name: ['', Validators.required],
       kind: ['', Validators.required],
+      country: ['', Validators.required],
       service: ['', Validators.required],
       limitDevices: ['', Validators.required],
       // features: ['', Validators.required],
       active: [false],
+      global: [false],
   })
 
 
@@ -84,6 +87,12 @@ export class PlansComponent implements OnInit{
     const service = new ServicesEntity();
     if(!exist_Service) { return }
     service.set(exist_Service)
+
+    const exist_Country = this.ListCountries().find(d => d.id == data.country);
+    const country = new CountryEntity();
+    if(!exist_Country) { return }
+    country.set(exist_Country)
+
     console.log("data: ", data)
     const dataToSave = new PlanEntity();
     dataToSave.set(data);
@@ -93,6 +102,7 @@ export class PlansComponent implements OnInit{
     dataToSave.currencyName = service.country.currencyName;
     dataToSave.currencySymbol = service.country.currencySymbol;
     dataToSave.language = service.country.languageCode;
+    dataToSave.country = country;
     this.plansService.register(dataToSave.get()).subscribe((resp) => {
       console.log("resp: ", resp)
         // if(resp?.error?.message) {

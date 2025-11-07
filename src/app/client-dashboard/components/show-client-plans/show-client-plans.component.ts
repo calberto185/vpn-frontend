@@ -120,7 +120,8 @@ export class ShowClientPlansComponent implements OnInit {
   }
   fillListContinents() {
     this.continentsService.get().subscribe((resp) => {
-      this.ListContinents.set(resp.data ?? []);
+      const continets = (resp.data ?? []).filter(c => !!c.visible);
+      this.ListContinents.set(continets);
     })
   }
 

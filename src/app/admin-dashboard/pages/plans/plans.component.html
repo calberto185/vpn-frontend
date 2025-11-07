@@ -494,6 +494,34 @@
         }
       </div>
 
+        <!-- País -->
+    <div class="w-full md:col-span-2">
+      <label for="country" class="block text-sm font-medium text-gray-700 mb-1">
+        País
+      </label>
+      <div class="flex items-center border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-blue-500">
+        <!-- Ícono: globo -->
+        <svg xmlns="http://www.w3.org/2000/svg"
+             class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0"
+             fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="2" y1="12" x2="22" y2="12"></line>
+          <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"></path>
+        </svg>
+        <select id="country" formControlName="country"
+                class="w-full outline-none text-gray-700 placeholder-gray-400"
+                required>
+          <option value="" disabled selected hidden>Selecciona el país</option>
+          @for (item of this.ListCountries(); track item.countryName; let idx = $index) {
+            <option [value]="item.id">{{ item.countryName }}</option>
+          }
+        </select>
+      </div>
+      @if (planForm.get('country')?.touched && planForm.get('country')?.invalid) {
+        <p class="text-red-500 text-sm mt-1">Seleccione un país válido.</p>
+      }
+    </div>
+
       <!-- Service -->
       <div class="w-full">
         <label class="block text-sm font-medium text-gray-700 mb-1">Servicio</label>
@@ -508,7 +536,7 @@
           <select formControlName="service" required class="w-full outline-none text-gray-700 bg-transparent">
             <option value="" disabled selected hidden>Selecciona la Moneda</option>
             @for (item of this.ListServices(); track item.id; let idx = $index) {
-            <option [value]="item.id">{{item.longName}} - {{ item.sortName }}</option>
+            <option [value]="item.id">{{item.longName}} - {{ item.sortName }} | {{item.country.countryName}}</option>
             }
           </select>
         </div>
@@ -546,8 +574,22 @@
         }
       </div>
 
+      <!-- Global -->
+      <div class="w-full md:col-span-2">
+        <label for="limitDevices" class="block text-sm font-medium text-gray-700 mb-1">
+          Es Plan Global:
+        </label>
+        <label class="label cursor-pointer justify-start gap-3">
+          <input type="checkbox" class="toggle" formControlName="global" aria-label="Activo" />
+          <span class="text-gray-700">Activo</span>
+        </label>
+      </div>
+
       <!-- Activo -->
       <div class="w-full md:col-span-2">
+        <label for="limitDevices" class="block text-sm font-medium text-gray-700 mb-1">
+          Estado:
+        </label>
         <label class="label cursor-pointer justify-start gap-3">
           <input type="checkbox" class="toggle" formControlName="active" aria-label="Activo" />
           <span class="text-gray-700">Activo</span>

@@ -14,7 +14,9 @@ class PlanEntity {
   language = "";
   active = false;
   visible = false;
-  service = new ServicesEntity()
+  global = false;
+  country = new CountryEntity();
+  service = new ServicesEntity();
   currencyName = "";
   currencyCode = "";
   currencySymbol = "";
@@ -39,6 +41,8 @@ class PlanEntity {
     language,
     active,
     visible,
+    global,
+    country,
     service,
     currencyName,
     currencyCode,
@@ -61,6 +65,8 @@ class PlanEntity {
     this.language = language ?? this.language;
     this.active = active ?? this.active;
     this.visible = visible ?? this.visible;
+    this.global = global ?? this.global;
+    this.country = country ?? this.country;
     this.service = service ?? this.service;
     this.currencyName = currencyName ?? this.currencyName;
     this.currencyCode = currencyCode ?? this.currencyCode;

@@ -616,7 +616,7 @@
           <select formControlName="planes" required class="w-full outline-none text-gray-700 bg-transparent">
             <option value="" disabled selected hidden>Selecciona el plan</option>
             @for (item of this.ListPlan(); track item.id; let idx = $index) {
-            <option [value]="item.id">{{ item.service.country.countryName }} | Servicio: {{ item.service.sortName }} |
+            <option [value]="item.id">Cliente: {{ item.service.country.countryName }} | Servicio: {{ item.service.sortName }} | Para: {{item.global ? "GLOBAL" : item.country.countryName}} |
               {{ item.title_prefix }} - {{ item.title_name }} - {{ item.title_suffix }} | {{ item.currencySymbol }}{{
               item.price }} / {{ item.kind }}</option>
             }

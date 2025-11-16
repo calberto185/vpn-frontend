@@ -217,8 +217,8 @@
       <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button>
     </form>
 
-    <h3 class="text-lg font-bold">Nueva cuenta</h3>
-    <p class="text-sm opacity-70 mb-3">Registra una cuenta y define su estado.</p>
+    <h3 class="text-lg font-bold">Nueva Pago</h3>
+    <p class="text-sm opacity-70 mb-3">Registra un pago y define su estado.</p>
 
     <!-- FormGroup con validaciones -->
     <form id="form-add-account"
@@ -253,7 +253,7 @@
                formControlName="number"
                placeholder="Número (ej. 001-123)"
                class="w-full font-mono"
-               required pattern="^[A-Za-z0-9\- ]{3,30}$"
+               required
                aria-label="Número de cuenta"
                [attr.aria-invalid]="bankAccountForm.get('number')?.invalid && bankAccountForm.get('number')?.touched ? 'true' : 'false'"
                aria-describedby="err-number" />
@@ -291,9 +291,10 @@
                 [attr.aria-invalid]="bankAccountForm.get('typeAccount')?.invalid && bankAccountForm.get('typeAccount')?.touched ? 'true' : 'false'"
                 aria-describedby="err-type">
           <option value="" disabled selected>Tipo…</option>
-          <option value="checking">checking</option>
-          <option value="savings">savings</option>
-          <option value="credit">credit</option>
+          <option value="checking">Cuanta Bancaria</option>
+          <option value="savings">Monedero Digital - Telefono</option>
+          <option value="credit">Cripto Modeneda</option>
+          <option value="credit">Pago Efectivo</option>
         </select>
       </label>
       @if (bankAccountForm.get('typeAccount')?.touched && bankAccountForm.get('typeAccount')?.errors) {

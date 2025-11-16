@@ -102,7 +102,7 @@
 </section>
 
 <!-- Tabla -->
-<section class="container mx-auto max-w-7xl px-2 md:px-4 mt-4">
+<!-- <section class="container mx-auto max-w-7xl px-2 md:px-4 mt-4">
   <div class="bg-base-100 border rounded-xl shadow-sm overflow-x-auto">
     <table class="table table-sm w-full">
       <thead>
@@ -119,7 +119,6 @@
         </tr>
       </thead>
       <tbody>
-        <!-- Fila ejemplo (desde tu modelo) -->
         <tr class="hover">
           <td><input type="checkbox" class="checkbox checkbox-xs" aria-label="Seleccionar pago p-0001" /></td>
 
@@ -192,12 +191,149 @@
             </div>
           </td>
         </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="mt-3 flex items-center justify-between">
+    <p class="text-sm opacity-70">Mostrando 1–1 de 1</p>
+    <nav class="join">
+      <button class="btn btn-xs join-item" disabled>«</button>
+      <button class="btn btn-xs join-item btn-active" aria-current="page">1</button>
+      <button class="btn btn-xs join-item" disabled>»</button>
+    </nav>
+  </div>
+</section> -->
+
+<section class="container mx-auto max-w-7xl px-2 md:px-4 mt-4">
+  <div class="bg-base-100 border rounded-xl shadow-sm overflow-x-auto">
+    <table class="table table-sm w-full">
+      <thead>
+        <tr>
+          <th class="w-8">
+            <input type="checkbox" class="checkbox checkbox-xs" aria-label="Seleccionar todas" />
+          </th>
+          <th>Usuario</th>
+          <th class="lg:table-cell">Servicio</th>
+          <th class="">PAGO</th>
+          <th>Estado</th>
+          <th class="hidden md:table-cell">Verificado</th>
+          <th class="hidden xl:table-cell">Dispositivos</th>
+          <!-- <th class="hidden 2xl:table-cell">Creado</th>
+          <th class="text-right w-36">Acciones</th> -->
+        </tr>
+      </thead>
+      <tbody>
+
+
+        @for (u of this.ListPayments(); track u.id) {
+        <tr class="hover">
+          <!-- Opciones -->
+          <td>
+            <input type="checkbox" class="checkbox checkbox-xs"
+              [attr.aria-label]="'Seleccionar ' + (u.user_id)" />
+          </td>
+
+          <!-- Usuario -->
+          <td>
+            <div class="flex items-center gap-3">
+              <div>
+                <div class="font-medium leading-tight capitalize">{{ u.user_name }}</div>
+                <div class="text-[11px] opacity-70">ID: {{ u.id }}</div>
+                <div class="text-[11px] opacity-70 hidden md:block">
+                  Nota: {{ u.note }}
+                </div>
+              </div>
+            </div>
+          </td>
+
+           <!-- Pago -->
+          <td>
+            <div class="flex items-center gap-3">
+              <div>
+                <div class="font-medium leading-tight capitalize"> {{u.plan.service_sortName}} {{ u.plan.plan_title_prefix }} {{ u.plan.plan_title_name }}</div>
+                <div class="text-[11px] opacity-70">N° Dispositivos ({{u.plan.limitDevices}})</div>
+                <div class="text-[11px] opacity-70">{{u.plan.currencySymbol}}{{u.plan.price}}/{{u.plan.kind}}</div>
+                <div class="text-[11px] opacity-70 hidden md:block">
+                  Periodo: {{ u.period }}
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="3xl:table-cell">{{u.plan.currencySymbol}} {{ u.amount}}/{{ u.kind}}</td>
+
+          <td>
+            <span class="badge" [class.badge-warning]="(u.state || '').toLowerCase().includes('pend')"
+              [class.badge-success]="(u.state || '').toLowerCase().includes('act')"
+              [class.badge-error]="(u.state || '').toLowerCase().includes('susp')"
+              [class.badge-ghost]="!u.state || u.state === '-'">
+              {{ u.state }}
+            </span>
+          </td>
+
+          <td class="hidden md:table-cell">
+            <span class="badge" [ngClass]="u.state">
+              {{ u.state ? 'Sí' : 'No' }}
+            </span>
+          </td>
+
+          <!-- <td class="hidden lg:table-cell">
+                <div class="flex items-center gap-2">
+                  <span class="badge">{{ u.plan.name }}</span>
+                  <span class="badge badge-ghost">{{ u.plan.devicesLimit }}</span>
+                </div>
+              </td>
+
+              <td class="hidden xl:table-cell">
+                <span class="tabular-nums">{{ u.plans }}</span>/<span class="tabular-nums">{{ u.plan.devicesLimit }}</span>
+              </td> -->
+
+          <td class="hidden 2xl:table-cell">
+            {{ u.createdAt | date:'dd LLL yyyy · HH:mm' }}
+          </td>
+
+          <td class="text-right w-36">
+            <div class="flex items-center justify-end gap-1.5">
+              <div class="tooltip" data-tip="Ver">
+                <button class="btn btn-ghost btn-xs" type="button" onclick="user_drawer.showModal()">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                </button>
+              </div>
+              <div class="tooltip" data-tip="Editar">
+                <button class="btn btn-ghost btn-xs" type="button" onclick="edit_user.showModal()">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <path d="M12 20h9" />
+                    <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+                  </svg>
+                </button>
+              </div>
+              <div class="tooltip" data-tip="Eliminar">
+                <button class="btn btn-ghost btn-xs text-error" type="button" onclick="delete_user.showModal()">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <path d="M3 6h18" />
+                    <path d="M8 6v14a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V6" />
+                    <path d="M10 11v6M14 11v6" />
+                    <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </td>
+        </tr>
+        }
+
         <!-- /fila ejemplo -->
       </tbody>
     </table>
   </div>
 
-  <!-- Paginación -->
+  <!-- Pagination -->
   <div class="mt-3 flex items-center justify-between">
     <p class="text-sm opacity-70">Mostrando 1–1 de 1</p>
     <nav class="join">
@@ -207,7 +343,6 @@
     </nav>
   </div>
 </section>
-
 <!-- ====== MODALES ====== -->
 
 <!-- Ver pago -->
@@ -260,7 +395,7 @@
 </dialog>
 
 <!-- Agregar pago -->
-<dialog id="add_payment" class="modal">
+<!-- <dialog id="add_payment" class="modal">
   <div class="modal-box max-w-3xl">
     <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button></form>
     <h3 class="text-lg font-bold">Nuevo pago</h3>
@@ -314,6 +449,309 @@
       <button class="btn btn-ghost" type="button">Cancelar</button>
       <button class="btn btn-primary" type="button">Crear</button>
     </div>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
+</dialog> -->
+<dialog id="add_payment" class="modal">
+  <div class="modal-box max-w-2xl">
+
+    <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button></form>
+    <h2 class="text-lg font-bold">Cargar Pago</h2>
+    <p class="mb-4 text-sm opacity-70">Carga el pago de un cliente en especifico.</p>
+    <form class="grid gap-3 md:grid-cols-2" [formGroup]="userForm" (ngSubmit)="onSubmit()" novalidate autocomplete="on">
+
+      <!-- Client -->
+      <div class="w-full md:col-span-2">
+        <label for="user_id" class="block text-sm font-medium text-gray-700 mb-1">
+          Cliente
+        </label>
+        <div
+          class="flex items-center border border-gray-300 rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-blue-500 bg-white"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.25a8.25 8.25 0 0115 0v.75H4.5v-.75z"
+            />
+          </svg>
+          <select
+            class="w-full outline-none text-gray-700 placeholder-gray-400 bg-transparent"
+            formControlName="user_id"
+            (change)="onSelectClient($event)"
+            aria-label="Usuario"
+            required
+          >
+            <option value="" disabled>Selecciona un usuario…</option>
+            @for (item of this.ListUsers(); track item.id) {
+              <option [value]="item.id">
+
+                {{ item.firstNames }} {{ item.lastNames }} | {{ item.email }}&#10;
+                {{item.country.countryName}} | verified: {{item.verified}} | suspend: {{item.suspend}} | bloqued: {{item.bloqued}}
+              </option>
+            }
+          </select>
+        </div>
+        @if (userForm.get('user_id')?.touched && userForm.get('user_id')?.invalid) {
+          <p class="text-red-500 text-sm mt-1">Seleccione un usuario.</p>
+        }
+      </div>
+
+       <!-- Service | plan -->
+      <div class="w-full md:col-span-2">
+        <label for="user_id" class="block text-sm font-medium text-gray-700 mb-1">
+          Service | Plan
+        </label>
+        <div
+          class="flex items-center border border-gray-300 rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-blue-500 bg-white"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.25a8.25 8.25 0 0115 0v.75H4.5v-.75z"
+            />
+          </svg>
+          <select
+            class="w-full outline-none text-gray-700 placeholder-gray-400 bg-transparent"
+            formControlName="plan_id"
+            aria-label="Usuario"
+            required
+          >
+            <option value="" disabled>Selecciona un usuario…</option>
+            @for (item of this.SelectClient().services; track item.plan_id) {
+              <option [value]="item.plan_id">
+                {{ item.service_sortName }} - {{ item.service_longName }} | {{item.global ? 'GLOBAL' : item.country.countryName}} | {{ item.plan_title_prefix }} {{ item.plan_title_name }} | Dispotivios {{item.limitDevices}} | {{item.currencySymbol}} {{item.price}} / {{ item.kind }}
+              </option>
+            }
+          </select>
+        </div>
+        @if (userForm.get('plan_id')?.touched && userForm.get('plan_id')?.invalid) {
+          <p class="text-red-500 text-sm mt-1">Seleccione un usuario.</p>
+        }
+      </div>
+
+       <!-- Monto -->
+      <div class="w-full">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Monto</label>
+        <div class="flex items-center border border-gray-300 rounded-lg px-3 py-2
+             focus-within:ring-2 focus-within:ring-blue-500 bg-white">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+          <input type="text"  formControlName="amount" placeholder="Escribe los nombres" required
+            autocomplete="given-name" class="w-full outline-none text-gray-700 placeholder-gray-400" />
+        </div>
+        @if (userForm.get('amount')?.touched && userForm.get('amount')?.invalid) {
+        <p class="text-red-500 text-sm mt-1">Ingrese el monto a pagar.</p>
+        }
+      </div>
+
+      <!-- Metodo de Pago -->
+      <div class="w-full">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Método de pago</label>
+        <div class="flex items-center border border-gray-300 rounded-lg px-3 py-2
+             focus-within:ring-2 focus-within:ring-blue-500 bg-white">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-3-3.87" />
+            <path d="M4 21v-2a4 4 0 0 1 3-3.87" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+          <select formControlName="method" required class="w-full outline-none text-gray-700 bg-transparent">
+            <option value="" disabled selected hidden>Selecciona un método</option>
+            <option value="efectivo">Efectivo</option>
+            <option value="tranferencia bancaria">Tranferencia Bancaria</option>
+            <option value="crypto moneda">Crypto Moneda</option>
+            <option value="Monedero Local">Monedero Local</option>
+            <option value="otros">Otros</option>
+          </select>
+        </div>
+        @if (userForm.get('method')?.touched && userForm.get('method')?.invalid) {
+        <p class="text-red-500 text-sm mt-1">Seleccione un método.</p>
+        }
+      </div>
+
+      <!-- Cuantas de Pago -->
+      <div class="w-full">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Cuanta de pago</label>
+        <div class="flex items-center border border-gray-300 rounded-lg px-3 py-2
+             focus-within:ring-2 focus-within:ring-blue-500 bg-white">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" fill="none"
+            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15 15 0 0 1 4 10 15 15 0 0 1-4 10 15 15 0 0 1-4-10 15 15 0 0 1 4-10z"></path>
+          </svg>
+          <select formControlName="methodPay" required class="w-full outline-none text-gray-700 bg-transparent">
+            <option value="" disabled selected hidden>Selecciona la cuenta de pago</option>
+            @for (item of this.ListBankAccount(); track item.id; let idx = $index) {
+            <option [value]="item.id">{{ item.country.countryName }} | Servicio: {{ item.name }} | {{ item.cardAccount
+              }} - {{ item.country.countryName }} </option>
+            }
+          </select>
+        </div>
+        @if (userForm.get('methodPay')?.touched && userForm.get('methodPay')?.invalid) {
+        <p class="text-red-500 text-sm mt-1">Selecciona la cuenta de pago.</p>
+        }
+      </div>
+
+      <!-- Estado -->
+      <div class="w-full">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+        <div class="flex items-center border border-gray-300 rounded-lg px-3 py-2
+             focus-within:ring-2 focus-within:ring-blue-500 bg-white">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-3-3.87" />
+            <path d="M4 21v-2a4 4 0 0 1 3-3.87" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+          <select formControlName="state" required class="w-full outline-none text-gray-700 bg-transparent">
+            <option value="" disabled selected hidden>Selecciona un estado</option>
+            <option value="Pendiente">Pendiente</option>
+            <option value="Aceptado">Aceptado</option>
+            <option value="Varificando">Varificando</option>
+            <option value="Devuelto">Devuelto</option>
+          </select>
+        </div>
+        @if (userForm.get('state')?.touched && userForm.get('state')?.invalid) {
+        <p class="text-red-500 text-sm mt-1">Seleccione un rol.</p>
+        }
+      </div>
+
+      <!-- Periodo -->
+      <div class="w-full md:col-span-2">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Periodo</label>
+
+        <div class="flex items-center border border-gray-300 rounded-lg px-3 py-2
+           focus-within:ring-2 focus-within:ring-blue-500 bg-white">
+          <!-- Ícono de calendario -->
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" viewBox="0 0 24 24"
+            fill="none">
+            <path stroke="currentColor" stroke-width="2" d="M8 7V3m8 4V3M3 11h18M5 5h14a2 2 0 0 1 2 2v14a2 2 0
+               0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z" />
+          </svg>
+
+          <!-- Campo tipo fecha -->
+          <input type="date" formControlName="period"
+            class="w-full outline-none text-gray-700 placeholder-gray-400" />
+        </div>
+
+        @if (userForm.get('period')?.touched && userForm.get('period')?.invalid) {
+        <p class="text-red-500 text-sm mt-1">
+          @if (userForm.get('createdAt')?.errors?.['required']) {
+          La fecha Periodo es obligatoria.
+          } @else if (userForm.get('createdAt')?.errors?.['futureDate']) {
+          No puedes ingresar una fecha futura.
+          }
+        </p>
+        }
+      </div>
+
+        <!-- 📎 EVIDENCIA DE PAGO (fila 4, ocupa 2 columnas) -->
+      <div class="p-6 rounded-2xl shadow-sm border transition-all duration-300 md:col-span-2"
+        [class.bg-white]="!selectedFile" [class.bg-green-50]="selectedFile" [class.border-gray-200]="!selectedFile"
+        [class.border-green-400]="selectedFile">
+        <h3 class="text-2xl font-semibold mb-4 text-gray-800 border-b pb-2 flex items-center">
+          📎 Evidencia de pago
+        </h3>
+
+        <p class="text-sm text-gray-600 mb-3">
+          Sube una <strong>captura o comprobante</strong> del pago realizado (imagen o PDF).
+        </p>
+
+        <div class="relative group">
+          <input
+          type="file"
+          id="paymentProof"
+          formControlName="file"
+          (change)="onUploadProof($event)"
+          accept="image/*,application/pdf"
+          class="block w-full text-sm text-gray-700 border border-gray-300 rounded-lg cursor-pointer
+             focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400
+             file:mr-4 file:py-2 file:px-4 file:rounded-md
+             file:border-0 file:text-sm file:font-semibold
+             file:bg-blue-600 file:text-white
+             hover:file:bg-blue-700 transition" />
+        </div>
+
+        @if (selectedFile) {
+        <div class="mt-3 flex items-center gap-2 text-sm text-green-600 font-medium animate-fade-in">
+          <span class="inline-block w-2 h-2 bg-green-500 rounded-full"></span>
+          Archivo seleccionado: {{ selectedFile.name }}
+        </div>
+        }
+      </div>
+
+      <!-- Observaciones -->
+    <div class="w-full  md:col-span-2">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Nota</label>
+
+      <div
+        class="flex border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-blue-500"
+      >
+        <!-- Ícono opcional (nota o texto) -->
+        <svg xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0 mt-1"
+            viewBox="0 0 20 20" fill="none">
+          <path fill="currentColor"
+                d="M4 4a2 2 0 0 1 2-2h6.586A2 2 0 0 1 14 2.586L17.414 6A2 2 0 0 1 18 7.414V16a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4zm2 0v12h10V8h-3a1 1 0 0 1-1-1V4H6z"/>
+        </svg>
+
+        <!-- Campo textarea -->
+        <textarea
+          formControlName="note"
+          placeholder="Escribe aquí una breve nota..."
+          rows="4"
+          maxlength="500"
+          class="w-full outline-none text-gray-700 placeholder-gray-400 bg-transparent resize-none"
+        ></textarea>
+      </div>
+
+      @if (userForm.get('note')?.touched && userForm.get('note')?.invalid) {
+        <p class="text-red-500 text-sm mt-1">
+          @if (userForm.get('note')?.errors?.['required']) {
+            Este campo es obligatorio.
+          } @else if (userForm.get('note')?.errors?.['maxlength']) {
+            Has superado el máximo de caracteres permitidos.
+          }
+        </p>
+      }
+    </div>
+
+      <!-- Botones -->
+      <div class="modal-action md:col-span-2">
+        <button class="btn btn-ghost" type="button" (click)="cerrarDialogo()">Cancelar</button>
+        <button class="btn btn-primary" type="submit" [disabled]="userForm.invalid">Crear</button>
+      </div>
+    </form>
+
+
+    @if (hasError()) {
+    <div role="alert" class="alert alert-error alert-soft animate-fadeIn fixed bottom-5 right-5 w-64">
+      <span>{{hasError()}}.</span>
+    </div>
+    }
+
   </div>
   <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
 </dialog>

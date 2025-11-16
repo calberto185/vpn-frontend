@@ -20,7 +20,7 @@ export class PaymentsService {
   user = computed(() => this._user())
 
   getPayments(user_id: string): Observable<any> {
-    return this.http.post<ResponseEntity<PaymentEntity>>(baseUrl+'/devices/'+user_id+'/get', {});
+    return this.http.post<ResponseEntity<PaymentEntity>>(baseUrl+'/payments/client/get', {});
   }
 
   doesPayments(user_id: string, data: PaymentEntity): Observable<any> {
@@ -31,19 +31,22 @@ export class PaymentsService {
     countries: any
     bank: any
     terms: any
+    global: boolean,
     payTo: number
-    total: number
+    total: number,
+    PersonalData: any
 }, file: File | null,): Observable<{ progress: number; response?: any }> {
     const formData = new FormData();
     if(file == null) throw("No hay file para cargar!.")
     formData.append('file', file);
 
     if (user_id) {
-      Object.entries(data).forEach(([key, value]) => {
-        formData.append(key, value);
-      });
+      // Object.entries(data).forEach(([key, value]) => {
+      //   formData.append(key, value);
+      // });
+      formData.append("payment", JSON.stringify(data))
     }
-    return this.http.post(baseUrl+'/payments/'+user_id+'/client/hacer-pago-inicial', formData, {
+    return this.http.post(baseUrl+'/payments/client/hacer-pago-inicial', formData, {
       reportProgress: true,
       observe: 'events',
     }).pipe(

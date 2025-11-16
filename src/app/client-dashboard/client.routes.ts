@@ -33,14 +33,14 @@ export const clientRoutes:Routes = [
         path: 'payments',
         component: PaymentsComponent
       },
-      {
-        path: 'plans',
-        component: PlansComponent
-      },
-      {
-        path: 'support',
-        component: SupportComponent
-      },
+      // {
+      //   path: 'plans',
+      //   component: PlansComponent
+      // },
+      // {
+      //   path: 'support',
+      //   component: SupportComponent
+      // },
       {
         path: '**',
         redirectTo: '/client/dashboard'

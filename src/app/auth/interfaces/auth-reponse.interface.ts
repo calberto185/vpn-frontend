@@ -6,7 +6,10 @@ export interface User {
   firstNames: string;
   role: string;
   picture: string;
-  services: PlanClientDto[];
+  // services: PlanClientDto[];
+  bloqued: string;
+  suspend: string;
+  verified: string;
 }
 export interface AuthResponse {
   user: User;

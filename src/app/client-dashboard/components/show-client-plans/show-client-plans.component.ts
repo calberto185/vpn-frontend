@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, DoCheck, inject, OnInit, signal } from '@angular/core';
 import PlanEntity from '../../interfaces/plan.interface';
 import { PlansService } from '../../services/plans/plans.service';
 
@@ -8,10 +8,10 @@ import { AuthService } from '../../../auth/services/auth.service';
 import PlanClientDto from '../../interfaces/planClient.interface';
 import { CountryEntity } from '../../interfaces/country.interface';
 import { CountriesService } from '../../services/countries/countries.service';
-import { FormsModule } from '@angular/forms';
+import { FormBuilder, FormsModule, Validators, ReactiveFormsModule } from '@angular/forms';
 import { BankAccountService } from '../../services/bankAccount/bankAccount.service';
 import bankAccountEntity from '../../interfaces/bankAccount.interface';
-import { DatePipe, DecimalPipe } from '@angular/common';
+import { DatePipe, DecimalPipe, NgClass } from '@angular/common';
 import { PaymentSummaryComponent } from "../../../shared/components/payment-summary/payment-summary.component";
 import { PaymentsService } from '../../services/payments/payments.service';
 import PaymentEntity from '../../interfaces/payment.interface';
@@ -19,14 +19,16 @@ import { TermsService } from '../../services/terms/terms.service';
 import TermsEntity from '../../interfaces/terms.interface';
 import { ContinentsService } from '../../services/continents/continents.service';
 import { ContinentEntity } from '../../interfaces/continent.interface';
+import UserEntity from '../../interfaces/user.interface';
 @Component({
   selector: 'app-show-client-plans',
-  imports: [FormsModule, DecimalPipe, DatePipe, PaymentSummaryComponent],
+  imports: [FormsModule, DecimalPipe, DatePipe, PaymentSummaryComponent, ReactiveFormsModule, NgClass],
   templateUrl: './show-client-plans.component.html',
   styleUrl: './show-client-plans.component.css'
 })
 export class ShowClientPlansComponent implements OnInit {
 
+  profile = signal<UserEntity| null>(null);
   sanitizer = inject(DomSanitizer);
 
   /** BARA DE PROCESO */
@@ -58,9 +60,13 @@ export class ShowClientPlansComponent implements OnInit {
   acceptedTerms: any = "";
   showTerms = false;
   showVoucher = signal(false);
+  showFillMissingFields = signal(false);
   selectedFile: File | null = null;
   monthsToPay = signal(1);
   totalToPay = signal(0);
+
+  selectedCountry = signal(new CountryEntity());
+  toggleDropdown = signal(false);
 
   // Seleccion Continente o Pais
   showCountries = signal(false);
@@ -74,41 +80,54 @@ export class ShowClientPlansComponent implements OnInit {
   bankAccount_RadioGroupName = 'bank-account-radio';
   selectedCountries = signal<CountryEntity[]>([]);
 
+  fb = inject(FormBuilder);
+  userMissingForm = this.fb.group({
+      country: ['', Validators.required],
+      telephone: ['', Validators.required],
+  })
+
   /** HOOKs */
   ngOnInit(): void {
-    this.fillListContinents();
-    this.fillListPlans();
+    this.fillProfile();
     this.fillListCountries();
+    this.fillListPlans();
     this.fillBankAccount();
+    this.fillListContinents();
     this.fillListTerms();
   }
   ngOnChanges() {
     if (this.selectedPlan) {
       this.SelectPlan(this.selectedPlan.id);
     }
+
   }
 
   /** LOAD Services Datas */
-  fillBankAccount() {
+   async fillProfile() {
+    this.userService.profile().subscribe(d => {
+      this.profile.set(d)
+    })
+  }
+  async fillBankAccount() {
     this.bankAccountService.getBankAccount().subscribe((resp) => {
       // console.log('bankAccountService getBankAccount: ', resp)
       this.ListBankAccount.set(resp?.data ?? []);
     });
   }
-  fillListCountries() {
+  async fillListCountries() {
     this.countryService.getAllCountries().subscribe((resp) => {
       // console.log("countryService getAllCountries: ", resp)
       this.ListCountries.set(resp.data ?? [])
-      this.selectedCountries.set(this.ListCountries().filter((p) => !!p.isActive))
+      this.selectedCountries.set(this.ListCountries().filter((p) => !!p.isActive && !!p.visible))
     })
   }
-  fillListPlans() {
+  async fillListPlans() {
     this.plansService.getPlans().subscribe((resp) => {
       // console.log("fillListPlans getPlans: ", resp)
       this.ListPlans.set(resp.data ?? []);
     })
   }
-  fillListTerms() {
+  async fillListTerms() {
     this.termsService.get().subscribe((resp) => {
       const data = resp.data ?? []
       if(data.length > 0) {
@@ -118,10 +137,17 @@ export class ShowClientPlansComponent implements OnInit {
       }
     })
   }
-  fillListContinents() {
+  async fillListContinents() {
     this.continentsService.get().subscribe((resp) => {
-      const continets = (resp.data ?? []).filter(c => !!c.visible);
+      const continets = (resp.data ?? []).filter(c => !!c.isActive && !!c.visible);
       this.ListContinents.set(continets);
+      if(this.ListContinents().length > 0) {
+        const [firstContinent] = this.ListContinents();
+        console.log("firstContinent: ", firstContinent)
+        setTimeout(() => {
+          this.seleccionarContinente(firstContinent);
+        }, 1000);
+      }
     })
   }
 
@@ -226,17 +252,32 @@ export class ShowClientPlansComponent implements OnInit {
     console.log("selectedFile: ", this.selectedFile)
     console.log("this.monthsToPay: ", this.monthsToPay())
     console.log("this.totalToPay: ", this.totalToPay())
+     console.log("this.userMissingForm.invalid: ", this.userMissingForm.invalid)
+    if(!!this.userMissingForm.invalid && !this.profile()?.country.id  && !this.profile()?.telephone.length ) {
+      this.showFillMissingFields.set(true)
+      return;
+    }
     const user_id = this.authService.user()?.id ?? "";
     const countries_ids = this.selectedCountries().map(p => p.id.toString());
     console.log("countries_ids: ", countries_ids)
-    this.paymentService.doesPaymentsInitial(user_id, {
+    const dataToSend = {
       plan: this.selectedPlan.id,
       countries: JSON.stringify(countries_ids),
       bank: this.selectedBank.id,
       terms: this.Terms().id,
       payTo: this.monthsToPay(),
-      total: this.totalToPay()
-    }, this.selectedFile).subscribe({
+      total: this.totalToPay(),
+      global: true,
+      PersonalData: {
+        country: this.userMissingForm.get("country")?.value,
+        telephone: {
+          number: this.userMissingForm.get("telephone")?.value,
+          country: this.selectedCountry().id
+        },
+      }
+    }
+    console.log("dataToSend: ", dataToSend)
+    this.paymentService.doesPaymentsInitial(user_id, dataToSend, this.selectedFile).subscribe({
       next: ({ progress, response }) => {
         console.log("progress: ", progress)
         // this.progress = progress;
@@ -247,10 +288,20 @@ export class ShowClientPlansComponent implements OnInit {
       },
       error: (err) => console.error('Error:', err),
     });
+    this.userService.getMe().subscribe(d => {})
+
+          const dialog = document.getElementById('view_select_plans') as HTMLDialogElement;
+          console.log("dialog: ", dialog)
+          dialog?.close();
+
+    window.location.reload();
     //  const dialog = document.getElementById('view_select_plans') as HTMLDialogElement;
     //   console.log("dialog: ", dialog)
     //   // dialog?.close();
     //   this.showVoucher.set(true);
+
+
+
   }
   onUploadProof(event: Event) {
     console.log("event: ", event)
@@ -264,7 +315,7 @@ export class ShowClientPlansComponent implements OnInit {
 
 
 
-  seleccionarContinente(continente: ContinentEntity) {
+  seleccionarContinente(continente: ContinentEntity | any) {
     console.log("continente: ", continente)
     this.SelectedContinent().set(continente);
     const data = this.ListContinents().map(c => {
@@ -277,7 +328,8 @@ export class ShowClientPlansComponent implements OnInit {
     });
     this.ListContinents.set(data);
 
-    const PlanAccording = this.ListPlans().filter((p: PlanEntity) => p.service.country.continent.id == continente.id && p.service.country.countryCode.toLocaleLowerCase() == "pe" && continente.name.toLocaleLowerCase() == "america");
+    // const PlanAccording = this.ListPlans().filter((p: PlanEntity) => p.service.country.continent.id == continente.id && p.service.country.countryCode.toLocaleLowerCase() == "pe" && continente.name.toLocaleLowerCase() == "america");
+    const PlanAccording = this.ListPlans().filter((p: PlanEntity) => p.global === true && continente.id === p.country.continent.id);
     console.log("PlanAccording: ", PlanAccording)
     this.ShowListPlans.set(PlanAccording);
   }
@@ -287,5 +339,17 @@ export class ShowClientPlansComponent implements OnInit {
     this.ListCountries().forEach(c => (c.isActive = false))
     this.SelectedContinent().set(new ContinentEntity())
     this.showCountries.set(!this.showCountries())
+    this.ShowListPlans.set([]);
   }
+  onSubmitMissing() {
+
+  }
+
+    changeCountry(selected: CountryEntity | any) {
+      this.selectedCountry.set(selected);
+      this.toggleDropdown.set(false)
+    }
+    closeComplete() {
+      this.showFillMissingFields.set(true)
+    }
 }

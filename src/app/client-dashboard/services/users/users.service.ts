@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
-import { catchError, map, Observable, of, tap } from 'rxjs';
+import { BehaviorSubject, catchError, map, Observable, of, tap } from 'rxjs';
 import { rxResource } from '@angular/core/rxjs-interop';
 import UserEntity from '../../interfaces/user.interface';
 import { ResponseEntity } from '../../../shared/interfaces/reponse.interface';
@@ -11,12 +11,21 @@ const baseUrl = environment.apiUrl
 
 @Injectable({providedIn: 'root'})
 export class UsersService {
-  private _user = signal<UserEntity|null>(null);
 
   private http = inject(HttpClient);
 
-  user = computed(() => this._user())
+  private loadingSubject = new BehaviorSubject<UserEntity | null>(new UserEntity());
 
+  profile(): Observable<any> {
+    return this.loadingSubject.asObservable()
+  }
+  getMe(): Observable<any> {
+    return this.http.post<ResponseEntity<UserEntity>>(baseUrl+'/auth/profile/me', {}).pipe(
+      tap((resp: any) => {
+        this.loadingSubject.next(resp?.data);
+      }),
+    );
+  }
   getUsers(): Observable<any> {
     return this.http.post<ResponseEntity<UserEntity>>(baseUrl+'/admin/consulta', {});
   }

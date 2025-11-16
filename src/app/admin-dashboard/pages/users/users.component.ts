@@ -142,6 +142,7 @@ export class UsersComponent implements OnInit{
       _serversEntity.server_country = exist_Servers.country.countryName;
       _serversEntity.server_id = exist_Servers.id;
       _serversEntity.server_name = exist_Servers.name;
+      _serversEntity.visible = exist_Servers.visible;
     }
 
     const exist_plan = this.ListPlan().find(f => f.id == planes);

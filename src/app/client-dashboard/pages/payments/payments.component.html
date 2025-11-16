@@ -108,90 +108,89 @@
       <thead>
         <tr>
           <th class="w-8"><input type="checkbox" class="checkbox checkbox-xs" aria-label="Seleccionar todas" /></th>
-          <th>Pago</th>
-          <th class="hidden lg:table-cell">Usuario</th>
-          <th class="hidden xl:table-cell">Dispositivo</th>
+          <th>Operación</th>
+          <!-- <th class="hidden lg:table-cell">Usuario</th> -->
+          <th class="hidden xl:table-cell">Servico</th>
           <th>Monto</th>
           <th>Estado</th>
-          <th class="hidden 2xl:table-cell">Periodo</th>
-          <th class="hidden 2xl:table-cell">Creado</th>
+          <!-- <th class="hidden 2xl:table-cell">Periodo</th> -->
+          <!-- <th class="hidden 2xl:table-cell">Creado</th> -->
           <th class="text-right w-48">Acciones</th>
         </tr>
       </thead>
       <tbody>
         <!-- Fila ejemplo (desde tu modelo) -->
-        <tr class="hover">
-          <td><input type="checkbox" class="checkbox checkbox-xs" aria-label="Seleccionar pago p-0001" /></td>
+         @for (d of ListPayments(); track d.id) {
+          <tr class="hover">
 
-          <td>
-            <div class="flex items-center gap-3">
-              <div class="avatar">
-                <div class="w-10 h-10 rounded-xl border overflow-hidden bg-base-200">
-                  <img src="https://images.unsplash.com/photo-1516426122078-c23e76319801?q=80&w=120&fit=crop" alt="Evidencia" />
+            <td><input type="checkbox" class="checkbox checkbox-xs" aria-label="Seleccionar pago p-0001" /></td>
+
+            <td>
+              <div class="flex items-center gap-3">
+                <div>
+                  <div class="font-medium leading-tight">{{d.kind}}-{{d.period}}</div>
+                  <div class="text-[11px] opacity-70 break-all">{{d.createdAt}}</div>
                 </div>
               </div>
-              <div>
-                <div class="font-medium leading-tight">p-0001</div>
-                <div class="text-[11px] opacity-70 break-all">user_id: 3ec951c0-491f-4078-beff-4f658b8ea7a1</div>
+            </td>
+
+            <td class="hidden xl:table-cell">
+              <div class="leading-tight">
+                <div class="font-normal">{{d.plan.service_sortName}} {{d.plan.plan_title_prefix}} {{d.plan.plan_title_name}} {{d.plan.plan_title_suffix }}</div>
+                <div class="text-[11px] opacity-70">{{d.plan.currencySymbol}}{{d.plan.price}}/{{d.plan.kind}}</div>
+                <!-- <div class="text-[11px] opacity-70">{{d.}}</div> -->
               </div>
-            </div>
-          </td>
+            </td>
 
-          <td class="hidden lg:table-cell">
-            <div class="leading-tight">
-              <div class="font-normal capitalize">carlos villar</div>
-              <div class="text-[11px] opacity-70 break-all">client: 9876-****-321</div>
-            </div>
-          </td>
+            <td>
+              <div class="tabular-nums font-medium">{{d.plan.currencySymbol}}{{d.amount}}</div>
+              <div class="text-[11px] opacity-70">{{d.amount/d.plan.price}} {{d.plan.kind}}</div>
+              <!-- <div class="text-[11px] opacity-70">{{d.methodPay.name}}</div>
+              <div class="text-[11px] opacity-70">{{d.method}}</div> -->
+            </td>
 
-          <td class="hidden xl:table-cell">
-            <div class="leading-tight">
-              <div class="font-normal">dev-0001</div>
-              <div class="text-[11px] opacity-70">Pixel 7</div>
-            </div>
-          </td>
+            <td>
+              <span class="badge badge-warning">{{d.state}}</span>
+            </td>
 
-          <td>
-            <div class="tabular-nums font-medium">USD 12.00</div>
-            <div class="text-[11px] opacity-70">coin: USD</div>
-          </td>
+            <!-- <td>
+              <div class="tabular-nums font-medium">{{d.createdAt}}</div>
+              <div class="text-[11px] opacity-70">Created: {{d.createdAt}}</div>
+            </td> -->
+            <!-- <td class="hidden 2xl:table-cell">Mensual</td>
+            <td class="hidden 2xl:table-cell">08 Ago 2025 · 22:30</td> -->
 
-          <td>
-            <span class="badge badge-warning">Pendiente</span>
-          </td>
-
-          <td class="hidden 2xl:table-cell">Mensual</td>
-          <td class="hidden 2xl:table-cell">08 Ago 2025 · 22:30</td>
-
-          <td class="text-right">
-            <div class="flex items-center justify-end gap-1.5">
-              <div class="dropdown dropdown-end">
-                <button class="btn btn-ghost btn-xs">Revisar</button>
-                <ul class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-44 z-[60]">
-                  <li><a onclick="document.getElementById('view_payment')?.showModal()">Ver</a></li>
-                  <li><a onclick="document.getElementById('verify_payment')?.showModal()">Marcar verificando</a></li>
-                  <li><a onclick="document.getElementById('accept_payment')?.showModal()">Aceptar</a></li>
-                  <li><a onclick="document.getElementById('refund_payment')?.showModal()">Devolver</a></li>
-                </ul>
+            <td class="text-right">
+              <div class="flex items-center justify-end gap-1.5">
+                <div class="dropdown dropdown-end">
+                  <button class="btn btn-ghost btn-xs">Revisar</button>
+                  <ul class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-44 z-[60]">
+                    <li><a onclick="document.getElementById('view_payment')?.showModal()">Ver</a></li>
+                    <li><a onclick="document.getElementById('verify_payment')?.showModal()">Marcar verificando</a></li>
+                    <li><a onclick="document.getElementById('accept_payment')?.showModal()">Aceptar</a></li>
+                    <li><a onclick="document.getElementById('refund_payment')?.showModal()">Devolver</a></li>
+                  </ul>
+                </div>
+                <button class="btn btn-ghost btn-xs" type="button"
+                        onclick="document.getElementById('edit_payment')?.showModal()">
+                  <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
+                      viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
+                  </svg>
+                </button>
+                <button class="btn btn-ghost btn-xs text-error" type="button"
+                        onclick="document.getElementById('delete_payment')?.showModal()">
+                  <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
+                      viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path d="M3 6h18"/><path d="M8 6v14a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V6"/>
+                    <path d="M10 11v6M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
+                  </svg>
+                </button>
               </div>
-              <button class="btn btn-ghost btn-xs" type="button"
-                      onclick="document.getElementById('edit_payment')?.showModal()">
-                <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
-                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
-                </svg>
-              </button>
-              <button class="btn btn-ghost btn-xs text-error" type="button"
-                      onclick="document.getElementById('delete_payment')?.showModal()">
-                <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
-                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path d="M3 6h18"/><path d="M8 6v14a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V6"/>
-                  <path d="M10 11v6M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
-                </svg>
-              </button>
-            </div>
-          </td>
-        </tr>
+            </td>
+
+          </tr>
+         }
         <!-- /fila ejemplo -->
       </tbody>
     </table>

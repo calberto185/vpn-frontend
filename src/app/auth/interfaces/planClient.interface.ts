@@ -1,4 +1,5 @@
 import PlanClientServerDto from "./planClientServer.interface";
+import {CountryEntity} from "./country.interface";
 
 class PlanClientDto {
   service_id = "";
@@ -17,6 +18,8 @@ class PlanClientDto {
   kind = "";
   active = true;
   visible = true;
+  global = false;
+  country = new CountryEntity();
   servers: PlanClientServerDto[] = []; // new planClientServer
   startedAt = new Date();
   endedAt = null;
@@ -38,6 +41,8 @@ class PlanClientDto {
     kind,
     active,
     visible,
+    global,
+    country,
     servers,
     startedAt,
     endedAt,
@@ -58,6 +63,8 @@ class PlanClientDto {
     this.kind = kind ?? this.kind;
     this.active = active ?? this.active;
     this.visible = visible ?? this.visible;
+    this.global = global ?? this.global;
+    this.country = country ?? this.country;
     this.servers = servers ?? this.servers;
     this.startedAt = startedAt ?? this.startedAt;
     this.endedAt = endedAt ?? this.endedAt;

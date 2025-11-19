@@ -1,142 +1,231 @@
-
-      <!-- BREADCRUMB + TITULAR -->
-      <section class="container mx-auto max-w-7xl px-2 md:px-4">
-        <div class="breadcrumbs text-sm pt-2"><ul><li><a>Panel</a></li><li aria-current="page">Dashboard</li></ul></div>
-        <div class="mt-2 flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">Resumen global</h1>
-            <p class="text-base-content/70">Estado de dispositivos, pagos.</p>
-          </div>
-          <!-- <div class="flex items-center gap-2">
+<!-- BREADCRUMB + TITULAR -->
+<section class="container mx-auto max-w-7xl px-2 md:px-4">
+  <div class="breadcrumbs text-sm pt-2">
+    <ul>
+      <li><a>Panel</a></li>
+      <li aria-current="page">Dashboard</li>
+    </ul>
+  </div>
+  <div class="mt-2 flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">Resumen global</h1>
+      <p class="text-base-content/70">Estado de servicios, pagos y actividad.</p>
+    </div>
+    <!-- <div class="flex items-center gap-2">
             <a href="#/dashboard/users" class="btn btn-outline">Ir a Usuarios</a>
             <a href="#/dashboard/servers" class="btn btn-outline">Ir a Servidores</a>
             <a href="#/dashboard/payments" class="btn btn-outline">Ir a Pagos</a>
           </div> -->
+  </div>
+</section>
+
+<!-- TABLAS RESUMEN -->
+<!-- <section class="container mx-auto max-w-7xl px-2 md:px-4 mt-4 grid grid-cols-1 xl:grid-cols-2 gap-3">
+  @for(d of this.profile().services; track d.id) {
+  <div class="card bg-base-100 border shadow-sm">
+    <div class="card-body">
+      <div class="flex items-center justify-between">
+        <h3 class="card-title text-base">Dispositivos</h3>
+        <span class="badge">876 activos</span>
+        <button class="btn btn-primary btn-sm" onclick="document.getElementById('add_user')?.showModal()">
+          <svg class="h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+            stroke="currentColor" stroke-width="2">
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+          Agregar
+        </button>
+      </div>
+      <table class="table table-xs">
+        <thead>
+          <tr>
+            <th>Usuario</th>
+            <th>Device</th>
+            <th class="text-right">Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Ana</td>
+            <td>iPhone 14</td>
+            <td class="text-right"><span class="badge badge-success">OK</span></td>
+          </tr>
+          <tr>
+            <td>Luis</td>
+            <td>MacBook</td>
+            <td class="text-right"><span class="badge">Suspend</span></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="card-actions justify-end">
+        <a class="btn btn-ghost btn-sm" href="#/dashboard/devices">Ver dispositivos</a>
+      </div>
+    </div>
+  </div>
+  }
+</section> -->
+<section
+  class="container mx-auto max-w-7xl px-3 md:px-6 mt-6
+  grid grid-cols-1 lg:grid-cols-2 gap-6"
+>
+
+  @for (plan of this.profile().services; track plan.plan_id) {
+
+  <div
+    class="
+      bg-white border border-gray-200 shadow-[0_4px_14px_rgba(0,0,0,0.06)]
+      rounded-3xl p-7 hover:shadow-[0_8px_24px_rgba(0,0,0,0.12)] transition
+      {{ plan.service_sortName === 'VPN' ? 'lg:col-span-2' : '' }}
+    "
+  >
+
+    <!-- Encabezado -->
+    <div class="flex items-start justify-between mb-2">
+      <div>
+        <h3 class="text-xl font-semibold text-neutral-900 leading-tight">
+          {{ plan.service_sortName }} ·
+          {{ plan.plan_title_prefix }} {{ plan.plan_title_name }}
+        </h3>
+
+        <span class="text-neutral-500 text-sm">
+          {{ plan.plan_title_suffix }}
+        </span>
+      </div>
+
+      <div class="flex flex-col items-end gap-1">
+        <span class="text-xs px-3 py-1 rounded-full bg-blue-100 text-blue-700 font-medium">
+          Pago los <span class="text-blue-600 font-bold text-lg">
+            {{ plan.startedAt | date:'dd' }}
+          </span>
+          de cada {{ plan.kind }}
+        </span>
+
+        <span
+          class="text-xs px-3 py-1 rounded-full
+          {{ plan.active ? 'bg-green-100 text-green-700'
+                         : 'bg-red-100 text-red-700' }}"
+        >
+          {{ plan.active ? 'Activo' : 'Inactivo' }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Precio -->
+    <div class="mt-4">
+      <span class="text-4xl font-bold text-neutral-900">
+        {{ plan.currencySymbol }}{{ plan.price }}
+      </span>
+      <span class="text-sm text-neutral-500">/ {{ plan.kind }}</span>
+    </div>
+
+  </div>
+
+  }
+
+</section>
+
+
+
+
+<!-- SALUD & MINI GRÁFICAS -->
+<!-- <section class="container mx-auto max-w-7xl px-2 md:px-4 mt-4 grid grid-cols-1 lg:grid-cols-1 gap-3">
+  <div class="card bg-base-100 border shadow-sm">
+    <div class="card-body">
+      <div class="flex items-center justify-between">
+        <h2 class="card-title text-base">Tráfico (Gb · 24h)</h2>
+        <span class="badge">+8%</span>
+      </div>
+      <div class="mt-2">
+        <svg viewBox="0 0 100 40" class="w-full h-24">
+          <defs>
+            <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="currentColor" stop-opacity="0.35" />
+              <stop offset="100%" stop-color="currentColor" stop-opacity="0" />
+            </linearGradient>
+          </defs>
+          <path d="M0,30 L10,28 L20,25 L30,24 L40,20 L50,18 L60,16 L70,14 L80,17 L90,15 L100,12 L100,40 L0,40 Z"
+            fill="url(#g1)"></path>
+          <polyline fill="none" stroke="currentColor" stroke-width="2"
+            points="0,30 10,28 20,25 30,24 40,20 50,18 60,16 70,14 80,17 90,15 100,12"></polyline>
+        </svg>
+      </div>
+      <p class="text-xs opacity-70">Pico 12:00 · 380 Mb/s</p>
+    </div>
+  </div>
+</section> -->
+
+<!-- TABLAS RESUMEN -->
+<section class="container mx-auto max-w-7xl px-2 md:px-4 mt-4 grid grid-cols-1 gap-3">
+
+  <div class="bg-white border rounded-xl shadow-sm">
+    <div class="p-4 pb-2 flex items-center justify-between">
+      <h3 class="font-semibold">Actividad reciente</h3>
+      <span class="badge bg-blue-100 text-blue-700">Sesión actual</span>
+    </div>
+
+    @for (session of this.ListSessions(); track session.id) {
+
+    <div class="border-t px-4 py-3 text-sm">
+
+      <!-- IP -->
+      <div class="flex items-center justify-between mb-2">
+        <div>
+          <span class="font-medium">IP:</span>
+          <span class="opacity-70 ml-1">{{ session.ip }}</span>
         </div>
-      </section>
 
- <!-- TABLAS RESUMEN -->
-      <section class="container mx-auto max-w-7xl px-2 md:px-4 mt-4 grid grid-cols-1 xl:grid-cols-2 gap-3">
-         <!-- Dispositivos -->
-        <div class="card bg-base-100 border shadow-sm">
-          <div class="card-body">
-            <div class="flex items-center justify-between">
-              <h3 class="card-title text-base">Dispositivos</h3>
-              <span class="badge">876 activos</span>
-            <button class="btn btn-primary btn-sm" onclick="document.getElementById('add_user')?.showModal()">
-              <svg class="h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-              Agregar
-            </button>
-            </div>
-            <table class="table table-xs">
-              <thead><tr><th>Usuario</th><th>Device</th><th class="text-right">Estado</th></tr></thead>
-              <tbody>
-                <tr><td>Ana</td><td>iPhone 14</td><td class="text-right"><span class="badge badge-success">OK</span></td></tr>
-                <tr><td>Luis</td><td>MacBook</td><td class="text-right"><span class="badge">Suspend</span></td></tr>
-              </tbody>
-            </table>
-            <div class="card-actions justify-end">
-              <a class="btn btn-ghost btn-sm" href="#/dashboard/devices">Ver dispositivos</a>
-            </div>
-          </div>
-        </div>
-        <!-- Pagos -->
-        <div class="card bg-base-100 border shadow-sm">
-          <div class="card-body">
-            <div class="flex items-center justify-between">
-              <h3 class="card-title text-base">Pagos</h3>
-              <span class="badge badge-warning">Pend: 4</span>
-            </div>
-            <table class="table table-xs">
-              <thead><tr><th>ID</th><th>Monto</th><th class="text-right">Estado</th></tr></thead>
-              <tbody>
-                <tr><td>#P-1025</td><td>$24</td><td class="text-right"><span class="badge badge-warning">Pendiente</span></td></tr>
-                <tr><td>#P-1026</td><td>$12</td><td class="text-right"><span class="badge badge-success">Aceptado</span></td></tr>
-              </tbody>
-            </table>
-            <div class="card-actions justify-end">
-              <a class="btn btn-ghost btn-sm" href="#/dashboard/payments">Ver pagos</a>
-            </div>
-          </div>
-        </div>
-      </section>
+        <span class="badge bg-green-100 text-green-700">
+          Conectado
+        </span>
+      </div>
 
-      <!-- SALUD & MINI GRÁFICAS -->
-      <section class="container mx-auto max-w-7xl px-2 md:px-4 mt-4 grid grid-cols-1 lg:grid-cols-1 gap-3">
-
-
-        <!-- Tráfico -->
-        <div class="card bg-base-100 border shadow-sm">
-          <div class="card-body">
-            <div class="flex items-center justify-between">
-              <h2 class="card-title text-base">Tráfico (Gb · 24h)</h2>
-              <span class="badge">+8%</span>
-            </div>
-            <div class="mt-2">
-              <svg viewBox="0 0 100 40" class="w-full h-24">
-                <defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="currentColor" stop-opacity="0.35"/><stop offset="100%" stop-color="currentColor" stop-opacity="0"/></linearGradient></defs>
-                <path d="M0,30 L10,28 L20,25 L30,24 L40,20 L50,18 L60,16 L70,14 L80,17 L90,15 L100,12 L100,40 L0,40 Z" fill="url(#g1)"></path>
-                <polyline fill="none" stroke="currentColor" stroke-width="2" points="0,30 10,28 20,25 30,24 40,20 50,18 60,16 70,14 80,17 90,15 100,12"></polyline>
-              </svg>
-            </div>
-            <p class="text-xs opacity-70">Pico 12:00 · 380 Mb/s</p>
-          </div>
+      <!-- Inicio de sesión -->
+      <div class="flex items-center justify-between mb-2">
+        <div>
+          <span class="font-medium">Inicio de sesión:</span>
+          <span class="opacity-70 ml-1">
+            {{ session.createdAt | date:'dd/MM/yyyy HH:mm' }}
+          </span>
         </div>
 
-      </section>
+        <span class="text-xs opacity-60">
+          token emitido
+        </span>
+      </div>
 
-
-
-
-        <!-- TABLAS RESUMEN -->
-      <section class="container mx-auto max-w-7xl px-2 md:px-4 mt-4 grid grid-cols-1 xl:grid-cols-1 gap-3">
-        <!-- Últimas operaciones (Pagos / Certs / Dispositivos) -->
-        <div class="bg-base-100 border rounded-xl shadow-sm overflow-x-auto">
-          <div class="p-4 pb-2 flex items-center justify-between">
-            <h3 class="font-semibold">Actividad reciente</h3>
-            <span class="badge">Últimas 24h</span>
-          </div>
-          <ul class="menu p-2">
-            <li>
-              <div class="flex items-center justify-between gap-2">
-                <div class="flex items-center gap-3">
-                  <span class="badge badge-success">Pago</span>
-                  <span>#P-1026 aceptado · $12</span>
-                </div>
-                <span class="text-xs opacity-70">hace 12m</span>
-              </div>
-            </li>
-            <li>
-              <div class="flex items-center justify-between gap-2">
-                <div class="flex items-center gap-3">
-                  <span class="badge badge-info">Cert</span>
-                  <span>Emitido c-0001 (personal)</span>
-                </div>
-                <span class="text-xs opacity-70">hace 28m</span>
-              </div>
-            </li>
-            <li>
-              <div class="flex items-center justify-between gap-2">
-                <div class="flex items-center gap-3">
-                  <span class="badge badge-warning">Srv</span>
-                  <span>vpn-eu-1 actualizado</span>
-                </div>
-                <span class="text-xs opacity-70">hace 1h</span>
-              </div>
-            </li>
-            <li>
-              <div class="flex items-center justify-between gap-2">
-                <div class="flex items-center gap-3">
-                  <span class="badge">Dev</span>
-                  <span>Nuevo dispositivo para Ana</span>
-                </div>
-                <span class="text-xs opacity-70">hace 2h</span>
-              </div>
-            </li>
-          </ul>
+      <!-- Expiración -->
+      <div class="flex items-center justify-between mb-2">
+        <div>
+          <span class="font-medium">Expira:</span>
+          <span class="opacity-70 ml-1">
+            {{ session.expiresAt | date:'dd/MM/yyyy HH:mm' }}
+          </span>
         </div>
-      </section>
 
+        <span class="badge"
+          [ngClass]="session.expiresAt > now
+            ? 'bg-green-100 text-green-700'
+            : 'bg-red-100 text-red-700'">
+
+          {{ session.expiresAt > now ? 'Vigente' : 'Expirado' }}
+        </span>
+
+      </div>
+
+      <!-- User Agent -->
+      <div class="mt-3">
+        <span class="font-medium">Navegador / Dispositivo</span>
+        <p class="opacity-70 text-xs mt-1 break-all">
+          {{ session.userAgent }}
+        </p>
+      </div>
+
+    </div>
+
+    }
+
+  </div>
+
+</section>
 
 
 
@@ -151,8 +240,10 @@
     <div class="grid gap-3 md:grid-cols-2">
       <label class="input input-bordered w-full"><input type="text" placeholder="Nombres" class="w-full" /></label>
       <label class="input input-bordered w-full"><input type="text" placeholder="Apellidos" class="w-full" /></label>
-      <label class="input input-bordered w-full md:col-span-2"><input type="email" placeholder="Email" class="w-full" /></label>
-      <label class="input input-bordered w-full md:col-span-2"><input type="password" placeholder="Contraseña temporal" class="w-full" /></label>
+      <label class="input input-bordered w-full md:col-span-2"><input type="email" placeholder="Email"
+          class="w-full" /></label>
+      <label class="input input-bordered w-full md:col-span-2"><input type="password" placeholder="Contraseña temporal"
+          class="w-full" /></label>
       <label class="select select-bordered w-full md:col-span-2">
         <select class="w-full" aria-label="Rol">
           <option selected>standar</option>
@@ -176,11 +267,14 @@
     <p class="text-sm opacity-70 mb-3">Registra un servidor SSH para OpenVPN/WireGuard.</p>
     <div class="grid gap-3 md:grid-cols-2">
       <label class="input input-bordered w-full"><input type="text" placeholder="Nombre" class="w-full" /></label>
-      <label class="input input-bordered w-full"><input type="text" placeholder="Ubicación (región)" class="w-full" /></label>
+      <label class="input input-bordered w-full"><input type="text" placeholder="Ubicación (región)"
+          class="w-full" /></label>
       <label class="input input-bordered w-full"><input type="text" placeholder="IP" class="w-full" /></label>
-      <label class="input input-bordered w-full"><input type="number" placeholder="Puerto SSH (22)" value="22" class="w-full" /></label>
+      <label class="input input-bordered w-full"><input type="number" placeholder="Puerto SSH (22)" value="22"
+          class="w-full" /></label>
       <label class="input input-bordered w-full"><input type="text" placeholder="Usuario SSH" class="w-full" /></label>
-      <label class="input input-bordered w-full md:col-span-2"><input type="text" placeholder="Ruta a llave privada" class="w-full" /></label>
+      <label class="input input-bordered w-full md:col-span-2"><input type="text" placeholder="Ruta a llave privada"
+          class="w-full" /></label>
       <label class="label cursor-pointer justify-start gap-3 md:col-span-2">
         <input type="checkbox" class="toggle toggle-success" checked />
         <span>Activo</span>

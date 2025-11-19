@@ -6,6 +6,7 @@ import UserEntity from '../../interfaces/user.interface';
 import { ResponseEntity } from '../../../shared/interfaces/reponse.interface';
 type AuthStatus = 'checking' | 'authenticated' | 'not-authenticated';
 import { environment } from '../../../../environments/environment'
+import PlanClientDto from '../../interfaces/planClient.interface';
 const baseUrl = environment.apiUrl
 
 @Injectable({providedIn: 'root'})
@@ -22,6 +23,10 @@ export class UsersService {
 
   register(data: UserEntity): Observable<any> {
     return this.http.post<ResponseEntity<UserEntity>>(baseUrl+'/admin/registrar', data);
+  }
+
+  updateServices(data: {user_id: string, services: Array<PlanClientDto>}): Observable<any> {
+    return this.http.post<ResponseEntity<UserEntity>>(baseUrl+'/admin/clients/update_services', data);
   }
 
   private handlerSuccess(resp: any) {

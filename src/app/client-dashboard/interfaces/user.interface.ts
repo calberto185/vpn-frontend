@@ -22,7 +22,7 @@ class UserEntity {
   suspendAt: Date = new Date(1);
   onService: boolean = false;
   onServiceAt: Date = new Date(1);
-  services: any = [];
+  services: PlanClientDto[] = [];
   observations: string = "";
   // devices = [];
   // devicesLimit: number = 1;

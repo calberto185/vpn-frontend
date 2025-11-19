@@ -14,10 +14,11 @@ import ServicesEntity from '../../interfaces/services.interface';
 import { ServicesService } from '../../services/services/services.service';
 import PlanClientServerDto from '../../interfaces/planClientServer.interface';
 import AdminTelephoneDto from '../../interfaces/AdminTelephone.interface';
+import { PrintservicesclientPipe } from '../../../shared/pipes/printservicesclient.pipe';
 
 @Component({
   selector: 'app-users',
-  imports: [NgClass, DatePipe, ReactiveFormsModule],
+  imports: [NgClass, DatePipe, ReactiveFormsModule, PrintservicesclientPipe],
   templateUrl: './users.component.html',
   styleUrl: './users.component.css'
 })
@@ -30,6 +31,7 @@ export class UsersComponent implements OnInit{
   ListServers = signal<serversEntity[]>([]);
 
   selectedCountry = signal(new CountryEntity());
+  selectedUser = signal<UserEntity>(new UserEntity());
   toggleDropdown = signal(false);
 
   countryService = inject(CountriesService);
@@ -51,6 +53,13 @@ export class UsersComponent implements OnInit{
     country: ['', [Validators.required ]],
     email: ['', [Validators.required, Validators.email ]],
     password: ['', [Validators.required, Validators.minLength(8) ]],
+    services: [''],
+    planes: [''],
+    servers: [''],
+    createdAt: [''],
+    observations: ['']
+  })
+  userServiceForm = this.fb.group({
     services: [''],
     planes: [''],
     servers: [''],
@@ -97,7 +106,7 @@ export class UsersComponent implements OnInit{
       this.ListServices.set(resp.data ?? [])
     })
   }
-    onSubmit() {
+  onSubmit() {
     if(this.userForm.invalid) {
       this.hasError.set("Formulario invalido");
       setTimeout(() => {
@@ -189,8 +198,96 @@ export class UsersComponent implements OnInit{
     this.cerrarDialogo();
     this.userForm.reset()
   }
+  onSubmitAssignService() {
+    if(this.userServiceForm.invalid) {
+      this.hasError.set("Formulario invalido");
+      setTimeout(() => {
+        this.hasError.set("");
+      }, 3000);
+      return;
+    }
+    const {services, planes, servers, createdAt} = this.userServiceForm.value;
+
+    // const dataToSave = this.selectedUser;
+    // dataToSave.telephone = data.phone ? [data.phone] : []
+
+
+
+    const exist_Service = this.ListServices().find(f => f.id == services);
+    const servicesEntity = new ServicesEntity();
+    if(!!exist_Service) {
+      servicesEntity.set(exist_Service);
+    } else {
+      return;
+    }
+
+     const exist_Servers = this.ListServers().find(f => f.id == servers);
+    const _serversEntity = new PlanClientServerDto();
+    if(!!exist_Servers) {
+      _serversEntity.access_permmit = exist_Servers.active;
+      _serversEntity.addAt = new Date();
+      // _serversEntity.plan_id = exist_plan.id;
+      _serversEntity.server_country = exist_Servers.country.countryName;
+      _serversEntity.server_id = exist_Servers.id;
+      _serversEntity.server_name = exist_Servers.name;
+      _serversEntity.visible = exist_Servers.visible;
+    }
+
+    const exist_plan = this.ListPlan().find(f => f.id == planes);
+    const planClient = new PlanClientDto();
+    if(!!exist_plan) {
+      planClient.service_id = servicesEntity.id;
+      planClient.service_longName = servicesEntity.longName;
+      planClient.service_sortName = servicesEntity.sortName;
+      planClient.plan_id = exist_plan.id;
+      planClient.plan_title_name = exist_plan.title_name;
+      planClient.plan_title_prefix = exist_plan.title_prefix;
+      planClient.plan_title_suffix = exist_plan.title_suffix;
+      planClient.price = exist_plan.price;
+      planClient.currencyCode = exist_plan.currencyCode;
+      planClient.currencyFormat = exist_plan.currencyFormat;
+      planClient.currencyName = exist_plan.currencyName;
+      planClient.currencySymbol = exist_plan.currencySymbol;
+      planClient.kind = exist_plan.kind;
+      planClient.limitDevices = exist_plan.limitDevices;
+      planClient.startedAt = new Date( createdAt || new Date());
+      planClient.active = exist_plan.active;
+      planClient.endedAt = null;
+      if(!!_serversEntity.server_id) {
+        _serversEntity.plan_id = exist_plan.id;
+      planClient.servers = [_serversEntity];
+      }
+    } else {
+      return
+    }
+    // this.selectedUser().services = [ planClient ];
+
+    // console.log("dataToSave.get(): ",  this.selectedUser())
+
+    this.userService.updateServices({user_id: this.selectedUser().id, services: [ planClient ]}).subscribe((resp) => {
+        if(resp?.error?.message) {
+          this.hasError.set(resp?.error?.message)
+          setTimeout(() => {
+          this.hasError.set("")
+          }, 4000);
+          return;
+        }
+
+      this.fillListCountries();
+      this.fillListUsers();
+    });
+    this.cerrarDialogoAssignService();
+    this.userServiceForm.reset()
+    this.selectedUser.set(new UserEntity());
+  }
 cerrarDialogo() {
   const dialogo: any = document.getElementById('add_user');
+  if (dialogo && dialogo.open) {
+    dialogo.close();
+  }
+}
+cerrarDialogoAssignService() {
+  const dialogo: any = document.getElementById('add_service_user');
   if (dialogo && dialogo.open) {
     dialogo.close();
   }
@@ -206,5 +303,13 @@ getServiceNameById(id: string): string {
     this.selectedCountry.set(selected);
     this.toggleDropdown.set(false)
   }
-
+showDialogAssign(user: any) {
+  console.log("user: ", user)
+  // onclick="add_service_user.showModal()";
+    const element = document.getElementById("add_service_user") as HTMLDialogElement;
+    element?.showModal();
+    const dataToSave = new UserEntity();
+    dataToSave.set(user);
+    this.selectedUser.set(dataToSave);
+  }
 }

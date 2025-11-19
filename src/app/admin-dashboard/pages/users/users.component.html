@@ -129,7 +129,7 @@
           <th>Estado</th>
           <th class="hidden md:table-cell">Verificado</th>
           <th class="hidden lg:table-cell">Plan</th>
-          <th class="hidden xl:table-cell">Dispositivos</th>
+          <!-- <th class="hidden xl:table-cell">Dispositivos</th> -->
           <th class="hidden 2xl:table-cell">Creado</th>
           <th class="text-right w-36">Acciones</th>
         </tr>
@@ -143,7 +143,6 @@
             <input type="checkbox" class="checkbox checkbox-xs"
               [attr.aria-label]="'Seleccionar ' + (u.firstNames || '') + ' ' + (u.lastNames || '')" />
           </td>
-
           <td>
             <div class="flex items-center gap-3">
               <div class="avatar">
@@ -154,16 +153,13 @@
               </div>
               <div>
                 <div class="font-medium leading-tight capitalize">{{ u.firstNames }} {{ u.lastNames }}</div>
-                <div class="text-[11px] opacity-70">ID: {{ u.id }}</div>
-                <div class="text-[11px] opacity-70 hidden md:block">
-                  DNI: {{ u.dni }}
-                </div>
+                <div class="text-[11px] opacity-70">ID:{{ u.id }}</div>
+                <div class="text-[11px] opacity-70">{{ u.email }}</div>
+                <!-- <div class="text-[11px] opacity-70 hidden md:block"> On: {{ u.onService }}</div> -->
               </div>
             </div>
           </td>
-
           <td class="hidden lg:table-cell">{{ u.country.countryName }}</td>
-
           <td>
             <span class="badge" [class.badge-warning]="(u.state || '').toLowerCase().includes('pend')"
               [class.badge-success]="(u.state || '').toLowerCase().includes('act')"
@@ -172,21 +168,20 @@
               {{ u.state }}
             </span>
           </td>
-
           <td class="hidden md:table-cell">
             <span class="badge" [ngClass]="u.verified ? 'badge-success' : 'badge-ghost'">
               {{ u.verified ? 'Sí' : 'No' }}
             </span>
           </td>
 
-          <!-- <td class="hidden lg:table-cell">
+          <td class="hidden lg:table-cell">
                 <div class="flex items-center gap-2">
-                  <span class="badge">{{ u.plan.name }}</span>
-                  <span class="badge badge-ghost">{{ u.plan.devicesLimit }}</span>
+                  <span class="badge">{{ u.services | printservicesclient }}</span>
+                  <!-- <span class="badge badge-ghost">{{ u.plan.devicesLimit }}</span> -->
                 </div>
               </td>
 
-              <td class="hidden xl:table-cell">
+              <!-- <td class="hidden xl:table-cell">
                 <span class="tabular-nums">{{ u.plans }}</span>/<span class="tabular-nums">{{ u.plan.devicesLimit }}</span>
               </td> -->
 
@@ -222,6 +217,15 @@
                     <path d="M8 6v14a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V6" />
                     <path d="M10 11v6M14 11v6" />
                     <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
+                  </svg>
+                </button>
+              </div>
+              <div class="tooltip" data-tip="Asignar Servicio">
+                <button class="btn btn-ghost btn-xs" type="button" (click)="this.showDialogAssign(u)">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <path d="M12 20h9" />
+                    <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
                   </svg>
                 </button>
               </div>
@@ -757,6 +761,173 @@
       <div class="modal-action md:col-span-2">
         <button class="btn btn-ghost" type="button" (click)="cerrarDialogo()">Cancelar</button>
         <button class="btn btn-primary" type="submit" [disabled]="userForm.invalid">Crear</button>
+      </div>
+    </form>
+
+
+    @if (hasError()) {
+    <div role="alert" class="alert alert-error alert-soft animate-fadeIn fixed bottom-5 right-5 w-64">
+      <span>{{hasError()}}.</span>
+    </div>
+    }
+
+  </div>
+  <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
+</dialog>
+
+<!-- ÚNICO modal de Agregar Se4rvicio a Usuario -->
+<dialog id="add_service_user" class="modal">
+  <div class="modal-box max-w-2xl">
+
+    <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button></form>
+    <h2 class="text-lg font-bold">Nuevo servicio para usuario</h2>
+    <p class="mb-4 text-sm opacity-70">Asigna un nuevo servicio al usuario.</p>
+    <form class="grid gap-3 md:grid-cols-2" [formGroup]="userServiceForm" (ngSubmit)="onSubmitAssignService()" novalidate autocomplete="on">
+
+      <!-- Servicios -->
+      <div class="w-full">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Servicios para:</label>
+        <div class="flex items-center border border-gray-300 rounded-lg px-3 py-2
+             focus-within:ring-2 focus-within:ring-blue-500 bg-white">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" fill="none"
+            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15 15 0 0 1 4 10 15 15 0 0 1-4 10 15 15 0 0 1-4-10 15 15 0 0 1 4-10z"></path>
+          </svg>
+          <select formControlName="services" required class="w-full outline-none text-gray-700 bg-transparent">
+            <option value="" disabled selected hidden>Selecciona los servicios</option>
+            @for (item of this.ListServices(); track item.id; let idx = $index) {
+            <option [value]="item.id">{{ item.country.countryName }} | Servicio: {{ item.sortName }} | {{ item.longName
+              }} - {{ item.country.countryName }} </option>
+            }
+          </select>
+        </div>
+        @if (userServiceForm.get('services')?.touched && userServiceForm.get('services')?.invalid) {
+        <p class="text-red-500 text-sm mt-1">Selecciona los servicios.</p>
+        }
+      </div>
+
+      <!-- Plan -->
+      <div class="w-full">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Planes: </label>
+        <div class="flex items-center border border-gray-300 rounded-lg px-3 py-2
+             focus-within:ring-2 focus-within:ring-blue-500 bg-white">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" fill="none"
+            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15 15 0 0 1 4 10 15 15 0 0 1-4 10 15 15 0 0 1-4-10 15 15 0 0 1 4-10z"></path>
+          </svg>
+          <select formControlName="planes" required class="w-full outline-none text-gray-700 bg-transparent">
+            <option value="" disabled selected hidden>Selecciona el plan</option>
+            @for (item of this.ListPlan(); track item.id; let idx = $index) {
+            <option [value]="item.id">Cliente: {{ item.service.country.countryName }} | Servicio: {{ item.service.sortName }} | Para: {{item.global ? "GLOBAL" : item.country.countryName}} |
+              {{ item.title_prefix }} - {{ item.title_name }} - {{ item.title_suffix }} | {{ item.currencySymbol }}{{
+              item.price }} / {{ item.kind }}</option>
+            }
+          </select>
+        </div>
+        @if (userServiceForm.get('plan')?.touched && userServiceForm.get('plan')?.invalid) {
+        <p class="text-red-500 text-sm mt-1">Selecciona el plan.</p>
+        }
+      </div>
+
+      <!-- Fecha registro -->
+      <div class="w-full">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Registro</label>
+
+        <div class="flex items-center border border-gray-300 rounded-lg px-3 py-2
+           focus-within:ring-2 focus-within:ring-blue-500 bg-white">
+          <!-- Ícono de calendario -->
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" viewBox="0 0 24 24"
+            fill="none">
+            <path stroke="currentColor" stroke-width="2" d="M8 7V3m8 4V3M3 11h18M5 5h14a2 2 0 0 1 2 2v14a2 2 0
+               0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z" />
+          </svg>
+
+          <!-- Campo tipo fecha -->
+          <input type="date" formControlName="createdAt"
+            class="w-full outline-none text-gray-700 placeholder-gray-400" />
+        </div>
+
+        @if (userServiceForm.get('createdAt')?.touched && userServiceForm.get('createdAt')?.invalid) {
+        <p class="text-red-500 text-sm mt-1">
+          @if (userServiceForm.get('createdAt')?.errors?.['required']) {
+          La fecha es obligatoria.
+          } @else if (userServiceForm.get('createdAt')?.errors?.['futureDate']) {
+          No puedes ingresar una fecha futura.
+          }
+        </p>
+        }
+      </div>
+
+
+      <!-- Servidores -->
+      <div class="w-full">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Servidores para:</label>
+        <div class="flex items-center border border-gray-300 rounded-lg px-3 py-2
+             focus-within:ring-2 focus-within:ring-blue-500 bg-white">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" fill="none"
+            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15 15 0 0 1 4 10 15 15 0 0 1-4 10 15 15 0 0 1-4-10 15 15 0 0 1 4-10z"></path>
+          </svg>
+          <select formControlName="servers" required class="w-full outline-none text-gray-700 bg-transparent">
+            <option value="" disabled selected hidden>Selecciona los servicios</option>
+            @for (item of this.ListServers(); track item.id; let idx = $index) {
+            <option [value]="item.id">{{ item.name }} | IP: {{ item.host }} | {{ item.country.countryName }} | active:
+              {{ item.active }} </option>
+            }
+          </select>
+        </div>
+        @if (userServiceForm.get('servers')?.touched && userServiceForm.get('servers')?.invalid) {
+        <p class="text-red-500 text-sm mt-1">Selecciona los Servidores.</p>
+        }
+      </div>
+
+      <!-- Observaciones -->
+    <div class="w-full  md:col-span-2">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Nota</label>
+
+      <div
+        class="flex border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-blue-500"
+      >
+        <!-- Ícono opcional (nota o texto) -->
+        <svg xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0 mt-1"
+            viewBox="0 0 20 20" fill="none">
+          <path fill="currentColor"
+                d="M4 4a2 2 0 0 1 2-2h6.586A2 2 0 0 1 14 2.586L17.414 6A2 2 0 0 1 18 7.414V16a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4zm2 0v12h10V8h-3a1 1 0 0 1-1-1V4H6z"/>
+        </svg>
+
+        <!-- Campo textarea -->
+        <textarea
+          formControlName="observations"
+          placeholder="Escribe aquí una breve nota..."
+          rows="4"
+          maxlength="500"
+          class="w-full outline-none text-gray-700 placeholder-gray-400 bg-transparent resize-none"
+        ></textarea>
+      </div>
+
+      @if (userServiceForm.get('observations')?.touched && userServiceForm.get('observations')?.invalid) {
+        <p class="text-red-500 text-sm mt-1">
+          @if (userServiceForm.get('observations')?.errors?.['required']) {
+            Este campo es obligatorio.
+          } @else if (userServiceForm.get('observations')?.errors?.['maxlength']) {
+            Has superado el máximo de caracteres permitidos.
+          }
+        </p>
+      }
+    </div>
+
+
+      <!-- Botones -->
+      <div class="modal-action md:col-span-2">
+        <button class="btn btn-ghost" type="button" (click)="cerrarDialogoAssignService()">Cancelar</button>
+        <button class="btn btn-primary" type="submit" [disabled]="userServiceForm.invalid">Crear</button>
       </div>
     </form>
 

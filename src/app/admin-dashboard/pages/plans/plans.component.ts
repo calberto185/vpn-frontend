@@ -7,10 +7,11 @@ import { CountriesService } from '../../services/countries/countries.service';
 import { CountryEntity } from '../../interfaces/country.interface';
 import ServicesEntity from '../../interfaces/services.interface';
 import { ServicesService } from '../../services/services/services.service';
+import { PrintperiodPipe } from '../../../client-dashboard/pipes/printPeriod.pipe';
 
 @Component({
   selector: 'app-plans',
-  imports: [NgClass, DatePipe, ReactiveFormsModule, CommonModule],
+  imports: [NgClass, DatePipe, ReactiveFormsModule, CommonModule, PrintperiodPipe],
   templateUrl: './plans.component.html',
   styleUrl: './plans.component.css'
 })
@@ -50,6 +51,7 @@ export class PlansComponent implements OnInit{
       // features: ['', Validators.required],
       active: [false],
       global: [false],
+      main: [false],
   })
 
 

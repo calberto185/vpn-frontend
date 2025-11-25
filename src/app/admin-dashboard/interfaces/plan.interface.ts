@@ -15,6 +15,7 @@ class PlanEntity {
   active = false;
   visible = false;
   global = false;
+  main = false;
   country = new CountryEntity();
   service = new ServicesEntity();
   currencyName = "";
@@ -42,6 +43,7 @@ class PlanEntity {
     active,
     visible,
     global,
+    main,
     country,
     service,
     currencyName,
@@ -66,6 +68,7 @@ class PlanEntity {
     this.active = active ?? this.active;
     this.visible = visible ?? this.visible;
     this.global = global ?? this.global;
+    this.main = main ?? this.main;
     this.country = country ?? this.country;
     this.service = service ?? this.service;
     this.currencyName = currencyName ?? this.currencyName;

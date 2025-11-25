@@ -6,6 +6,7 @@ import DeviceEntity from '../../interfaces/device.interface'
 import UsersEntity from '../../interfaces/user.interface'
 import { UsersService } from '../../services/users/users.service';
 import { AuthService } from '../../../auth/services/auth.service';
+import UserEntity from '../../interfaces/user.interface';
 
 @Component({
   selector: 'app-devices',
@@ -24,11 +25,12 @@ export class DevicesComponent implements OnInit{
 
   // ListCountries = signal<CountryEntity[]>([]);
   ListUsers = signal<UsersEntity[]>([]);
+  profile = signal<UserEntity>(new UserEntity());
   hasError = signal("");
   fb = inject(FormBuilder);
 deviceForm = this.fb.group({
       // id: [''], // opcional
-      // user_id: ['', Validators.required],
+      service: ['', Validators.required],
       device: ['', Validators.required],
       typeDevice: ['', Validators.required],
       // active: [false],
@@ -40,7 +42,7 @@ deviceForm = this.fb.group({
   ngOnInit(): void {
     // this.fillListCountries();
     this.fillListDevices();
-    this. fillListUsers();
+    this.fillUser();
   }
 
   // fillListCountries() {
@@ -50,12 +52,18 @@ deviceForm = this.fb.group({
   //   })
   // }
 
-  fillListUsers() {
-      this.usersService.getUsers().subscribe((resp) => {
-        console.log("resp users: ", resp)
-        this.ListUsers.set(resp.data ?? [])
-      })
-    }
+  // fillListUsers() {
+  //     this.usersService.getUsers().subscribe((resp) => {
+  //       console.log("resp users: ", resp)
+  //       this.ListUsers.set(resp.data ?? [])
+  //     })
+  //   }
+  async fillUser() {
+    this.usersService.profile().subscribe((resp) => {
+      // console.log("resp: ", resp)
+      this.profile.set(resp)
+    });
+  }
   async fillListDevices() {
     this.devicesService.getDevices(this.authService.user()?.id ?? "").subscribe((resp) => {
       console.log("resp: ", resp)

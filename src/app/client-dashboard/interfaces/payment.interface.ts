@@ -9,7 +9,8 @@ class PaymentEntity {
   plan: PlanClientDto = new PlanClientDto();
   kind = ""; // minuto / hora / dia / semana / mes / trimestre / semestre / año
   picture = ""; // evidencia del pago foto
-  state = "Pendiente"; // ["Pendiente"; "Aceptado", "Varificando", "Devuelto"]
+  isPrePay = false;
+  state = "Varificando"; // [ "Prepagado", "Pagado", "Aceptado", "Varificando", "Devuelto", "Pendiente"]
   states: PaymentStateDto[] = []; // new PaymentStateDto();
   amount = 0;
   method = ""; // ["efectivo", "tranferencia bancaria", "crypto", "modeneroLocal" "unknow"]
@@ -27,6 +28,7 @@ class PaymentEntity {
     plan,
     kind,
     picture,
+    isPrePay,
     state,
     states,
     amount,
@@ -43,6 +45,7 @@ class PaymentEntity {
     this.plan = plan ?? this.plan;
     this.kind = kind ?? this.kind;
     this.picture = picture ?? this.picture;
+    this.isPrePay = isPrePay ?? this.isPrePay;
     this.state = state ?? this.state;
     this.states = states ?? this.states;
     this.amount = amount ?? this.amount;

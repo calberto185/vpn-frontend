@@ -10,14 +10,14 @@ const baseUrl = environment.apiUrl
 
 @Injectable({providedIn: 'root'})
 export class PlansService {
-  private _user = signal<PlanEntity|null>(null);
+  // private _user = signal<PlanEntity|null>(null);
 
   private http = inject(HttpClient);
 
-  user = computed(() => this._user())
+  // user = computed(() => this._user())
 
   getPlans(): Observable<ResponseEntity<PlanEntity[]>> {
-    return this.http.post<ResponseEntity<PlanEntity[]>>(baseUrl+'/plans/get', {});
+    return this.http.get<ResponseEntity<PlanEntity[]>>(baseUrl+'/public/plans');
   }
 
   register(data: PlanEntity): Observable<ResponseEntity<PlanEntity>> {

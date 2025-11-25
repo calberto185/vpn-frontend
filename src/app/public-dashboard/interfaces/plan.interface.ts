@@ -1,4 +1,5 @@
 import { CountryEntity } from "./country.interface";
+import ServicesEntity from "./services.interface";
 
 class PlanEntity {
   id = "";
@@ -12,6 +13,11 @@ class PlanEntity {
   kind = "";
   language = "";
   active = false;
+  visible = false;
+  global = false;
+  main = false;
+  country = new CountryEntity();
+  service = new ServicesEntity();
   currencyName = "";
   currencyCode = "";
   currencySymbol = "";
@@ -35,6 +41,11 @@ class PlanEntity {
     kind,
     language,
     active,
+    visible,
+    global,
+    main,
+    country,
+    service,
     currencyName,
     currencyCode,
     currencySymbol,
@@ -55,6 +66,11 @@ class PlanEntity {
     this.kind = kind ?? this.kind;
     this.language = language ?? this.language;
     this.active = active ?? this.active;
+    this.visible = visible ?? this.visible;
+    this.global = global ?? this.global;
+    this.main = main ?? this.main;
+    this.country = country ?? this.country;
+    this.service = service ?? this.service;
     this.currencyName = currencyName ?? this.currencyName;
     this.currencyCode = currencyCode ?? this.currencyCode;
     this.currencySymbol = currencySymbol ?? this.currencySymbol;
@@ -68,6 +84,7 @@ class PlanEntity {
     if(!this.title_name) throw new Error('The title_name field is required!.');
     if(!this.price) throw new Error('The price field is required!.');
     if(!this.limitDevices) throw new Error('The limitDevices field is required!.');
+    if(!this.service) throw new Error('The service field is required!.');
     return this;
   }
 }

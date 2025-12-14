@@ -5,6 +5,7 @@ import { DeviceService } from '../../services/devices/devices.service';
 import DeviceEntity from '../../interfaces/device.interface'
 import UsersEntity from '../../interfaces/user.interface'
 import { UsersService } from '../../services/users/users.service';
+import PlanClientDto from '../../interfaces/planClient.interface';
 
 @Component({
   selector: 'app-devices',
@@ -18,6 +19,9 @@ export class DevicesComponent implements OnInit{
   usersService = inject(UsersService);
   devicesService = inject(DeviceService);
   ListDevices = signal<DeviceEntity[]>([]);
+  clientSelected = signal<UsersEntity>(new UsersEntity());
+  planSelected = signal<PlanClientDto>(new PlanClientDto());
+  // ListServers = signal<any[]>([]);
     // countryService = inject(CountriesService);
 
   // ListCountries = signal<CountryEntity[]>([]);
@@ -27,6 +31,8 @@ export class DevicesComponent implements OnInit{
 deviceForm = this.fb.group({
       // id: [''], // opcional
       user_id: ['', Validators.required],
+      plan_id: ['', Validators.required],
+      server_id: ['', Validators.required],
       device: ['', Validators.required],
       typeDevice: ['', Validators.required],
       active: [false],
@@ -50,13 +56,14 @@ deviceForm = this.fb.group({
 
  fillListUsers() {
     this.usersService.getUsers().subscribe((resp) => {
-      console.log("resp users: ", resp)
+      // console.log("resp users: ", resp)
       this.ListUsers.set(resp.data ?? [])
+      // console.log("this.ListUsers: ", this.ListUsers())
     })
   }
   async fillListDevices() {
     this.devicesService.getDevices().subscribe((resp) => {
-      console.log("resp: ", resp)
+      // console.log("resp: ", resp)
       this.ListDevices.set(resp.data  ?? [])
     });
   }
@@ -70,9 +77,13 @@ deviceForm = this.fb.group({
       return;
     }
     const data: DeviceEntity | any = this.deviceForm.value;
-    console.log("data: ", data)
     const dataToSave = new DeviceEntity();
+    // const plan = this.clientSelected().services.find(d => d.plan_id == data.plan_id);
+    // const server = plan?.servers;
     dataToSave.set(data);
+    // dataToSave.plan_id =
+    dataToSave.service_id = this.planSelected().service_id;
+    // dataToSave.server_id = this.planSelected().ser;
     this.devicesService.register(dataToSave.get()).subscribe((resp) => {
         this.fillListDevices();
         this. fillListUsers();
@@ -86,7 +97,20 @@ deviceForm = this.fb.group({
     });
     this.onCancel();
   }
-
+selectedUser(event: Event) {
+  const id = (event.target as HTMLSelectElement).value;
+  // const id = this.deviceForm.get('user_id')?.value;
+  let existClient = this.ListUsers().find(u => u.id ==id);
+  if(!existClient) return;
+  this.clientSelected.set(existClient);
+}
+selectedPlan(event: Event) {
+  const id = (event.target as HTMLSelectElement).value;
+  // const id = this.deviceForm.get('user_id')?.value;
+  let existPlan = this.clientSelected().services.find(u => u.plan_id ==id);
+  if(!existPlan) return;
+  this.planSelected.set(existPlan);
+}
 onCancel() {
   const dialogo: any = document.getElementById('add_device');
   if (dialogo && dialogo.open) {
@@ -94,14 +118,15 @@ onCancel() {
   }
 }
 
-private usersIndex = new Map(this.ListUsers().map(u => [u.id, u]));
-userNameById(id: string): string | null {
-  const u = this.usersIndex.get(id);
-  return u ? `${u.firstNames} ${u.lastNames} — DNI: ${u.dni}` : null;
-}
+// private usersIndex = new Map(this.ListUsers().map(u => [u.id, u]));
 
-isEpoch(iso: string | null | undefined | any): boolean {
-  return !iso || iso.startsWith('1970-01-01');
-}
+// userNameById(id: string): string | null {
+//   const u = this.usersIndex.get(id);
+//   return u ? `${u.firstNames} ${u.lastNames} — DNI: ${u.dni}` : null;
+// }
+
+// isEpoch(iso: string | null | undefined | any): boolean {
+//   return !iso || iso.startsWith('1970-01-01');
+// }
 
 }

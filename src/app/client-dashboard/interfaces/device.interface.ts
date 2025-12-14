@@ -1,6 +1,9 @@
 class DeviceEntity {
   id = "";
   user_id = "";
+  plan_id = "";
+  service_id = "";
+  server_id = "";
   device = "";
   typeDevice = "";
   active = false;
@@ -16,6 +19,9 @@ class DeviceEntity {
   set({
     id,
     user_id,
+    plan_id,
+    service_id,
+    server_id,
     device,
     typeDevice,
     active,
@@ -29,6 +35,9 @@ class DeviceEntity {
   }: DeviceEntity) {
     this.id = id ?? this.id;
     this.user_id = user_id ?? this.user_id;
+    this.plan_id = plan_id ?? this.plan_id;
+    this.service_id = service_id ?? this.service_id;
+    this.server_id = server_id ?? this.server_id;
     this.device = device ?? this.device;
     this.typeDevice = typeDevice ?? this.typeDevice;
     this.active = active ?? this.active;
@@ -42,6 +51,7 @@ class DeviceEntity {
   }
   get() {
     if(!this.user_id) throw new Error('The user_id field is required!.');
+    if(!this.plan_id) throw new Error('The plan_id field is required!.');
     if(!this.device) throw new Error('The device field is required!.');
     if(!this.typeDevice) throw new Error('The typeDevice field is required!.');
     if(!this.active) throw new Error('The active field is required!.');

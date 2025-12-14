@@ -9,9 +9,9 @@ import { CommonModule } from '@angular/common';
   styleUrl: './tutorial.component.css'
 })
 export class TutorialComponent {
-  @Input() companyName = 'TuEmpresa';
-  @Input() portalUrl = 'https://portal.tuempresa.com';
-  @Input() downloadsUrl = 'https://portal.tuempresa.com/descargas';
+  @Input() companyName = 'CarlosVM';
+  @Input() portalUrl = 'https://carlosvm.ru';
+  @Input() downloadsUrl = 'https://carlosvm.ru/descargas';
   @Input() supportEmail = 'soporte@tuempresa.com';
 
   os = signal<'windows'|'macos'|'android'|'ios'|'linux'>('windows');

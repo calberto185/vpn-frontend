@@ -61,19 +61,19 @@
           <li><a>Todos</a></li>
           <li><a>Activos</a></li>
           <li><a>Suspendidos</a></li>
-          <li><a>Revocados</a></li>
-          <li><a>Inactivos</a></li>
+          <!-- <li><a>Revocados</a></li>
+          <li><a>Inactivos</a></li> -->
         </ul>
       </div>
 
-      <div class="dropdown">
+      <!-- <div class="dropdown">
         <button tabindex="0" class="btn btn-ghost btn-sm md:btn-md">Certificado</button>
         <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-48 z-[60]">
           <li><a>Todos</a></li>
           <li><a>Con certificado</a></li>
           <li><a>Sin certificado</a></li>
         </ul>
-      </div>
+      </div> -->
 
       <div class="ml-auto flex items-center gap-2">
         <div class="tooltip" data-tip="Seleccionar todo">
@@ -83,14 +83,14 @@
         <div class="dropdown dropdown-end">
           <button tabindex="0" class="btn btn-ghost btn-sm md:btn-md">Acciones</button>
           <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-64 z-[60]">
-            <li><a>Activar</a></li>
-            <li><a>Desactivar</a></li>
+            <!-- <li><a>Activar</a></li>
+            <li><a>Desactivar</a></li> -->
             <li><a>Suspender</a></li>
-            <li><a>Reactivar</a></li>
+            <!-- <li><a>Reactivar</a></li>
             <li><a>Revocar certificado</a></li>
             <li><a>Regenerar certificado…</a></li>
-            <li><a>Exportar CSV</a></li>
-            <li><a class="text-error">Eliminar</a></li>
+            <li><a>Exportar CSV</a></li> -->
+            <!-- <li><a class="text-error">Eliminar</a></li> -->
           </ul>
         </div>
 
@@ -116,11 +116,11 @@
         <tr>
           <th class="w-8"><input type="checkbox" class="checkbox checkbox-xs" aria-label="Seleccionar todas" /></th>
           <th>Dispositivo</th>
-          <th class="hidden lg:table-cell">Usuario</th>
-          <th class="hidden xl:table-cell">Certificado</th>
+          <!-- <th class="hidden lg:table-cell">Usuario</th> -->
+          <th class="hidden xl:table-cell">Servicio</th>
           <th>Estado</th>
-          <th class="hidden 2xl:table-cell">Creado</th>
-          <th class="hidden 2xl:table-cell">Actualizado</th>
+          <!-- <th class="hidden 2xl:table-cell">Creado</th> -->
+          <th class="hidden xl:table-cell">Fecha</th>
           <th class="text-right w-44">Acciones</th>
         </tr>
       </thead>
@@ -217,6 +217,9 @@
                 <div class="font-medium leading-tight">
                   {{ d.device || '—' }}
                 </div>
+                <div class="text-[10px] opacity-70 break-all">
+                  {{ d.typeDevice }}
+                </div>
                 <div class="text-[11px] opacity-70 break-all">
                   ID: {{ d.id }}
                 </div>
@@ -225,7 +228,7 @@
           </td>
 
           <!-- Usuario -->
-          <td class="hidden lg:table-cell">
+          <!-- <td class="hidden lg:table-cell">
             <div class="leading-tight">
               <div class="font-normal">
                 {{ userNameById(d.user_id) || '—' }}
@@ -234,23 +237,26 @@
                 user_id: {{ d.user_id }}
               </div>
             </div>
-          </td>
+          </td> -->
 
           <!-- Certificado -->
           <td class="hidden xl:table-cell">
             <div class="text-[11px] opacity-80 break-all">
-              @if (d.certificate?.length) {
-              {{ d.certificate }}
-              } @else {
-              —
-              }
+              {{ d | printservicedevice: this.profile() }}
             </div>
           </td>
 
           <!-- Estado -->
           <td>
             <div class="flex flex-wrap gap-1">
-              <span class="badge" [class.badge-success]="d.active" [class.badge-ghost]="!d.active">
+              <span class="badge"
+                    [class.badge-error]="(d | printstatedevice).class === 'badge-error'"
+                    [class.badge-warning]="(d | printstatedevice).class === 'badge-warning'"
+                    [class.badge-success]="(d | printstatedevice).class === 'badge-success'">
+                {{ (d | printstatedevice).text }}
+              </span>
+
+              <!-- <span class="badge" [class.badge-success]="d.active" [class.badge-ghost]="!d.active">
                 {{ d.active ? 'Activo' : 'Inactivo' }}
               </span>
 
@@ -260,26 +266,35 @@
 
               <span class="badge" [class.badge-error]="d.revoked" [class.badge-ghost]="!d.revoked">
                 {{ d.revoked ? 'Revocado' : 'No revocado' }}
-              </span>
+              </span> -->
             </div>
           </td>
 
           <!-- Fechas -->
-          <td class="hidden 2xl:table-cell">
-            {{ d.createdAt | date:'dd MMM yyyy · HH:mm' }}
+          <td class=" 2xl:table-cell">
+            <div class="flex items-center gap-3">
+              <div>
+                <div class="font-medium leading-tight">
+                  {{ d.updatedAt | date:'dd MMM yyyy · HH:mm' }}
+                </div>
+                <div class="text-[10px] opacity-70 break-all">
+                  Created: {{d.createdAt | date:'dd MMM yyyy · HH:mm' }}
+                </div>
+              </div>
+            </div>
           </td>
-          <td class="hidden 2xl:table-cell">
+          <!-- <td class="hidden 2xl:table-cell">
             @if (!isEpoch(d.updatedAt)) {
             {{ d.updatedAt | date:'dd MMM yyyy · HH:mm' }}
             } @else {
             —
             }
-          </td>
+          </td> -->
 
           <!-- Acciones -->
           <td class="text-right">
             <div class="flex items-center justify-end gap-1.5">
-              <div class="tooltip" data-tip="Ver">
+              <!-- <div class="tooltip" data-tip="Ver">
                 <button class="btn btn-ghost btn-xs" type="button">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2">
@@ -287,8 +302,18 @@
                     <circle cx="12" cy="12" r="3" />
                   </svg>
                 </button>
+              </div> -->
+              <div  class="tooltip" data-tip="Descargar">
+                <button class="btn btn-ghost btn-xs" type="button" (click)="this.downloadAccessOvpn()">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <path d="M4 17v2h16v-2" />
+                    <path d="M12 3v14" />
+                    <path d="M6 11l6 6 6-6" />
+                  </svg>
+                </button>
               </div>
-              <div class="tooltip" data-tip="Editar">
+              <!-- <div class="tooltip" data-tip="Editar">
                 <button class="btn btn-ghost btn-xs" type="button">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2">
@@ -296,7 +321,7 @@
                     <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
                   </svg>
                 </button>
-              </div>
+              </div> -->
               <div class="tooltip" data-tip="Revocar">
                 <button class="btn btn-ghost btn-xs" type="button">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none"
@@ -305,7 +330,7 @@
                   </svg>
                 </button>
               </div>
-              <div class="tooltip" data-tip="Eliminar">
+              <!-- <div class="tooltip" data-tip="Eliminar">
                 <button class="btn btn-ghost btn-xs text-error" type="button">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2">
@@ -315,9 +340,10 @@
                     <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
                   </svg>
                 </button>
-              </div>
+              </div> -->
             </div>
           </td>
+
         </tr>
         } @empty {
         <tr>
@@ -400,7 +426,7 @@
 
     <!-- Encabezado -->
     <h3 class="text-lg font-bold">Nuevo dispositivo</h3>
-    <p class="text-sm opacity-70 mb-3">Registra un dispositivo al cual deseas agregar la VPN.</p>
+    <p class="text-sm opacity-70 mb-3">Registra un dispositivo al servicio que deseas usar!.</p>
 
     <!-- Formulario reactivo -->
     <form class="grid gap-3 md:grid-cols-2" [formGroup]="deviceForm" (ngSubmit)="onSubmit()" novalidate
@@ -460,24 +486,30 @@
       </div>
 
       <!-- Nombre del dispositivo -->
-      <div class="form-control w-full md:col-span-2 validator">
-        <label class="label">
-          <span class="label-text">Nombre del dispositivo</span>
-        </label>
-        <div class="input input-bordered flex items-center w-full">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-70 shrink-0" fill="none" viewBox="0 0 24 24"
+       <div class="w-full md:col-span-2">
+  <!-- Label Nombre del dispositivoa -->
+    <label for="firstNames" class="block text-sm font-medium text-gray-700 mb-1">
+      Nombre del dispositivo
+    </label>
+    <div class="flex items-center border border-gray-300 rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-blue-500 bg-white">
+       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-70 shrink-0" fill="none" viewBox="0 0 24 24"
             stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 12h16M4 16h16" />
           </svg>
-          <input type="text" class="grow bg-transparent outline-none" placeholder="Ej. iPhone 14 / Pixel 7 / MacBook"
-            formControlName="device" required />
-        </div>
-        @if (deviceForm.get('device')?.touched && deviceForm.get('device')?.invalid) {
-        <p class="text-red-500 text-sm mt-1">
-          Ingrese el nombre del dispositivo.
-        </p>
-        }
-      </div>
+      <input
+        type="text"
+        name="device"
+        placeholder="Ej. iPhone 14 / Pixel 7 / MacBook"
+        formControlName="device"
+        required
+        autocomplete="family-name"
+        class="w-full outline-none text-gray-700 placeholder-gray-400"
+      />
+    </div>
+    @if (deviceForm.get('device')?.touched && deviceForm.get('device')?.invalid) {
+      <p class="text-red-500 text-sm">Ingresa tus apellidos.</p>
+    }
+  </div>
 
 
       <!-- Acciones -->

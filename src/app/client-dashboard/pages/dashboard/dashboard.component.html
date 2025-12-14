@@ -16,6 +16,38 @@
             <a href="#/dashboard/servers" class="btn btn-outline">Ir a Servidores</a>
             <a href="#/dashboard/payments" class="btn btn-outline">Ir a Pagos</a>
           </div> -->
+
+      <div class="ml-auto flex items-center gap-2">
+        <!-- <div class="tooltip" data-tip="Seleccionar todo">
+          <input type="checkbox" class="checkbox checkbox-sm" aria-label="Seleccionar todo" />
+        </div> -->
+
+        <!-- <div class="dropdown dropdown-end">
+          <button tabindex="0" class="btn btn-ghost btn-sm md:btn-md">Acciones</button>
+          <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-64 z-[60]">
+            <li><a>Activar</a></li>
+            <li><a>Desactivar</a></li>
+            <li><a>Suspender</a></li>
+            <li><a>Reactivar</a></li>
+            <li><a>Revocar certificado</a></li>
+            <li><a>Regenerar certificado…</a></li>
+            <li><a>Exportar CSV</a></li>
+            <li><a class="text-error">Eliminar</a></li>
+          </ul>
+        </div> -->
+
+        <!-- Botón Agregar dispositivo -->
+         @if(this.btnAddService()) {
+          <button class="btn btn-primary btn-sm md:btn-md" type="button"
+            (click)="this.addPlanOnlyVPN()">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            Agregar Servicio
+          </button>
+         }
+      </div>
   </div>
 </section>
 

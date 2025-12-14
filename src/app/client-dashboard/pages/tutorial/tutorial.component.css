@@ -1,0 +1,20 @@
+
+/* Mostrar contenido según tab seleccionado */
+#Android:checked ~ .tabs-content .android-content,
+#iOS:checked ~ .tabs-content .ios-content,
+#Windows:checked ~ .tabs-content .windows-content,
+#Linux:checked ~ .tabs-content .linux-content,
+#MacOS:checked ~ .tabs-content .macos-content {
+  display: block;
+}
+
+/* Tab activo */
+#Android:checked ~ .labels label[for="Android"],
+#iOS:checked ~ .labels label[for="iOS"],
+#Windows:checked ~ .labels label[for="Windows"],
+#Linux:checked ~ .labels label[for="Linux"],
+#MacOS:checked ~ .labels label[for="MacOS"] {
+  background-color: #6a7df8;
+  color: #ffffff;
+  border-bottom-color: white;
+}

@@ -177,8 +177,8 @@ export class CertificatesComponent implements OnInit {
     dataToSave.profile_type = user?.role ?? '';
     dataToSave.tags = device?.typeDevice ?? '';
     // En tu backend estas propiedades llegan como string, mantenemos string:
-    (dataToSave as any).valid_days = '30';
-    (dataToSave as any).expires_at = '30';
+    (dataToSave as any).valid_days = '365';
+    (dataToSave as any).expires_at = '365';
     dataToSave.note = note ?? '';
     (dataToSave as any).version = '2';
 

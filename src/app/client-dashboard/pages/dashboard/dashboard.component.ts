@@ -30,6 +30,7 @@ export class DashboardComponent implements OnInit{
   ListUsers = signal<ActivitiesDevicesDashboardEntity[]>([]);
   profile = signal<UserEntity>(new UserEntity());
   hasError = signal("");
+  btnAddService = signal(false);
 
   ngOnInit(): void {
     this.fillListSessions();
@@ -76,6 +77,7 @@ export class DashboardComponent implements OnInit{
       this.profile.set(upates)
       console.log("this.profile ===>: ", this.profile())
       })
+      this.btnAddService.set(this.profile()?.services?.length == 0 || !this.profile()?.services?.find(s => s.service_sortName.toUpperCase().includes("VPN")));
     });
   }
 
@@ -87,4 +89,10 @@ export class DashboardComponent implements OnInit{
     return item["paymentAdvance"]
   }
 
+   addPlanOnlyVPN() {
+      if(this.btnAddService()) {
+          const dialog = document.getElementById('view_select_plans') as HTMLDialogElement;
+          dialog?.showModal();
+      }
+    }
 }

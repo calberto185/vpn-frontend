@@ -1,14 +1,42 @@
+<section class="mx-auto max-w-5xl p-4 md:p-10">
+
+  <!-- Inputs ocultos (hermanos de .tabs-content) -->
+  <input type="radio" name="mainTab" id="Android" class="hidden" checked>
+  <input type="radio" name="mainTab" id="iOS" class="hidden">
+  <input type="radio" name="mainTab" id="Windows" class="hidden">
+  <input type="radio" name="mainTab" id="Linux" class="hidden">
+  <input type="radio" name="mainTab" id="MacOS" class="hidden">
+
+  <!-- Labels como tabs -->
+  <div class="labels mb-0 flex border-b border-gray-100">
+    <label for="Android" class="flex-1 text-center cursor-pointer px-4 py-2 border border-b-0 border-gray-200
+      rounded-t-lg bg-gray-100 hover:bg-gray-200">Android</label>
+    <label for="iOS" class="flex-1 text-center cursor-pointer px-4 py-2 border border-b-0 border-gray-200
+      rounded-t-lg bg-gray-100 hover:bg-gray-200">iOS</label>
+    <label for="Windows" class="flex-1 text-center cursor-pointer px-4 py-2 border border-b-0 border-gray-200
+      rounded-t-lg bg-gray-100 hover:bg-gray-200">Windows</label>
+    <label for="Linux" class="flex-1 text-center cursor-pointer px-4 py-2 border border-b-0 border-gray-200
+      rounded-t-lg bg-gray-100 hover:bg-gray-200">Linux</label>
+    <label for="MacOS" class="flex-1 text-center cursor-pointer px-4 py-2 border border-b-0 border-gray-200
+      rounded-t-lg bg-gray-100 hover:bg-gray-200">MacOS</label>
+  </div>
+
+  <!-- Contenido (hermano de los inputs) -->
+  <div class="tabs-content border border-gray-200 rounded-b-lg bg-white p-5">
+    <div class="android-content hidden">
+      <!-- <p class="text-gray-700">Contenido para Android</p> -->
+
 
   <section class="mx-auto max-w-5xl p-4 md:p-10">
     <!-- Hero -->
     <header class="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
       <h1 class="text-3xl font-semibold tracking-tight">Guía rápida para conectarte a la VPN</h1>
       <p class="mt-2 text-gray-600">Sigue estos pasos: crea tu cuenta, elige un plan, agrega dispositivos, descarga tus credenciales <code class="rounded bg-gray-100 px-1">.ovpn</code>, impórtalas y conéctate.</p>
-      <div class="mt-4 flex flex-wrap gap-3 text-sm text-gray-600">
+      <!-- <div class="mt-4 flex flex-wrap gap-3 text-sm text-gray-600">
         <a class="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 hover:bg-gray-100" [href]="portalUrl" target="_blank">Ir al portal</a>
         <a class="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 hover:bg-gray-100" [href]="downloadsUrl" target="_blank">Descargas</a>
         <a class="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 hover:bg-gray-100" [href]="'mailto:' + supportEmail">Contactar soporte</a>
-      </div>
+      </div> -->
     </header>
 
     <!-- Paso 1: Crear cuenta -->
@@ -200,3 +228,22 @@
       <p class="mt-4 text-sm text-gray-500">¿Necesitas ayuda? Escríbenos a <a class="underline" [href]="'mailto:' + supportEmail">{{ supportEmail }}</a>.</p>
     </article>
   </section>
+
+
+      <!-- <p class="text-gray-700">Contenido para Android</p> -->
+    </div>
+    <div class="ios-content hidden">
+      <p class="text-gray-700">Contenido para iOS</p>
+    </div>
+    <div class="windows-content hidden">
+      <p class="text-gray-700">Contenido para Windows</p>
+    </div>
+    <div class="linux-content hidden">
+      <p class="text-gray-700">Contenido para Linux</p>
+    </div>
+    <div class="macos-content hidden">
+      <p class="text-gray-700">Contenido para MacOS</p>
+    </div>
+  </div>
+
+</section>

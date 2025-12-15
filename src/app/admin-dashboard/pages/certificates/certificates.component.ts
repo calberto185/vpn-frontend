@@ -164,7 +164,8 @@ export class CertificatesComponent implements OnInit {
     const segundo = String(fecha.getSeconds()).padStart(2, '0');
     const fechaNum = Number(`${dia}${mes}${año}${hora}${minuto}${segundo}`);
 
-    const userName = (server?.country.countryName || '') + '-' + (device?.device || '') + '-' + (device?.typeDevice || '') + '-' + fechaNum;
+    // const userName = (server?.country.countryName || '') + '-' + (device?.device || '') + '-' + (device?.typeDevice || '') + '-' + fechaNum;
+    const userName = (server?.country.countryCode || '') + '-' + fechaNum + '-' + (device?.device || '') + '-' + (device?.typeDevice || '');
     const serverName = (server?.name || '') + '-' + (server?.country.countryCode || '') + '-' + (server?.country.currencyCode || '');
 
     dataToSave.user_id = user?.id ?? '';

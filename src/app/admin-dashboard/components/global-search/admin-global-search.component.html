@@ -1,0 +1,155 @@
+<!-- Trigger button (visible in navbar) -->
+<button type="button"
+        (click)="open()"
+        class="hidden md:flex items-center gap-2 px-3 h-9 rounded-lg border border-base-300 bg-base-200/60 hover:bg-base-200 hover:border-base-400 transition-colors text-sm text-base-content/50 w-56 cursor-text">
+  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+    <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+  </svg>
+  <span class="flex-1 text-left truncate text-xs">Buscar… </span>
+  <kbd class="kbd kbd-xs opacity-50">⌘K</kbd>
+</button>
+
+<!-- Mobile search icon -->
+<button type="button" (click)="open()" class="md:hidden btn btn-ghost btn-circle btn-sm" aria-label="Buscar">
+  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+    <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+  </svg>
+</button>
+
+<!-- Overlay + Modal -->
+@if (isOpen()) {
+  <div class="fixed inset-0 z-[200] flex items-start justify-center pt-16 px-4"
+       (click)="close()">
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+
+    <!-- Panel -->
+    <div class="relative w-full max-w-xl bg-base-100 rounded-2xl shadow-2xl border border-base-300 overflow-hidden flex flex-col"
+         style="max-height: 70vh"
+         (click)="$event.stopPropagation()">
+
+      <!-- Search input row -->
+      <div class="flex items-center gap-3 px-4 border-b border-base-300 h-14 shrink-0">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0 text-base-content/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+        </svg>
+        <input
+          id="gs-input"
+          type="text"
+          class="flex-1 bg-transparent outline-none text-sm placeholder:text-base-content/30"
+          placeholder="Buscar páginas, clientes, pagos…"
+          [(ngModel)]="queryValue"
+          (ngModelChange)="onInput()"
+          (keydown)="onKeydown($event)"
+          autocomplete="off"
+          spellcheck="false" />
+        @if (loading()) {
+          <span class="loading loading-spinner loading-xs opacity-50"></span>
+        }
+        <kbd class="kbd kbd-xs opacity-40 hidden sm:inline-flex">ESC</kbd>
+      </div>
+
+      <!-- Results list -->
+      <div class="overflow-y-auto flex-1">
+        @if (allResults().length === 0 && !loading()) {
+          <div class="px-6 py-10 text-center text-sm text-base-content/40">
+            @if (queryValue.trim().length > 0) {
+              <div class="text-2xl mb-2">🔍</div>
+              Sin resultados para <strong>"{{ queryValue }}"</strong>
+            } @else {
+              <div class="text-2xl mb-2">⌨️</div>
+              Empieza a escribir para buscar
+            }
+          </div>
+        } @else {
+          <ul class="py-2">
+
+            <!-- NAV section -->
+            @if (navResults().length > 0) {
+              <li class="px-4 pt-3 pb-1">
+                <span class="text-[10px] font-semibold uppercase tracking-wider text-base-content/40">Navegación</span>
+              </li>
+              @for (r of navResults(); track r.route; let i = $index) {
+                <li>
+                  <button type="button"
+                          (click)="navigate(r)"
+                          (mouseenter)="activeIndex.set(i)"
+                          class="w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors"
+                          [class.bg-base-200]="activeIndex() === i"
+                          [class.gs-item-active]="activeIndex() === i">
+                    <!-- Icon -->
+                    <div class="w-7 h-7 rounded-md bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                      </svg>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <div class="text-sm font-medium truncate">{{ r.label }}</div>
+                      <div class="text-xs text-base-content/40 truncate">{{ r.sublabel }}</div>
+                    </div>
+                    @if (activeIndex() === i) {
+                      <kbd class="kbd kbd-xs opacity-50">↵</kbd>
+                    }
+                  </button>
+                </li>
+              }
+            }
+
+            <!-- USERS section -->
+            @if (userResults().length > 0) {
+              <li class="px-4 pt-4 pb-1">
+                <span class="text-[10px] font-semibold uppercase tracking-wider text-base-content/40">Clientes</span>
+              </li>
+              @for (r of userResults(); track r.queryParams?.['id']; let j = $index) {
+                <li>
+                  <button type="button"
+                          (click)="navigate(r)"
+                          (mouseenter)="activeIndex.set(navResults().length + j)"
+                          class="w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors"
+                          [class.bg-base-200]="activeIndex() === navResults().length + j"
+                          [class.gs-item-active]="activeIndex() === navResults().length + j">
+                    <!-- Avatar initials -->
+                    <div class="w-7 h-7 rounded-full bg-secondary/20 border border-secondary/30 flex items-center justify-center text-[10px] font-bold text-secondary shrink-0">
+                      {{ r.initials }}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <div class="text-sm font-medium truncate">{{ r.label }}</div>
+                      <div class="text-xs text-base-content/40 truncate">{{ r.sublabel }}</div>
+                    </div>
+                    @if (r.extra) {
+                      <span class="badge badge-xs shrink-0" [ngClass]="stateClass(r.extra)">{{ r.extra }}</span>
+                    }
+                  </button>
+                </li>
+              }
+            }
+
+            <!-- Loading users placeholder -->
+            @if (loading() && queryValue.trim().length >= 2) {
+              <li class="px-4 pt-4 pb-1">
+                <span class="text-[10px] font-semibold uppercase tracking-wider text-base-content/40">Clientes</span>
+              </li>
+              @for (s of [1,2,3]; track s) {
+                <li class="flex items-center gap-3 px-4 py-2.5">
+                  <div class="w-7 h-7 rounded-full skeleton shrink-0"></div>
+                  <div class="flex-1 space-y-1.5">
+                    <div class="skeleton h-3 w-32 rounded"></div>
+                    <div class="skeleton h-2.5 w-48 rounded"></div>
+                  </div>
+                </li>
+              }
+            }
+          </ul>
+        }
+      </div>
+
+      <!-- Footer hints -->
+      <div class="shrink-0 border-t border-base-200 px-4 py-2 flex items-center gap-4 text-[10px] text-base-content/30">
+        <span><kbd class="kbd kbd-xs">↑↓</kbd> navegar</span>
+        <span><kbd class="kbd kbd-xs">↵</kbd> ir</span>
+        <span><kbd class="kbd kbd-xs">ESC</kbd> cerrar</span>
+        <span class="ml-auto">⌘K para abrir</span>
+      </div>
+    </div>
+  </div>
+}

@@ -21,6 +21,14 @@ class PlanClientDto {
   global = false;
   country = new CountryEntity();
   servers: PlanClientServerDto[] = []; // new planClientServer
+  // VPN mode fields
+  vpnMode: 'by_device' | 'by_data' | null = null;
+  dataLimitGB = 0;
+  dataLimitPeriod = "";
+  // Service credentials (non-VPN)
+  userNameService = "";
+  passwordService = "";
+  codeService = "";
   startedAt = new Date();
   endedAt = null;
   constructor() {}
@@ -44,6 +52,12 @@ class PlanClientDto {
     global,
     country,
     servers,
+    vpnMode,
+    dataLimitGB,
+    dataLimitPeriod,
+    userNameService,
+    passwordService,
+    codeService,
     startedAt,
     endedAt,
   }: PlanClientDto) {
@@ -66,6 +80,12 @@ class PlanClientDto {
     this.global = global ?? this.global;
     this.country = country ?? this.country;
     this.servers = servers ?? this.servers;
+    this.vpnMode = vpnMode !== undefined ? vpnMode : this.vpnMode;
+    this.dataLimitGB = dataLimitGB ?? this.dataLimitGB;
+    this.dataLimitPeriod = dataLimitPeriod ?? this.dataLimitPeriod;
+    this.userNameService = userNameService ?? this.userNameService;
+    this.passwordService = passwordService ?? this.passwordService;
+    this.codeService = codeService ?? this.codeService;
     this.startedAt = startedAt ?? this.startedAt;
     this.endedAt = endedAt ?? this.endedAt;
   }

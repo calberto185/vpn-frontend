@@ -7,6 +7,8 @@ import { ProfileComponent } from "./pages/profile/profile.component";
 import { SupportComponent } from "./pages/support/support.component";
 import { PlansComponent } from "./pages/plans/plans.component";
 import { TutorialComponent } from "./pages/tutorial/tutorial.component";
+import { ClientMessagesComponent } from "./pages/messages/messages.component";
+import { ClientPreferencesComponent } from "./pages/preferences/preferences.component";
 
 export const clientRoutes:Routes = [
   {
@@ -30,17 +32,25 @@ export const clientRoutes:Routes = [
         component: ProfileComponent
       },
       {
+        path: 'preferences',
+        component: ClientPreferencesComponent
+      },
+      {
         path: 'payments',
         component: PaymentsComponent
       },
-      // {
-      //   path: 'plans',
-      //   component: PlansComponent
-      // },
-      // {
-      //   path: 'support',
-      //   component: SupportComponent
-      // },
+      {
+        path: 'messages',
+        component: ClientMessagesComponent
+      },
+      {
+        path: 'plans',
+        component: PlansComponent
+      },
+      {
+        path: 'support',
+        component: SupportComponent
+      },
       {
         path: '**',
         redirectTo: '/client/dashboard'

@@ -1,49 +1,37 @@
 import { HttpClient } from '@angular/common/http';
-import { computed, inject, Injectable, signal } from '@angular/core';
-import { BehaviorSubject, catchError, map, Observable, of, tap } from 'rxjs';
-import { rxResource } from '@angular/core/rxjs-interop';
+import { inject, Injectable, signal } from '@angular/core';
+import { Observable, tap } from 'rxjs';
 import UserEntity from '../../interfaces/user.interface';
 import { ResponseEntity } from '../../../shared/interfaces/reponse.interface';
 import PlanClientDto from '../../interfaces/planClient.interface';
-type AuthStatus = 'checking' | 'authenticated' | 'not-authenticated';
-import { environment } from '../../../../environments/environment'
-const baseUrl = environment.apiUrl
+import { environment } from '../../../../environments/environment';
 
-@Injectable({providedIn: 'root'})
+const baseUrl = environment.apiUrl;
+
+@Injectable({ providedIn: 'root' })
 export class UsersService {
-
   private http = inject(HttpClient);
+  private _profile = signal<UserEntity>(new UserEntity());
 
-  private loadingSubject = new BehaviorSubject<UserEntity | null>(new UserEntity());
-
-  profile(): Observable<any> {
-    return this.loadingSubject.asObservable()
+  /** Observable del perfil cacheado. Llama getMe() si está vacío. */
+  profile(): Observable<UserEntity> {
+    return this._profile.asReadonly() as any;
   }
-  getMe(): Observable<any> {
-    return this.http.post<ResponseEntity<UserEntity>>(baseUrl+'/auth/profile/me', {}).pipe(
-      tap((resp: any) => {
-        this.loadingSubject.next(resp?.data);
+
+  /** Carga el perfil completo del cliente (con servicios y datos CRM) y actualiza el signal. */
+  getMe(): Observable<ResponseEntity<UserEntity>> {
+    return this.http.get<ResponseEntity<UserEntity>>(baseUrl + '/client/me').pipe(
+      tap((resp) => {
+        if (resp?.data) {
+          const u = new UserEntity();
+          u.set(resp.data);
+          this._profile.set(u);
+        }
       }),
     );
   }
-  getUsers(): Observable<any> {
-    return this.http.post<ResponseEntity<UserEntity>>(baseUrl+'/admin/consulta', {});
-  }
-
-  register(data: UserEntity): Observable<any> {
-    return this.http.post<ResponseEntity<UserEntity>>(baseUrl+'/admin/registrar', data);
-  }
 
   updateClientPlan(user_id: string, dataPlan: PlanClientDto): Observable<any> {
-    return this.http.post<ResponseEntity<UserEntity>>(baseUrl+'/admin/'+user_id+'/updateplan', dataPlan);
+    return this.http.post<ResponseEntity<UserEntity>>(baseUrl + '/admin/' + user_id + '/updateplan', dataPlan);
   }
-
-  private handlerSuccess(resp: any) {
-    return resp;
-  }
-
-  private handlerError(error: any) {
-    return error;
-  }
-
 }

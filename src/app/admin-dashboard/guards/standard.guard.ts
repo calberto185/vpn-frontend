@@ -13,7 +13,7 @@ export const StandardGuard: CanMatchFn = async  (
 
   // 1) Si no está autenticado → al logi
   //
-    const isAuthenticated = await firstValueFrom(authService.checkStatus());
+    await firstValueFrom(authService.ensureAuthChecked());
   if (!authService) {
     return router.createUrlTree(['/auth/login']);
   }

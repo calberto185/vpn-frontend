@@ -1,5 +1,35 @@
 <!-- ====== Dispositivos: Gestión ====== -->
 
+<!-- Toast -->
+@if (toast()) {
+  <div class="toast toast-top toast-end z-50">
+    <div [class]="toast()!.ok ? 'alert alert-success' : 'alert alert-error'">
+      <span>{{ toast()!.msg }}</span>
+    </div>
+  </div>
+}
+
+@if (hasError()) {
+  <div class="alert alert-error shadow-sm mx-2 mt-3"><span>{{ hasError() }}</span></div>
+}
+
+<!-- Guía de flujo -->
+<section class="container mx-auto max-w-7xl px-2 md:px-4 mt-4">
+  <div class="alert alert-info shadow-sm text-sm">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    </svg>
+    <div>
+      <strong>Flujo de activación:</strong>
+      <span class="opacity-80">
+        1 · Crea el usuario en <a class="link" href="/panel/users">Usuarios</a> &nbsp;→&nbsp;
+        2 · Registra su dispositivo aquí (sin S-UI) &nbsp;→&nbsp;
+        3 · Ve a <a class="link" href="/panel/certificates">Certificados</a> para generar el acceso VPN / S-UI
+      </span>
+    </div>
+  </div>
+</section>
+
 <!-- Stats -->
 <section class="container mx-auto max-w-7xl px-2 md:px-4 mt-4">
   <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -9,9 +39,9 @@
           <path d="M3 7h18M3 17h18M6 3h12v18H6z"/>
         </svg>
       </div>
-      <div class="stat-title">Dispositivos</div>
-      <div class="stat-value text-2xl">1</div>
-      <div class="stat-desc">desde modelo</div>
+      <div class="stat-title">Total dispositivos</div>
+      <div class="stat-value text-2xl">{{ devicesTotal() }}</div>
+      <div class="stat-desc">registrados en la BD</div>
     </div>
 
     <div class="stat bg-base-100/80 border rounded-xl shadow-sm">
@@ -21,8 +51,8 @@
         </svg>
       </div>
       <div class="stat-title">Activos</div>
-      <div class="stat-value text-2xl">0</div>
-      <div class="stat-desc">con certificado válido</div>
+      <div class="stat-value text-2xl">{{ devicesActivos() }}</div>
+      <div class="stat-desc">sin revocar ni suspender</div>
     </div>
 
     <div class="stat bg-base-100/80 border rounded-xl shadow-sm">
@@ -32,8 +62,8 @@
         </svg>
       </div>
       <div class="stat-title">Revocados</div>
-      <div class="stat-value text-2xl">0</div>
-      <div class="stat-desc">últimos 30 días</div>
+      <div class="stat-value text-2xl">{{ devicesRevocados() }}</div>
+      <div class="stat-desc">certificado invalidado</div>
     </div>
   </div>
 </section>
@@ -42,60 +72,47 @@
 <section class="container mx-auto max-w-7xl px-2 md:px-4 mt-4">
   <div class="bg-base-100 border rounded-xl p-3 md:p-4 shadow-sm">
     <div class="flex flex-wrap items-center gap-3">
+
+      <!-- Búsqueda -->
       <label class="input input-bordered flex items-center gap-2 w-full sm:w-[28rem]" aria-label="Buscar dispositivos">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
         </svg>
-        <input id="search-devices" type="text" placeholder="Buscar por usuario, dispositivo, ID o certificado" />
+        <input id="search-devices" type="text" placeholder="Buscar por nombre, usuario, ID o S-UI email"
+               (input)="searchQuery.set($any($event.target).value)" />
       </label>
 
+      <!-- Filtro estado -->
       <div class="dropdown">
-        <button tabindex="0" class="btn btn-sm md:btn-md">Estado</button>
-        <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-48 z-[60]">
-          <li><a>Todos</a></li>
-          <li><a>Activos</a></li>
-          <li><a>Suspendidos</a></li>
-          <li><a>Revocados</a></li>
-          <li><a>Inactivos</a></li>
-        </ul>
-      </div>
-
-      <div class="dropdown">
-        <button tabindex="0" class="btn btn-ghost btn-sm md:btn-md">Certificado</button>
-        <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-48 z-[60]">
-          <li><a>Todos</a></li>
-          <li><a>Con certificado</a></li>
-          <li><a>Sin certificado</a></li>
-        </ul>
-      </div>
-
-      <div class="ml-auto flex items-center gap-2">
-        <div class="tooltip" data-tip="Seleccionar todo">
-          <input type="checkbox" class="checkbox checkbox-sm" aria-label="Seleccionar todo" />
-        </div>
-
-        <div class="dropdown dropdown-end">
-          <button tabindex="0" class="btn btn-ghost btn-sm md:btn-md">Acciones</button>
-          <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-64 z-[60]">
-            <li><a>Activar</a></li>
-            <li><a>Desactivar</a></li>
-            <li><a>Suspender</a></li>
-            <li><a>Reactivar</a></li>
-            <li><a>Revocar certificado</a></li>
-            <li><a>Regenerar certificado…</a></li>
-            <li><a>Exportar CSV</a></li>
-            <li><a class="text-error">Eliminar</a></li>
-          </ul>
-        </div>
-
-        <!-- Botón Agregar dispositivo -->
-        <button class="btn btn-primary btn-sm md:btn-md" type="button"
-                onclick="document.getElementById('add_device')?.showModal()">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 5v14M5 12h14"/>
-          </svg>
-          Agregar dispositivo
+        <button tabindex="0" class="btn btn-sm md:btn-md">
+          {{ filterEstado() || 'Estado' }}
         </button>
+        <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-48 z-[60]">
+          <li><a (click)="filterEstado.set('')">Todos</a></li>
+          <li><a (click)="filterEstado.set('activo')">Activos</a></li>
+          <li><a (click)="filterEstado.set('suspendido')">Suspendidos</a></li>
+          <li><a (click)="filterEstado.set('revocado')">Revocados</a></li>
+          <li><a (click)="filterEstado.set('inactivo')">Inactivos</a></li>
+        </ul>
+      </div>
+
+      <!-- Limpiar -->
+      @if (searchQuery() || filterEstado()) {
+        <button class="btn btn-ghost btn-sm" (click)="searchQuery.set(''); filterEstado.set('')">
+          ✕ Limpiar
+        </button>
+      }
+
+      <div class="ml-auto">
+        @if (canCreate()) {
+          <button class="btn btn-primary btn-sm md:btn-md" type="button"
+                  (click)="openModal('add_device')">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 5v14M5 12h14"/>
+            </svg>
+            Registrar dispositivo
+          </button>
+        }
       </div>
     </div>
   </div>
@@ -107,497 +124,347 @@
     <table class="table table-sm w-full">
       <thead>
         <tr>
-          <th class="w-8"><input type="checkbox" class="checkbox checkbox-xs" aria-label="Seleccionar todas" /></th>
           <th>Dispositivo</th>
           <th class="hidden lg:table-cell">Usuario</th>
-          <th class="hidden xl:table-cell">Certificado</th>
+          <th class="hidden xl:table-cell">Protocolo / S-UI</th>
           <th>Estado</th>
           <th class="hidden 2xl:table-cell">Creado</th>
-          <th class="hidden 2xl:table-cell">Actualizado</th>
-          <th class="text-right w-44">Acciones</th>
+          <th class="text-right w-36">Acciones</th>
         </tr>
       </thead>
       <tbody>
 
-  @for (d of ListDevices(); track d.id) {
-    <tr class="hover">
-      <!-- checkbox fila -->
-      <td>
-        <input
-          type="checkbox"
-          class="checkbox checkbox-xs"
-          [attr.aria-label]="'Seleccionar ' + (d.device || 'dispositivo')"
-        />
-      </td>
+        @for (d of filteredDevices(); track d.id) {
+          <tr class="hover">
 
-      <!-- Dispositivo -->
-      <td>
-        <div class="flex items-center gap-3">
-          <div class="avatar placeholder">
-            <div class="bg-primary/10 text-primary w-10 h-10 rounded-xl flex items-center justify-center">
-              {{ d.device?.[0] ? (d.device[0] | uppercase) : 'D' }}
-            </div>
-          </div>
-          <div>
-            <div class="font-medium leading-tight">
-              {{ d.device || '—' }}
-            </div>
-            <div class="text-[11px] opacity-70 break-all">
-              ID: {{ d.id }}
-            </div>
-          </div>
-        </div>
-      </td>
+            <!-- Dispositivo -->
+            <td>
+              <div class="flex items-center gap-3">
+                <div class="avatar placeholder">
+                  <div class="bg-primary/10 text-primary w-10 h-10 rounded-xl flex items-center justify-center font-bold">
+                    {{ d.device?.[0] | uppercase }}
+                  </div>
+                </div>
+                <div>
+                  <div class="font-medium leading-tight">{{ d.device || '—' }}</div>
+                  <div class="text-[11px] opacity-60">{{ d.typeDevice }}</div>
+                  <div class="text-[11px] opacity-50 break-all">ID: {{ d.id }}</div>
+                </div>
+              </div>
+            </td>
 
-      <!-- Usuario -->
-      <td class="hidden lg:table-cell">
-        <div class="leading-tight">
-          <div class="font-normal">
-            <!-- {{ userNameById(d.user_id) || '—' }} -->
-          </div>
-          <div class="text-[11px] opacity-70 break-all">
-            user_id: {{ d.user_id }}
-          </div>
-        </div>
-      </td>
+            <!-- Usuario -->
+            <td class="hidden lg:table-cell">
+              <div class="font-normal leading-tight">{{ userNameById(d.user_id) }}</div>
+              <div class="text-[11px] opacity-60 break-all">{{ d.user_id }}</div>
+            </td>
 
-      <!-- Certificado -->
-      <td class="hidden xl:table-cell">
-        <div class="text-[11px] opacity-80 break-all">
-          @if (d.certificate?.length) {
-            {{ d.certificate }}
-          } @else {
-            —
-          }
-        </div>
-      </td>
+            <!-- Protocolo / S-UI -->
+            <td class="hidden xl:table-cell">
+              <span class="badge badge-outline badge-sm">{{ d.protocol || 'sin protocolo' }}</span>
+              @if (d.sui_email) {
+                <div class="text-[11px] opacity-60 mt-1 break-all">{{ d.sui_email }}</div>
+              } @else {
+                <div class="text-[11px] opacity-40 mt-1">Sin certificado</div>
+              }
+            </td>
 
-      <!-- Estado -->
-      <td>
-        <div class="flex flex-wrap gap-1">
-          <span class="badge" [class.badge-success]="d.active" [class.badge-ghost]="!d.active">
-            {{ d.active ? 'Activo' : 'Inactivo' }}
-          </span>
+            <!-- Estado -->
+            <td>
+              <span class="badge" [class]="stateClass(d)">{{ stateLabel(d) }}</span>
+            </td>
 
-          <span class="badge" [class.badge-warning]="d.suspend" [class.badge-ghost]="!d.suspend">
-            {{ d.suspend ? 'Suspendido' : 'No suspendido' }}
-          </span>
+            <!-- Fecha -->
+            <td class="hidden 2xl:table-cell text-sm opacity-70">
+              {{ d.createdAt | date:'dd MMM yyyy · HH:mm' }}
+            </td>
 
-          <span class="badge" [class.badge-error]="d.revoked" [class.badge-ghost]="!d.revoked">
-            {{ d.revoked ? 'Revocado' : 'No revocado' }}
-          </span>
-        </div>
-      </td>
+            <!-- Acciones -->
+            <td class="text-right">
+              <div class="flex items-center justify-end gap-1">
+                <div class="tooltip" data-tip="Ver">
+                  <button class="btn btn-ghost btn-xs" type="button" (click)="openView(d)">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>
+                    </svg>
+                  </button>
+                </div>
+                @if (canUpdate()) {
+                  <div class="tooltip" data-tip="Editar">
+                    <button class="btn btn-ghost btn-xs" type="button" (click)="openEdit(d)">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
+                      </svg>
+                    </button>
+                  </div>
+                }
+                @if (canDelete() && !d.revoked) {
+                  <div class="tooltip" data-tip="Revocar">
+                    <button class="btn btn-ghost btn-xs text-warning" type="button" (click)="openRevoke(d)">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6L6 18M6 6l12 12"/>
+                      </svg>
+                    </button>
+                  </div>
+                }
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="text-center py-10 text-sm opacity-70">
+              No hay dispositivos registrados.
+            </td>
+          </tr>
+        }
 
-      <!-- Fechas -->
-      <td class="hidden 2xl:table-cell">
-        {{ d.createdAt | date:'dd MMM yyyy · HH:mm' }}
-      </td>
-      <td class="hidden 2xl:table-cell">
-        <!-- @if (!isEpoch(d.updatedAt)) {
-          {{ d.updatedAt | date:'dd MMM yyyy · HH:mm' }}
-        } @else {
-          —
-        } -->
-      </td>
-
-      <!-- Acciones -->
-      <td class="text-right">
-        <div class="flex items-center justify-end gap-1.5">
-          <div class="tooltip" data-tip="Ver">
-            <button class="btn btn-ghost btn-xs" type="button" >
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>
-              </svg>
-            </button>
-          </div>
-          <div class="tooltip" data-tip="Editar">
-            <button class="btn btn-ghost btn-xs" type="button" >
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
-              </svg>
-            </button>
-          </div>
-          <div class="tooltip" data-tip="Revocar">
-            <button class="btn btn-ghost btn-xs" type="button" >
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M18 6L6 18M6 6l12 12"/>
-              </svg>
-            </button>
-          </div>
-          <div class="tooltip" data-tip="Eliminar">
-            <button class="btn btn-ghost btn-xs text-error" type="button" >
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M3 6h18"/><path d="M8 6v14a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
-              </svg>
-            </button>
-          </div>
-        </div>
-      </td>
-    </tr>
-  } @empty {
-    <tr>
-      <td colspan="8" class="text-center py-10 text-sm opacity-70">
-        No hay dispositivos.
-      </td>
-    </tr>
-  }
-
-        <!-- /fila ejemplo -->
       </tbody>
     </table>
   </div>
 
-  <!-- Paginación -->
+  <!-- Contador -->
   <div class="mt-3 flex items-center justify-between">
-    <p class="text-sm opacity-70">Mostrando 1–1 de 1</p>
-    <nav class="join">
-      <button class="btn btn-xs join-item" disabled>«</button>
-      <button class="btn btn-xs join-item btn-active" aria-current="page">1</button>
-      <button class="btn btn-xs join-item" disabled>»</button>
-    </nav>
+    <p class="text-sm opacity-70">{{ filteredDevices().length }} de {{ devicesTotal() }} dispositivo(s)</p>
   </div>
 </section>
+
 
 <!-- ====== MODALES ====== -->
 
 <!-- Ver dispositivo -->
 <dialog id="view_device" class="modal">
-  <div class="modal-box w-11/12 max-w-3xl">
+  <div class="modal-box w-11/12 max-w-2xl">
     <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button></form>
-    <h3 class="text-lg font-bold">Detalle del dispositivo</h3>
-    <div class="grid gap-4 md:grid-cols-2 mt-3">
-      <div class="card border bg-base-200/60">
-        <div class="card-body p-4">
-          <h4 class="card-title text-sm">Información</h4>
-          <ul class="text-sm space-y-1">
-            <li><span class="opacity-70">ID:</span> dev-0001</li>
-            <li><span class="opacity-70">Dispositivo:</span> Pixel 7</li>
-            <li class="break-all"><span class="opacity-70">Usuario ID:</span> 3ec951c0-491f-4078-beff-4f658b8ea7a1</li>
-            <li><span class="opacity-70">Activo:</span> false</li>
-            <li><span class="opacity-70">Suspendido:</span> false</li>
-            <li><span class="opacity-70">Revocado:</span> false</li>
-          </ul>
-        </div>
-      </div>
-      <div class="card border bg-base-200/60">
-        <div class="card-body p-4">
-          <h4 class="card-title text-sm">Certificado</h4>
-          <div class="text-xs break-all bg-base-100 border rounded p-2">
-            cert-abc123...xyz789
+    <h3 class="text-lg font-bold mb-3">Detalle del dispositivo</h3>
+    @if (selectedDevice(); as d) {
+      <div class="grid gap-4 md:grid-cols-2">
+        <div class="card border bg-base-200/60">
+          <div class="card-body p-4 space-y-1 text-sm">
+            <h4 class="card-title text-sm mb-2">Información</h4>
+            <p><span class="opacity-60">ID:</span> {{ d.id }}</p>
+            <p><span class="opacity-60">Nombre:</span> {{ d.device }}</p>
+            <p><span class="opacity-60">Tipo:</span> {{ d.typeDevice }}</p>
+            <p><span class="opacity-60">Protocolo:</span> {{ d.protocol }}</p>
+            <p><span class="opacity-60">Usuario:</span> {{ userNameById(d.user_id) }}</p>
+            <p><span class="opacity-60">Plan:</span> {{ d.plan_id || '—' }}</p>
+            <p><span class="opacity-60">Servidor:</span> {{ d.server_id || '—' }}</p>
           </div>
-          <ul class="text-sm space-y-1 mt-2">
-            <li><span class="opacity-70">Creado:</span> 08 Ago 2025 · 22:10</li>
-            <li><span class="opacity-70">Actualizado:</span> 01 Ene 1970 · 00:00</li>
-            <li><span class="opacity-70">Suspendido el:</span> —</li>
-            <li><span class="opacity-70">Revocado el:</span> —</li>
-          </ul>
+        </div>
+        <div class="card border bg-base-200/60">
+          <div class="card-body p-4 space-y-1 text-sm">
+            <h4 class="card-title text-sm mb-2">Estado y S-UI</h4>
+            <p><span class="opacity-60">Activo:</span> <span class="badge badge-xs" [class.badge-success]="d.active" [class.badge-ghost]="!d.active">{{ d.active ? 'Sí' : 'No' }}</span></p>
+            <p><span class="opacity-60">Suspendido:</span> <span class="badge badge-xs" [class.badge-warning]="d.suspend" [class.badge-ghost]="!d.suspend">{{ d.suspend ? 'Sí' : 'No' }}</span></p>
+            <p><span class="opacity-60">Revocado:</span> <span class="badge badge-xs" [class.badge-error]="d.revoked" [class.badge-ghost]="!d.revoked">{{ d.revoked ? 'Sí' : 'No' }}</span></p>
+            @if (d.sui_email) {
+              <p class="mt-2"><span class="opacity-60">S-UI email:</span> {{ d.sui_email }}</p>
+              <p><span class="opacity-60">S-UI sub_id:</span> {{ d.sui_sub_id || '—' }}</p>
+            } @else {
+              <p class="mt-2 opacity-50 italic">Sin certificado generado aún.<br>Ve a <a class="link" href="/panel/certificates">Certificados</a> para crearlo.</p>
+            }
+            <p class="mt-2"><span class="opacity-60">Creado:</span> {{ d.createdAt | date:'dd MMM yyyy · HH:mm' }}</p>
+          </div>
         </div>
       </div>
-    </div>
+    }
     <div class="modal-action">
-      <button class="btn" type="button" onclick="document.getElementById('edit_device')?.showModal()">Editar</button>
-      <button class="btn btn-error" type="button" onclick="document.getElementById('revoke_device')?.showModal()">Revocar</button>
+      <button class="btn btn-ghost" type="button" onclick="document.getElementById('view_device')?.close()">Cerrar</button>
+      @if (selectedDevice(); as d) {
+        <button class="btn btn-primary" type="button" (click)="closeModal('view_device'); openEdit(d)">Editar</button>
+      }
     </div>
   </div>
   <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
 </dialog>
 
-<!-- Agregar dispositivo -->
+
+<!-- Registrar dispositivo -->
 <dialog id="add_device" class="modal">
   <div class="modal-box max-w-2xl">
-
-    <!-- Botón de cierre -->
     <form method="dialog">
       <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button>
     </form>
 
-    <!-- Encabezado -->
-    <h3 class="text-lg font-bold">Nuevo dispositivo</h3>
-    <p class="text-sm opacity-70 mb-3">Registra un dispositivo y asigna su estado inicial.</p>
+    <h3 class="text-lg font-bold">Registrar dispositivo</h3>
+    <p class="text-sm opacity-60 mb-4">
+      Paso 2 del flujo: registra el dispositivo en la BD.
+      El certificado VPN / acceso S-UI se genera después en
+      <a class="link" href="/panel/certificates">Certificados</a>.
+    </p>
 
-    <!-- Formulario reactivo -->
-    <form
-  class="grid gap-3 md:grid-cols-2"
-  [formGroup]="deviceForm"
-  (ngSubmit)="onSubmit()"
-  novalidate
-  autocomplete="on"
->
-  <!-- Usuario -->
-  <div class="w-full md:col-span-2">
-    <label for="user_id" class="block text-sm font-medium text-gray-700 mb-1">
-      Usuario
-    </label>
-    <div
-      class="flex items-center border border-gray-300 rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-blue-500 bg-white"
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="1.5"
-        aria-hidden="true"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.25a8.25 8.25 0 0115 0v.75H4.5v-.75z"
-        />
-      </svg>
-      <select
-        class="w-full outline-none text-gray-700 placeholder-gray-400 bg-transparent"
-        formControlName="user_id"
-        aria-label="Usuario"
-        (change)="selectedUser($event)"
-        required
-      >
-        <option value="" disabled>Selecciona un usuario…</option>
-        @for (item of ListUsers(); track item.id) {
-          <option [value]="item.id">
-            {{ item.firstNames }} {{ item.lastNames }} — DNI: {{ item.dni }}
+    <form class="grid gap-4 md:grid-cols-2" [formGroup]="deviceForm" (ngSubmit)="onSubmit()" novalidate>
+
+      <!-- Usuario -->
+      <div class="form-control md:col-span-2">
+        <label class="label"><span class="label-text">Usuario *</span></label>
+        <select class="select select-bordered w-full" formControlName="user_id"
+                (change)="onSelectedUser($event)" required>
+          <option value="" disabled>Selecciona un usuario…</option>
+          @for (u of ListUsers(); track u.id) {
+            <option [value]="u.id">{{ u.firstNames }} {{ u.lastNames }} — {{ u.email }}</option>
+          }
+        </select>
+        @if (deviceForm.get('user_id')?.touched && deviceForm.get('user_id')?.invalid) {
+          <span class="label-text-alt text-error mt-1">Requerido</span>
+        }
+      </div>
+
+      <!-- Servicio / Plan del usuario -->
+      <div class="form-control md:col-span-2">
+        <label class="label">
+          <span class="label-text">Servicio / Plan *</span>
+          @if (planSelected().service_id) {
+            <span class="label-text-alt text-primary">{{ planSelected().limitDevices }} dispositivo(s) permitido(s)</span>
+          }
+        </label>
+        <select class="select select-bordered w-full" formControlName="plan_id"
+                (change)="onSelectedPlan($event)" required
+                [attr.disabled]="!clientSelected().id ? true : null">
+          <option value="" disabled>
+            {{ !clientSelected().id ? 'Primero selecciona un usuario…' : 'Selecciona el servicio / plan…' }}
           </option>
+          @for (p of clientSelected().services; track p.plan_id) {
+            <option [value]="p.plan_id">
+              {{ p.service_sortName }} — {{ p.plan_title_name }}
+              (máx. {{ p.limitDevices }} dispositivo(s))
+            </option>
+          }
+        </select>
+        @if (clientSelected().id && clientSelected().services.length === 0) {
+          <span class="label-text-alt text-warning mt-1">Este usuario no tiene servicios/planes activos.</span>
         }
-      </select>
-    </div>
-    @if (deviceForm.get('user_id')?.touched && deviceForm.get('user_id')?.invalid) {
-      <p class="text-red-500 text-sm mt-1">Seleccione un usuario.</p>
-    }
-  </div>
-
-  <!-- Servicios -->
-  <div class="form-control w-full md:col-span-2 validator">
-    <label class="block text-sm font-medium text-gray-700 mb-1">Servicios para:</label>
-    <div class="flex items-center border border-gray-300 rounded-lg px-3 py-2
-         focus-within:ring-2 focus-within:ring-blue-500 bg-white">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" fill="none"
-        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <circle cx="12" cy="12" r="10"></circle>
-        <line x1="2" y1="12" x2="22" y2="12"></line>
-        <path d="M12 2a15 15 0 0 1 4 10 15 15 0 0 1-4 10 15 15 0 0 1-4-10 15 15 0 0 1 4-10z"></path>
-      </svg>
-      <select formControlName="plan_id" (change)="selectedPlan($event)"  required class="w-full outline-none text-gray-700 bg-transparent">
-        <option value="" disabled selected hidden>Selecciona los servicios</option>
-        @for (item of this.clientSelected().services; track item.plan_id; let idx = $index) {
-        <option [value]="item.plan_id">{{ item.service_sortName }} ({{ item.service_longName}}) - {{item.limitDevices}} {{item.service_sortName.includes("Netflix") ? 'Pantalla(s)' : 'Dispotivo(s)'}} | {{ item.global ? 'GLOBAL' : item.country.countryName }}  </option>
+        @if (deviceForm.get('plan_id')?.touched && deviceForm.get('plan_id')?.invalid) {
+          <span class="label-text-alt text-error mt-1">Requerido</span>
         }
-      </select>
-    </div>
-    @if (deviceForm.get('plan_id')?.touched && deviceForm.get('plan_id')?.invalid) {
-    <p class="text-red-500 text-sm mt-1">Selecciona los servicios.</p>
-    }
-  </div>
+      </div>
 
-  <!-- Servidores -->
-  <div class="form-control w-full md:col-span-2 validator">
-    <label class="block text-sm font-medium text-gray-700 mb-1">Servidores:</label>
-    <div class="flex items-center border border-gray-300 rounded-lg px-3 py-2
-         focus-within:ring-2 focus-within:ring-blue-500 bg-white">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" fill="none"
-        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <circle cx="12" cy="12" r="10"></circle>
-        <line x1="2" y1="12" x2="22" y2="12"></line>
-        <path d="M12 2a15 15 0 0 1 4 10 15 15 0 0 1-4 10 15 15 0 0 1-4-10 15 15 0 0 1 4-10z"></path>
-      </svg>
-      <select formControlName="server_id" required class="w-full outline-none text-gray-700 bg-transparent">
-        <option value="" disabled selected hidden>Selecciona el servidor</option>
-        @for (item of this.planSelected().servers; track item.server_id; let idx = $index) {
-        <option [value]="item.server_id">{{ item.server_country }} ({{ item.server_name}})  </option>
+      <!-- Servidor del plan -->
+      <div class="form-control md:col-span-2">
+        <label class="label"><span class="label-text">Servidor *</span></label>
+        <select class="select select-bordered w-full" formControlName="server_id" required
+                [attr.disabled]="!planSelected().plan_id ? true : null">
+          <option value="" disabled>
+            {{ !planSelected().plan_id ? 'Primero selecciona un plan…' : 'Selecciona el servidor…' }}
+          </option>
+          @for (s of planSelected().servers; track s.server_id) {
+            <option [value]="s.server_id">{{ s.server_country }} — {{ s.server_name }}</option>
+          }
+        </select>
+        @if (deviceForm.get('server_id')?.touched && deviceForm.get('server_id')?.invalid) {
+          <span class="label-text-alt text-error mt-1">Requerido</span>
         }
-      </select>
-    </div>
-    @if (deviceForm.get('server_id')?.touched && deviceForm.get('server_id')?.invalid) {
-    <p class="text-red-500 text-sm mt-1">Selecciona el servidor.</p>
-    }
+      </div>
+
+      <!-- Protocolo -->
+      <div class="form-control">
+        <label class="label"><span class="label-text">Protocolo *</span></label>
+        <select class="select select-bordered w-full" formControlName="protocol" required>
+          <option value="s-ui">S-UI (VLESS / Hysteria2)</option>
+          <option value="openvpn">OpenVPN</option>
+        </select>
+      </div>
+
+      <!-- Tipo de dispositivo -->
+      <div class="form-control">
+        <label class="label"><span class="label-text">Tipo de dispositivo *</span></label>
+        <select class="select select-bordered w-full" formControlName="typeDevice" required>
+          <option value="movil">Móvil</option>
+          <option value="tablet">Tablet</option>
+          <option value="laptop">Laptop</option>
+          <option value="desktop">Desktop</option>
+          <option value="tv">Smart TV</option>
+          <option value="router">Router</option>
+          <option value="others">Otro</option>
+        </select>
+      </div>
+
+      <!-- Nombre del dispositivo -->
+      <div class="form-control md:col-span-2">
+        <label class="label"><span class="label-text">Nombre del dispositivo *</span></label>
+        <input class="input input-bordered" type="text"
+               placeholder="Ej. iPhone 14, MacBook, Pixel 7…"
+               formControlName="device" required />
+        @if (deviceForm.get('device')?.touched && deviceForm.get('device')?.invalid) {
+          <span class="label-text-alt text-error mt-1">Requerido</span>
+        }
+      </div>
+
+      <!-- Activo -->
+      <label class="label cursor-pointer justify-start gap-3 md:col-span-2">
+        <input type="checkbox" class="toggle toggle-success" formControlName="active" />
+        <span class="label-text">Marcar como activo</span>
+      </label>
+
+      <div class="modal-action md:col-span-2">
+        <button class="btn btn-ghost" type="button" (click)="onCancelAdd()">Cancelar</button>
+        <button class="btn btn-primary" type="submit" [disabled]="deviceForm.invalid">
+          Registrar
+        </button>
+      </div>
+    </form>
   </div>
-
-  <!-- Tipo de dispositivo -->
-  <div class="w-full md:col-span-2">
-    <label for="typeDevice" class="block text-sm font-medium text-gray-700 mb-1">
-      Tipo de dispositivo
-    </label>
-    <div
-      class="flex items-center border border-gray-300 rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-blue-500 bg-white"
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="1.5"
-        aria-hidden="true"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M3.75 6.75v10.5a2.25 2.25 0 002.25 2.25h12a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0018 4.5H6a2.25 2.25 0 00-2.25 2.25z"
-        />
-      </svg>
-      <select
-        class="w-full outline-none text-gray-700 bg-transparent"
-        formControlName="typeDevice"
-        aria-label="Tipo de dispositivo"
-        required
-      >
-        <option value="movil">Móvil</option>
-        <option value="tablet">Tablet</option>
-        <option value="laptop">Laptop</option>
-        <option value="desktop">Desktop</option>
-        <option value="tv">TV</option>
-        <option value="router">Router</option>
-        <option value="others">Otros</option>
-      </select>
-    </div>
-    @if (deviceForm.get('typeDevice')?.touched && deviceForm.get('typeDevice')?.invalid) {
-      <p class="text-red-500 text-sm mt-1">Seleccione un tipo de dispositivo.</p>
-    }
-  </div>
-
-  <!-- Nombre del dispositivo -->
-  <div class="w-full md:col-span-2">
-    <label for="device" class="block text-sm font-medium text-gray-700 mb-1">
-      Nombre del dispositivo
-    </label>
-    <div
-      class="flex items-center border border-gray-300 rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-blue-500 bg-white"
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="1.5"
-        aria-hidden="true"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M9.75 3h4.5a2.25 2.25 0 012.25 2.25v13.5A2.25 2.25 0 0114.25 21h-4.5A2.25 2.25 0 017.5 18.75V5.25A2.25 2.25 0 019.75 3z"
-        />
-      </svg>
-      <input
-        type="text"
-        placeholder="Ej. iPhone 14 / Pixel 7 / MacBook"
-        formControlName="device"
-        required
-        class="w-full outline-none text-gray-700 placeholder-gray-400"
-      />
-    </div>
-    @if (deviceForm.get('device')?.touched && deviceForm.get('device')?.invalid) {
-      <p class="text-red-500 text-sm mt-1">Ingrese el nombre del dispositivo.</p>
-    }
-  </div>
-
-
-  <!-- Activo -->
-  <label class="label cursor-pointer justify-start gap-3 md:col-span-2">
-    <input
-      type="checkbox"
-      class="toggle"
-      formControlName="active"
-      aria-label="Activo"
-    />
-    <span class="text-gray-700">Activo</span>
-  </label>
-
-  <!-- Acciones -->
-  <div class="modal-action md:col-span-2">
-    <button class="btn btn-ghost" type="button" (click)="onCancel()">Cancelar</button>
-    <button class="btn btn-primary" type="submit" [disabled]="deviceForm.invalid">
-      Crear
-    </button>
-  </div>
-</form>
-
-  </div>
-
-  <form method="dialog" class="modal-backdrop">
-    <button aria-label="Cerrar">close</button>
-  </form>
+  <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
 </dialog>
-
-
 
 
 <!-- Editar dispositivo -->
 <dialog id="edit_device" class="modal">
-  <div class="modal-box max-w-2xl">
+  <div class="modal-box max-w-md">
     <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button></form>
-    <h3 class="text-lg font-bold">Editar dispositivo</h3>
-    <div class="grid gap-3 md:grid-cols-2 mt-2">
-      <label class="input input-bordered w-full md:col-span-2"><input type="text" value="dev-0001" class="w-full" disabled /></label>
-      <label class="input input-bordered w-full md:col-span-2"><input type="text" value="3ec951c0-491f-4078-beff-4f658b8ea7a1" class="w-full" /></label>
-      <label class="input input-bordered w-full md:col-span-2"><input type="text" value="Pixel 7" class="w-full" /></label>
-      <label class="label cursor-pointer justify-start gap-3 md:col-span-2">
-        <input type="checkbox" class="toggle" aria-label="Activo" />
-        <span>Activo</span>
-      </label>
-      <label class="input input-bordered w-full md:col-span-2 break-all"><input type="text" value="cert-abc123...xyz789" class="w-full" /></label>
-      <div class="grid grid-cols-2 gap-3 md:col-span-2">
-        <label class="label cursor-pointer justify-start gap-3">
-          <input type="checkbox" class="toggle" aria-label="Suspendido" />
-          <span>Suspendido</span>
+    <h3 class="text-lg font-bold mb-3">Editar dispositivo</h3>
+
+    <form class="space-y-4" [formGroup]="editForm" (ngSubmit)="onEditSubmit()" novalidate>
+      <div class="form-control">
+        <label class="label"><span class="label-text">Nombre</span></label>
+        <input class="input input-bordered" type="text" formControlName="device" />
+      </div>
+      <div class="form-control">
+        <label class="label"><span class="label-text">Tipo</span></label>
+        <select class="select select-bordered w-full" formControlName="typeDevice">
+          <option value="movil">Móvil</option>
+          <option value="tablet">Tablet</option>
+          <option value="laptop">Laptop</option>
+          <option value="desktop">Desktop</option>
+          <option value="tv">Smart TV</option>
+          <option value="router">Router</option>
+          <option value="others">Otro</option>
+        </select>
+      </div>
+      <div class="flex gap-6">
+        <label class="label cursor-pointer gap-2">
+          <input type="checkbox" class="toggle toggle-success" formControlName="active" />
+          <span class="label-text">Activo</span>
         </label>
-        <label class="label cursor-pointer justify-start gap-3">
-          <input type="checkbox" class="toggle" aria-label="Revocado" />
-          <span>Revocado</span>
+        <label class="label cursor-pointer gap-2">
+          <input type="checkbox" class="toggle toggle-warning" formControlName="suspend" />
+          <span class="label-text">Suspendido</span>
         </label>
       </div>
-      <div class="grid grid-cols-2 gap-3 md:col-span-2">
-        <label class="input input-bordered w-full"><input type="text" value="—" class="w-full" disabled /></label>
-        <label class="input input-bordered w-full"><input type="text" value="—" class="w-full" disabled /></label>
+      <div class="modal-action">
+        <button class="btn btn-ghost" type="button" (click)="closeModal('edit_device')">Cancelar</button>
+        <button class="btn btn-primary" type="submit" [disabled]="editForm.invalid">Guardar</button>
       </div>
-      <div class="grid grid-cols-2 gap-3 md:col-span-2">
-        <label class="input input-bordered w-full"><input type="text" value="08 Ago 2025 · 22:10" class="w-full" disabled /></label>
-        <label class="input input-bordered w-full"><input type="text" value="01 Ene 1970 · 00:00" class="w-full" disabled /></label>
-      </div>
-    </div>
-    <div class="modal-action">
-      <button class="btn btn-ghost" type="button">Cancelar</button>
-      <button class="btn btn-primary" type="button">Guardar</button>
-    </div>
+    </form>
   </div>
   <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
 </dialog>
 
-<!-- Revocar certificado / dispositivo -->
+
+<!-- Revocar dispositivo -->
 <dialog id="revoke_device" class="modal">
   <div class="modal-box">
     <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button></form>
-    <h3 class="text-lg font-bold text-warning">Revocar certificado</h3>
-    <p class="py-2">Esto marcará el dispositivo como <strong>revocado</strong> e invalidará su certificado. ¿Deseas continuar?</p>
-    <div class="modal-action">
-      <button class="btn" type="button">Cancelar</button>
-      <button class="btn btn-warning" type="button">Revocar</button>
-    </div>
-  </div>
-  <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
-</dialog>
-
-<!-- Eliminar dispositivo -->
-<dialog id="delete_device" class="modal">
-  <div class="modal-box">
-    <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button></form>
-    <h3 class="text-lg font-bold text-error">Eliminar dispositivo</h3>
-    <p class="py-2">Esta acción es permanente. ¿Deseas continuar?</p>
-    <div class="modal-action">
-      <button class="btn" type="button">Cancelar</button>
-      <button class="btn btn-error" type="button">Eliminar</button>
-    </div>
-  </div>
-  <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
-</dialog>
-
-<!-- Atajo: Ctrl/Cmd + K enfoca búsqueda -->
-<script>
-  document.addEventListener('keydown', (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
-      const input = document.getElementById('search-devices');
-      if (input) { e.preventDefault(); input.focus(); }
+    <h3 class="text-lg font-bold text-warning">Revocar dispositivo</h3>
+    @if (selectedDevice(); as d) {
+      <p class="py-3">
+        ¿Revocar <strong>{{ d.device }}</strong> de <strong>{{ userNameById(d.user_id) }}</strong>?
+        Esto marcará el dispositivo como revocado e invalidará su acceso VPN/S-UI.
+      </p>
     }
-  });
-</script>
+    <div class="modal-action">
+      <button class="btn btn-ghost" type="button" (click)="closeModal('revoke_device')">Cancelar</button>
+      <button class="btn btn-warning" type="button" (click)="doRevoke()">Revocar</button>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
+</dialog>

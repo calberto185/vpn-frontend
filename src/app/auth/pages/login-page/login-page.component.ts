@@ -3,11 +3,12 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { environment } from '../../../../environments/environment';
+import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 declare var grecaptcha: any;
 
 @Component({
   selector: 'app-login-page',
-  imports: [RouterLink, ReactiveFormsModule],
+  imports: [RouterLink, ReactiveFormsModule, TranslatePipe],
   templateUrl: './login-page.component.html',
   styleUrl: './login-page.component.css'
 })
@@ -15,6 +16,7 @@ export class LoginPageComponent implements AfterViewInit, OnInit {
   fb = inject(FormBuilder);
   hasError = signal("");
   isPosting = signal(false);
+  showPassword = signal(false);
   router = inject(Router);
   ngZone = inject(NgZone);
 
@@ -48,26 +50,31 @@ export class LoginPageComponent implements AfterViewInit, OnInit {
 // RECAPCHA
   onSubmitRecaptcha(token: string) {
     if(this.loginForm.invalid) {
-      this.hasError.set("Formulario invalido");
-      setTimeout(() => {
-        this.hasError.set("");
-      }, 3000);
+      this.hasError.set("Formulario inválido, revisa los campos.");
+      setTimeout(() => { this.hasError.set(""); }, 3000);
+      (window as any).grecaptcha?.reset();
       return;
     }
     const { email = '', password = '', } = this.loginForm.value;
-    this.authService.login({email, password, recaptcha: token}).subscribe((resp) => {
-        if(resp?.error?.message) {
-          this.hasError.set(resp?.error?.message)
-          setTimeout(() => {
-          this.hasError.set("")
-          }, 4000);
+    this.isPosting.set(true);
+    this.authService.login({email, password, recaptcha: token}).subscribe({
+      next: (resp) => {
+        this.isPosting.set(false);
+        if(resp?.error?.message || resp?.status >= 400) {
+          this.hasError.set(resp?.error?.message ?? 'Credenciales incorrectas.');
+          setTimeout(() => { this.hasError.set(""); }, 4000);
+          (window as any).grecaptcha?.reset();
           return;
         }
-        // this.router.navigateByUrl('/');
-        this.router.navigateByUrl('/client');
-        // this.router.navigateByUrl('/panel/dashboard');
+        this.redirectAfterLogin();
+      },
+      error: (err) => {
+        this.isPosting.set(false);
+        this.hasError.set(err?.error?.message ?? 'Credenciales incorrectas.');
+        setTimeout(() => { this.hasError.set(""); }, 4000);
+        (window as any).grecaptcha?.reset();
+      }
     });
-
   }
 
   onRecaptchaLoad() {
@@ -87,11 +94,13 @@ export class LoginPageComponent implements AfterViewInit, OnInit {
   }
 
   onSubmit() {
+    if (this.loginForm.invalid) {
+      this.loginForm.markAllAsTouched();
+      return;
+    }
     const grecaptcha = (window as any).grecaptcha;
     if (grecaptcha) {
-      grecaptcha.execute(); // Ejecuta el reCAPTCHA invisible
-    } else {
-      console.error('❌ grecaptcha no está inicializado');
+      grecaptcha.execute();
     }
   }
 
@@ -111,16 +120,30 @@ export class LoginPageComponent implements AfterViewInit, OnInit {
     (window as any).google.accounts.id.disableAutoSelect();
   }
 
+  /** Redirige al módulo correcto según el rol del usuario */
+  private redirectAfterLogin() {
+    const role = this.authService.role()?.toLowerCase() ?? null;
+    const isPanelUser = role !== null && role !== '' && role !== 'client';
+    this.router.navigateByUrl(isPanelUser ? '/panel' : '/client');
+  }
+
   handleCredentialResponse(response: any) {
-     this.authService.loginGoogle({jwt: response.credential}).subscribe((resp) => {
-        if(resp?.error?.message) {
-          this.hasError.set(resp?.error?.message)
-          setTimeout(() => {
-          this.hasError.set("")
-          }, 4000);
+    this.isPosting.set(true);
+    this.authService.loginGoogle({jwt: response.credential}).subscribe({
+      next: (resp) => {
+        this.isPosting.set(false);
+        if(resp?.error?.message || resp?.status >= 400) {
+          this.hasError.set(resp?.error?.message ?? 'Error al iniciar sesión con Google.');
+          setTimeout(() => { this.hasError.set(""); }, 4000);
           return;
         }
-        this.router.navigateByUrl('/client');
+        this.redirectAfterLogin();
+      },
+      error: (err) => {
+        this.isPosting.set(false);
+        this.hasError.set(err?.error?.message ?? 'Error al iniciar sesión con Google.');
+        setTimeout(() => { this.hasError.set(""); }, 4000);
+      }
     });
   }
 

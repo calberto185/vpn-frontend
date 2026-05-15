@@ -8,8 +8,8 @@
         <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 7h18M3 17h18M6 3h12v18H6z"/></svg>
       </div>
       <div class="stat-title">Pagos</div>
-      <div class="stat-value text-2xl">1</div>
-      <div class="stat-desc">desde modelo</div>
+      <div class="stat-value text-2xl">{{ ListPayments().length }}</div>
+      <div class="stat-desc">total registrados</div>
     </div>
 
     <div class="stat bg-base-100/80 border rounded-xl shadow-sm">
@@ -17,8 +17,8 @@
         <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>
       </div>
       <div class="stat-title">Aceptados</div>
-      <div class="stat-value text-2xl">0</div>
-      <div class="stat-desc">últimos 30 días</div>
+      <div class="stat-value text-2xl">{{ paymentsAceptados() }}</div>
+      <div class="stat-desc">confirmados</div>
     </div>
 
     <div class="stat bg-base-100/80 border rounded-xl shadow-sm">
@@ -26,7 +26,7 @@
         <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v5M12 16h.01"/></svg>
       </div>
       <div class="stat-title">Pendientes</div>
-      <div class="stat-value text-2xl">1</div>
+      <div class="stat-value text-2xl">{{ paymentsPendientes() }}</div>
       <div class="stat-desc">en revisión</div>
     </div>
   </div>
@@ -34,70 +34,130 @@
 
 <!-- Action bar -->
 <section class="container mx-auto max-w-7xl px-2 md:px-4 mt-4">
-  <div class="bg-base-100 border rounded-xl p-3 md:p-4 shadow-sm">
-    <div class="flex flex-wrap items-center gap-3">
-      <label class="input input-bordered flex items-center gap-2 w-full sm:w-[28rem]" aria-label="Buscar pagos">
-        <svg class="h-5 w-5 opacity-70" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-        <input id="search-payments" type="text" placeholder="Buscar por usuario, dispositivo, ID o cuenta" />
+  <div class="bg-base-100 border rounded-xl p-3 md:p-4 shadow-sm space-y-3">
+
+    <!-- Row 1: search + buttons -->
+    <div class="flex flex-wrap items-center gap-2">
+      <!-- Búsqueda -->
+      <label class="input input-bordered input-sm flex items-center gap-2 flex-1 min-w-[200px]" aria-label="Buscar pagos">
+        <svg class="h-4 w-4 opacity-50 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input id="search-payments" type="text" placeholder="Buscar por usuario, email, ID…"
+          [value]="searchQuery()"
+          (input)="searchQuery.set($any($event.target).value); currentPage.set(1)" />
       </label>
 
+      <!-- Filtro Estado -->
       <div class="dropdown">
-        <button tabindex="0" class="btn btn-sm md:btn-md">Estado</button>
-        <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-56 z-[60]">
-          <li><a>Todos</a></li>
-          <li><a>Pendiente</a></li>
-          <li><a>Verificando</a></li>
-          <li><a>Aceptado</a></li>
-          <li><a>Devuelto</a></li>
+        <button tabindex="0" class="btn btn-sm" [class.btn-primary]="filterState()">
+          {{ filterState() || 'Estado' }}
+          <svg class="h-3 w-3 ml-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-48 z-[60]">
+          <li><a (click)="filterState.set(''); currentPage.set(1)">Todos</a></li>
+          <li><a (click)="filterState.set('Pendiente'); currentPage.set(1)">Pendiente</a></li>
+          <li><a (click)="filterState.set('Varificando'); currentPage.set(1)">Verificando</a></li>
+          <li><a (click)="filterState.set('Aceptado'); currentPage.set(1)">Aceptado</a></li>
+          <li><a (click)="filterState.set('Devuelto'); currentPage.set(1)">Devuelto</a></li>
         </ul>
       </div>
 
+      <!-- Filtro Método -->
       <div class="dropdown">
-        <button tabindex="0" class="btn btn-ghost btn-sm md:btn-md">Moneda</button>
-        <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-48 z-[60]">
-          <li><a>Todos</a></li>
-          <li><a>USD</a></li>
-          <li><a>PEN</a></li>
-          <li><a>BTC</a></li>
-          <li><a>USDT</a></li>
+        <button tabindex="0" class="btn btn-sm" [class.btn-primary]="filterMethod()">
+          {{ filterMethod() || 'Método' }}
+          <svg class="h-3 w-3 ml-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 z-[60]">
+          <li><a (click)="filterMethod.set(''); currentPage.set(1)">Todos</a></li>
+          <li><a (click)="filterMethod.set('transferencia'); currentPage.set(1)">Transferencia bancaria</a></li>
+          <li><a (click)="filterMethod.set('efectivo'); currentPage.set(1)">Efectivo</a></li>
+          <li><a (click)="filterMethod.set('crypto'); currentPage.set(1)">Crypto</a></li>
+          <li><a (click)="filterMethod.set('monedero'); currentPage.set(1)">Monedero</a></li>
         </ul>
       </div>
 
-      <div class="dropdown">
-        <button tabindex="0" class="btn btn-ghost btn-sm md:btn-md">Periodo</button>
-        <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-48 z-[60]">
-          <li><a>Todos</a></li>
-          <li><a>Mensual</a></li>
-          <li><a>Trimestral</a></li>
-          <li><a>Anual</a></li>
-        </ul>
-      </div>
+      <!-- Filtro Servicio -->
+      <label class="input input-bordered input-sm flex items-center gap-2 w-40" aria-label="Filtrar por servicio">
+        <svg class="h-3.5 w-3.5 opacity-50 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+        <input type="text" placeholder="Servicio…"
+          [value]="filterService()"
+          (input)="filterService.set($any($event.target).value); currentPage.set(1)" />
+      </label>
+
+      <!-- Limpiar filtros -->
+      @if (hasActiveFilters()) {
+        <button class="btn btn-ghost btn-sm text-error" type="button" (click)="clearFilters()">
+          <svg class="h-3.5 w-3.5 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          Limpiar
+        </button>
+      }
 
       <div class="ml-auto flex items-center gap-2">
-        <div class="tooltip" data-tip="Seleccionar todo">
-          <input type="checkbox" class="checkbox checkbox-sm" aria-label="Seleccionar todo" />
-        </div>
-
-        <div class="dropdown dropdown-end">
-          <button tabindex="0" class="btn btn-ghost btn-sm md:btn-md">Acciones</button>
-          <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-64 z-[60]">
-            <li><a>Marcar verificando</a></li>
-            <li><a>Aceptar</a></li>
-            <li><a>Devolver</a></li>
-            <li><a>Exportar CSV</a></li>
-            <li><a class="text-error">Eliminar</a></li>
-          </ul>
-        </div>
-
-        <!-- Botón Agregar pago -->
-        <button class="btn btn-primary btn-sm md:btn-md" type="button"
-                onclick="document.getElementById('add_payment')?.showModal()">
-          <svg class="h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-               stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-          Agregar pago
+        <!-- Exportar -->
+        <button class="btn btn-outline btn-sm" type="button" (click)="downloadPaymentsReport()">
+          <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          <span class="hidden sm:inline">Exportar</span>
         </button>
+
+        @if (canCreate()) {
+          <button class="btn btn-primary btn-sm" type="button"
+                  onclick="document.getElementById('add_payment')?.showModal()">
+            <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                 stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+            <span class="hidden sm:inline">Agregar pago</span>
+          </button>
+        }
       </div>
     </div>
+
+    <!-- Row 2: period tabs + date range + page size -->
+    <div class="flex flex-wrap items-center gap-2">
+      <!-- Tabs de período -->
+      <div class="join">
+        @for (tab of [
+          { key: 'all',   label: 'Todos' },
+          { key: 'today', label: 'Hoy' },
+          { key: 'week',  label: 'Semana' },
+          { key: 'month', label: 'Mes' },
+          { key: 'year',  label: 'Año' }
+        ]; track tab.key) {
+          <button class="btn btn-xs join-item"
+                  [class.btn-primary]="filterPeriod() === tab.key"
+                  (click)="filterPeriod.set($any(tab.key)); dateFrom.set(''); dateTo.set(''); currentPage.set(1)">
+            {{ tab.label }}
+          </button>
+        }
+      </div>
+
+      <!-- Rango personalizado -->
+      <div class="flex items-center gap-1">
+        <span class="text-xs opacity-50">Desde</span>
+        <input type="date" class="input input-bordered input-xs w-32"
+               [value]="dateFrom()"
+               (change)="dateFrom.set($any($event.target).value); filterPeriod.set('all'); currentPage.set(1)" />
+        <span class="text-xs opacity-50">Hasta</span>
+        <input type="date" class="input input-bordered input-xs w-32"
+               [value]="dateTo()"
+               (change)="dateTo.set($any($event.target).value); filterPeriod.set('all'); currentPage.set(1)" />
+      </div>
+
+      <!-- Items por página -->
+      <div class="flex items-center gap-1 ml-auto">
+        <span class="text-xs opacity-50">Por página:</span>
+        <div class="join">
+          @for (size of [25, 50, 100, 0]; track size) {
+            <button class="btn btn-xs join-item"
+                    [class.btn-primary]="pageSize() === size"
+                    (click)="setPageSize(size)">
+              {{ size === 0 ? 'Todos' : size }}
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+
   </div>
 </section>
 
@@ -205,6 +265,15 @@
   </div>
 </section> -->
 
+<!-- Toast -->
+@if (toast()) {
+  <div class="toast toast-top toast-end z-50">
+    <div class="alert" [class.alert-success]="toast()!.ok" [class.alert-error]="!toast()!.ok">
+      <span>{{ toast()!.msg }}</span>
+    </div>
+  </div>
+}
+
 <section class="container mx-auto max-w-7xl px-2 md:px-4 mt-4">
   <div class="bg-base-100 border rounded-xl shadow-sm overflow-x-auto">
     <table class="table table-sm w-full">
@@ -214,182 +283,433 @@
             <input type="checkbox" class="checkbox checkbox-xs" aria-label="Seleccionar todas" />
           </th>
           <th>Usuario</th>
-          <th class="lg:table-cell">Servicio</th>
-          <th class="">PAGO</th>
+          <th class="hidden lg:table-cell">Plan / Servicio</th>
+          <th>Monto</th>
           <th>Estado</th>
-          <th class="hidden md:table-cell">Verificado</th>
-          <th class="hidden xl:table-cell">Dispositivos</th>
-          <!-- <th class="hidden 2xl:table-cell">Creado</th>
-          <th class="text-right w-36">Acciones</th> -->
+          <th class="hidden xl:table-cell">Período</th>
+          <th class="hidden 2xl:table-cell">Creado</th>
+          <th class="text-right">Acciones</th>
         </tr>
       </thead>
       <tbody>
+        @for (p of paginatedPayments(); track p.id) {
+          <tr class="hover">
+            <td>
+              <input type="checkbox" class="checkbox checkbox-xs" [attr.aria-label]="'Seleccionar ' + p.user_id" />
+            </td>
 
+            <td>
+              <div class="font-medium leading-tight capitalize">{{ p.user_name }}</div>
+              <div class="text-[11px] opacity-70">{{ p.user_email }}</div>
+              @if (p.note) {
+                <div class="text-[11px] opacity-60 hidden md:block truncate max-w-[180px]">{{ p.note }}</div>
+              }
+            </td>
 
-        @for (u of this.ListPayments(); track u.id) {
-        <tr class="hover">
-          <!-- Opciones -->
-          <td>
-            <input type="checkbox" class="checkbox checkbox-xs"
-              [attr.aria-label]="'Seleccionar ' + (u.user_id)" />
-          </td>
+            <td class="hidden lg:table-cell">
+              <div class="font-medium leading-tight">
+                {{ p.plan.service_sortName }} {{ p.plan.plan_title_prefix }} {{ p.plan.plan_title_name }}
+              </div>
+              <div class="text-[11px] opacity-70">{{ p.plan.limitDevices }} dispositivo(s)</div>
+              <div class="text-[11px] opacity-70">{{ p.plan.currencySymbol }}{{ p.plan.price }}/{{ p.plan.kind }}</div>
+            </td>
 
-          <!-- Usuario -->
-          <td>
-            <div class="flex items-center gap-3">
-              <div>
-                <div class="font-medium leading-tight capitalize">{{ u.user_name }}</div>
-                <div class="text-[11px] opacity-70">ID: {{ u.id }}</div>
-                <div class="text-[11px] opacity-70 hidden md:block">
-                  Nota: {{ u.note }}
+            <td>
+              <span class="font-semibold">{{ p.plan.currencySymbol }}{{ p.amount }}</span>
+              <div class="text-[11px] opacity-60">{{ p.kind }}</div>
+            </td>
+
+            <td>
+              <span class="badge badge-sm" [class]="stateClass(p.state)">{{ p.state }}</span>
+            </td>
+
+            <td class="hidden xl:table-cell text-xs opacity-70">{{ p.period }}</td>
+
+            <td class="hidden 2xl:table-cell text-xs opacity-70">
+              {{ p.createdAt | date:'dd/MM/yyyy HH:mm' }}
+            </td>
+
+            <td class="text-right">
+              <div class="flex items-center justify-end gap-1">
+                <div class="tooltip" data-tip="Ver detalle">
+                  <button class="btn btn-ghost btn-xs" type="button" (click)="openPaymentDetail(p)">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>
+                    </svg>
+                  </button>
                 </div>
+                @if (canUpdate()) {
+                  <div class="tooltip" data-tip="Confirmar">
+                    <button class="btn btn-ghost btn-xs text-success" type="button" (click)="openConfirm(p)"
+                            [disabled]="p.state === 'Aceptado'">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path d="M5 13l4 4L19 7"/>
+                      </svg>
+                    </button>
+                  </div>
+                  <div class="tooltip" data-tip="Rechazar">
+                    <button class="btn btn-ghost btn-xs text-error" type="button" (click)="openReject(p)"
+                            [disabled]="p.state === 'Devuelto'">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path d="M18.364 18.364A9 9 0 0 0 5.636 5.636m12.728 12.728A9 9 0 0 1 5.636 5.636m12.728 12.728L5.636 5.636"/>
+                      </svg>
+                    </button>
+                  </div>
+                }
               </div>
-            </div>
-          </td>
-
-           <!-- Pago -->
-          <td>
-            <div class="flex items-center gap-3">
-              <div>
-                <div class="font-medium leading-tight capitalize"> {{u.plan.service_sortName}} {{ u.plan.plan_title_prefix }} {{ u.plan.plan_title_name }}</div>
-                <div class="text-[11px] opacity-70">N° Dispositivos ({{u.plan.limitDevices}})</div>
-                <div class="text-[11px] opacity-70">{{u.plan.currencySymbol}}{{u.plan.price}}/{{u.plan.kind}}</div>
-                <div class="text-[11px] opacity-70 hidden md:block">
-                  Periodo: {{ u.period }}
-                </div>
-              </div>
-            </div>
-          </td>
-          <td class="3xl:table-cell">{{u.plan.currencySymbol}} {{ u.amount}}/{{ u.kind}}</td>
-
-          <td>
-            <span class="badge" [class.badge-warning]="(u.state || '').toLowerCase().includes('pend')"
-              [class.badge-success]="(u.state || '').toLowerCase().includes('act')"
-              [class.badge-error]="(u.state || '').toLowerCase().includes('susp')"
-              [class.badge-ghost]="!u.state || u.state === '-'">
-              {{ u.state }}
-            </span>
-          </td>
-
-          <td class="hidden md:table-cell">
-            <span class="badge" [ngClass]="u.state">
-              {{ u.state ? 'Sí' : 'No' }}
-            </span>
-          </td>
-
-          <!-- <td class="hidden lg:table-cell">
-                <div class="flex items-center gap-2">
-                  <span class="badge">{{ u.plan.name }}</span>
-                  <span class="badge badge-ghost">{{ u.plan.devicesLimit }}</span>
-                </div>
-              </td>
-
-              <td class="hidden xl:table-cell">
-                <span class="tabular-nums">{{ u.plans }}</span>/<span class="tabular-nums">{{ u.plan.devicesLimit }}</span>
-              </td> -->
-
-          <td class="hidden 2xl:table-cell">
-            {{ u.createdAt | date:'dd LLL yyyy · HH:mm' }}
-          </td>
-
-          <td class="text-right w-36">
-            <div class="flex items-center justify-end gap-1.5">
-              <div class="tooltip" data-tip="Ver">
-                <button class="btn btn-ghost btn-xs" type="button" onclick="user_drawer.showModal()">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2">
-                    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" />
-                    <circle cx="12" cy="12" r="3" />
-                  </svg>
-                </button>
-              </div>
-              <div class="tooltip" data-tip="Editar">
-                <button class="btn btn-ghost btn-xs" type="button" onclick="edit_user.showModal()">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2">
-                    <path d="M12 20h9" />
-                    <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
-                  </svg>
-                </button>
-              </div>
-              <div class="tooltip" data-tip="Eliminar">
-                <button class="btn btn-ghost btn-xs text-error" type="button" onclick="delete_user.showModal()">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2">
-                    <path d="M3 6h18" />
-                    <path d="M8 6v14a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V6" />
-                    <path d="M10 11v6M14 11v6" />
-                    <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-          </td>
-        </tr>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="8" class="text-center py-12 opacity-40">No hay pagos registrados.</td>
+          </tr>
         }
-
-        <!-- /fila ejemplo -->
       </tbody>
     </table>
   </div>
 
-  <!-- Pagination -->
-  <div class="mt-3 flex items-center justify-between">
-    <p class="text-sm opacity-70">Mostrando 1–1 de 1</p>
-    <nav class="join">
-      <button class="btn btn-xs join-item" disabled>«</button>
-      <button class="btn btn-xs join-item btn-active" aria-current="page">1</button>
-      <button class="btn btn-xs join-item" disabled>»</button>
-    </nav>
+  <!-- Pagination footer -->
+  <div class="mt-3 flex flex-wrap items-center justify-between gap-2">
+    <p class="text-xs opacity-50">
+      @if (pageSize() > 0) {
+        Mostrando {{ (currentPage() - 1) * pageSize() + 1 }}–{{ currentPage() * pageSize() < filteredPayments().length ? currentPage() * pageSize() : filteredPayments().length }}
+        de {{ filteredPayments().length }}
+        @if (filteredPayments().length !== ListPayments().length) {
+          ({{ ListPayments().length }} total)
+        }
+      } @else {
+        {{ filteredPayments().length }} pago(s)
+        @if (filteredPayments().length !== ListPayments().length) {
+          de {{ ListPayments().length }} total
+        }
+      }
+      @if (hasActiveFilters()) {
+        · <button class="link link-primary" (click)="clearFilters()">limpiar filtros</button>
+      }
+    </p>
+
+    @if (totalPages() > 1) {
+      <nav class="join" aria-label="Paginación">
+        <button class="btn btn-xs join-item" [disabled]="currentPage() === 1"
+                (click)="goToPage(currentPage() - 1)">«</button>
+        @for (p of pageNumbers(); track $index) {
+          @if (p === '...') {
+            <button class="btn btn-xs join-item" disabled>…</button>
+          } @else {
+            <button class="btn btn-xs join-item" [class.btn-primary]="p === currentPage()"
+                    (click)="goToPage(p)">{{ p }}</button>
+          }
+        }
+        <button class="btn btn-xs join-item" [disabled]="currentPage() === totalPages()"
+                (click)="goToPage(currentPage() + 1)">»</button>
+      </nav>
+    }
   </div>
 </section>
 <!-- ====== MODALES ====== -->
 
 <!-- Ver pago -->
 <dialog id="view_payment" class="modal">
-  <div class="modal-box w-11/12 max-w-4xl">
+  <div class="modal-box w-11/12 max-w-3xl max-h-[95vh] overflow-y-auto">
+    <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar" (click)="closePaymentDetail()">✕</button></form>
+    <h3 class="text-lg font-bold mb-4">Detalle del pago</h3>
+
+    @if (selectedPayment()) {
+      <div class="space-y-4">
+
+        <!-- Estado + acciones rápidas -->
+        <div class="flex items-center gap-3 flex-wrap">
+          <span class="badge badge-lg" [class]="stateClass(selectedPayment()!.state)">
+            {{ selectedPayment()!.state }}
+          </span>
+          <span class="text-xs opacity-50 font-mono">{{ selectedPayment()!.id }}</span>
+          <span class="text-xs opacity-50 ml-auto">
+            {{ selectedPayment()!.createdAt | date:'dd/MM/yyyy HH:mm' }}
+          </span>
+        </div>
+
+        <!-- Info grid -->
+        <div class="grid gap-3 md:grid-cols-2">
+
+          <!-- Datos del cliente -->
+          <div class="card border bg-base-200/50 text-sm">
+            <div class="card-body p-4 gap-1.5">
+              <h4 class="font-semibold text-xs uppercase tracking-wider opacity-50 mb-1">Cliente</h4>
+              <div class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
+                <span class="opacity-60">Nombre</span><span class="font-medium capitalize">{{ selectedPayment()!.user_name }}</span>
+                <span class="opacity-60">Email</span><span class="break-all text-xs">{{ selectedPayment()!.user_email }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Datos del pago -->
+          <div class="card border bg-base-200/50 text-sm">
+            <div class="card-body p-4 gap-1.5">
+              <h4 class="font-semibold text-xs uppercase tracking-wider opacity-50 mb-1">Pago</h4>
+              <div class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
+                <span class="opacity-60">Monto</span>
+                <span class="font-bold text-base">
+                  {{ selectedPayment()!.amount }}
+                  <span class="text-xs font-normal opacity-60">{{ selectedPayment()!.currencyCode || selectedPayment()!.plan.currencyCode }}</span>
+                </span>
+                <span class="opacity-60">Método</span>
+                <span class="flex items-center gap-1.5">
+                  {{ selectedPayment()!.method }}
+                  @if (selectedPayment()!.method.toLowerCase().includes('crypto') ||
+                       selectedPayment()!.methodPay.typeAccount.startsWith('crypto_') ||
+                       selectedPayment()!.methodPay.typeAccount === 'binance_pay' ||
+                       selectedPayment()!.methodPay.typeAccount === 'bybit_pay') {
+                    <span class="badge badge-warning badge-xs">Cripto</span>
+                  }
+                </span>
+                <span class="opacity-60">Cuenta</span>
+                <span class="text-xs break-all">{{ selectedPayment()!.methodPay.name }}</span>
+                @if (selectedPayment()!.methodPay.number) {
+                  <span class="opacity-60">Dirección</span>
+                  <span class="font-mono text-[10px] break-all select-all bg-base-200 rounded px-1">{{ selectedPayment()!.methodPay.number }}</span>
+                }
+                <span class="opacity-60">Período</span><span class="text-xs">{{ selectedPayment()!.period || '—' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Plan -->
+          <div class="card border bg-base-200/50 text-sm md:col-span-2">
+            <div class="card-body p-4 gap-1.5">
+              <h4 class="font-semibold text-xs uppercase tracking-wider opacity-50 mb-1">Plan / Servicio</h4>
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
+                <div class="bg-base-100 rounded-lg p-2">
+                  <p class="text-[10px] opacity-50">Servicio</p>
+                  <p class="text-sm font-semibold">{{ selectedPayment()!.plan.service_sortName || '—' }}</p>
+                </div>
+                <div class="bg-base-100 rounded-lg p-2">
+                  <p class="text-[10px] opacity-50">Plan</p>
+                  <p class="text-sm font-semibold">{{ selectedPayment()!.plan.plan_title_prefix }} {{ selectedPayment()!.plan.plan_title_name }}</p>
+                </div>
+                <div class="bg-base-100 rounded-lg p-2">
+                  <p class="text-[10px] opacity-50">Precio</p>
+                  <p class="text-sm font-semibold text-primary">{{ selectedPayment()!.plan.currencySymbol }}{{ selectedPayment()!.plan.price }}/{{ selectedPayment()!.plan.kind }}</p>
+                </div>
+                <div class="bg-base-100 rounded-lg p-2">
+                  <p class="text-[10px] opacity-50">Dispositivos</p>
+                  <p class="text-sm font-semibold">{{ selectedPayment()!.plan.limitDevices }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Nota -->
+        @if (selectedPayment()!.note) {
+          <div class="bg-base-200/50 border rounded-xl px-4 py-3 text-sm">
+            <p class="text-xs font-semibold opacity-50 uppercase tracking-wider mb-1">Nota</p>
+            <p class="opacity-80 whitespace-pre-wrap">{{ selectedPayment()!.note }}</p>
+          </div>
+        }
+
+        <!-- Comprobante / Voucher -->
+        @if (fullPictureUrl(selectedPayment()!.picture)) {
+          <div class="space-y-2">
+            <p class="text-xs font-semibold opacity-50 uppercase tracking-wider">Comprobante de pago</p>
+            <div class="border rounded-xl overflow-hidden bg-base-200/50 flex items-center justify-center min-h-[140px]">
+              @if (voucherLoading()) {
+                <span class="loading loading-spinner loading-md opacity-40"></span>
+              } @else if (voucherBlobUrl()) {
+                <img [src]="voucherBlobUrl()" alt="Comprobante"
+                     class="w-full max-h-[480px] object-contain cursor-zoom-in"
+                     (click)="openVoucher(selectedPayment()!.picture)" />
+              } @else {
+                <p class="text-xs opacity-40 py-6">No se pudo cargar la imagen del comprobante.</p>
+              }
+            </div>
+            <p class="text-[10px] opacity-40 text-center">Haz clic en la imagen para verla a tamano completo</p>
+          </div>
+        } @else {
+          <div class="border border-dashed rounded-xl py-6 text-center opacity-40">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>
+            </svg>
+            <p class="text-sm">Sin comprobante adjunto</p>
+          </div>
+        }
+
+      </div>
+
+      <div class="modal-action flex-wrap gap-2 mt-4">
+        <button class="btn btn-ghost btn-sm" type="button" (click)="closePaymentDetail()">Cerrar</button>
+
+        <!-- Descargar información -->
+        <button class="btn btn-outline btn-sm" type="button" (click)="downloadPaymentInfo(selectedPayment()!)">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          Descargar información
+        </button>
+
+        <!-- Notificar cliente -->
+        <button class="btn btn-info btn-sm" type="button" (click)="closeModal('view_payment'); openNotifyPayment(selectedPayment()!)">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 8.91a16 16 0 0 0 6 6l.81-.81a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+          </svg>
+          Notificar cliente
+        </button>
+
+        @if (canUpdate()) {
+          <button class="btn btn-success btn-sm" type="button" (click)="openConfirm(selectedPayment()!)"
+                  [disabled]="selectedPayment()!.state === 'Aceptado'">Confirmar</button>
+          <button class="btn btn-error btn-sm" type="button" (click)="openReject(selectedPayment()!)"
+                  [disabled]="selectedPayment()!.state === 'Devuelto'">Rechazar</button>
+        }
+      </div>
+    }
+  </div>
+  <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar" (click)="closePaymentDetail()">close</button></form>
+</dialog>
+
+<!-- Confirmar pago -->
+<dialog id="confirm_payment" class="modal">
+  <div class="modal-box max-w-sm">
     <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button></form>
-    <h3 class="text-lg font-bold">Detalle del pago</h3>
-
-    <div class="grid gap-4 md:grid-cols-3 mt-3">
-      <div class="md:col-span-2 card border bg-base-200/60">
-        <div class="card-body p-4">
-          <h4 class="card-title text-sm">Información</h4>
-          <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-            <span class="opacity-70">ID:</span><span>p-0001</span>
-            <span class="opacity-70">Estado:</span><span>Pendiente</span>
-            <span class="opacity-70">Periodo:</span><span>Mensual</span>
-            <span class="opacity-70">Monto:</span><span>USD 12.00</span>
-            <span class="opacity-70">Moneda cliente:</span><span>USD</span>
-            <span class="opacity-70">Cuenta cliente:</span><span class="break-all">9876-****-321</span>
-            <span class="opacity-70">Moneda admin:</span><span>USD</span>
-            <span class="opacity-70">Cuenta admin:</span><span class="break-all">acc-0001</span>
-            <span class="opacity-70">Usuario:</span><span class="break-all">3ec951c0-491f-4078-beff-4f658b8ea7a1</span>
-            <span class="opacity-70">Dispositivo:</span><span>dev-0001 · Pixel 7</span>
-            <span class="opacity-70">Creado:</span><span>08 Ago 2025 · 22:30</span>
-          </div>
-          <div class="mt-3">
-            <h5 class="text-sm font-semibold">Nota</h5>
-            <p class="text-sm opacity-80">—</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="card border bg-base-200/60">
-        <div class="card-body p-4">
-          <h4 class="card-title text-sm">Evidencia</h4>
-          <div class="border rounded-lg overflow-hidden bg-base-100">
-            <img src="https://images.unsplash.com/photo-1516426122078-c23e76319801?q=80&w=800&fit=crop" alt="Evidencia del pago" />
-          </div>
-        </div>
-      </div>
-    </div>
-
+    <h3 class="text-lg font-bold text-success">Confirmar pago</h3>
+    <p class="py-3 text-sm">
+      ¿Confirmas el pago de <strong>{{ selectedPayment()?.user_name }}</strong> por
+      <strong>{{ selectedPayment()?.plan?.currencySymbol }}{{ selectedPayment()?.amount }}</strong>?
+    </p>
     <div class="modal-action">
-      <button class="btn" type="button" onclick="document.getElementById('verify_payment')?.showModal()">Marcar verificando</button>
-      <button class="btn btn-success" type="button" onclick="document.getElementById('accept_payment')?.showModal()">Aceptar</button>
-      <button class="btn btn-warning" type="button" onclick="document.getElementById('refund_payment')?.showModal()">Devolver</button>
+      <button class="btn btn-ghost btn-sm" type="button" (click)="closeModal('confirm_payment')">Cancelar</button>
+      <button class="btn btn-success btn-sm" type="button" (click)="doConfirm()">Confirmar</button>
     </div>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
+</dialog>
+
+<!-- Rechazar pago -->
+<dialog id="reject_payment" class="modal">
+  <div class="modal-box max-w-sm">
+    <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button></form>
+    <h3 class="text-lg font-bold text-error">Rechazar pago</h3>
+    <p class="py-2 text-sm">Motivo del rechazo (opcional):</p>
+    <textarea class="textarea textarea-bordered w-full textarea-sm" rows="3"
+              (input)="rejectReason = $any($event.target).value"
+              placeholder="Ej: imagen ilegible, monto incorrecto..."></textarea>
+    <div class="modal-action">
+      <button class="btn btn-ghost btn-sm" type="button" (click)="closeModal('reject_payment')">Cancelar</button>
+      <button class="btn btn-error btn-sm" type="button" (click)="doReject()">Rechazar</button>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
+</dialog>
+
+<!-- Notificar cliente sobre pago -->
+<dialog id="notify_payment" class="modal">
+  <div class="modal-box w-11/12 max-w-2xl max-h-[95vh] overflow-y-auto">
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button>
+    </form>
+
+    <div class="mb-4">
+      <h3 class="text-lg font-bold flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-info" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 8.91a16 16 0 0 0 6 6l.81-.81a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+        </svg>
+        Notificar cliente sobre el pago
+      </h3>
+      @if (notifyPayTarget()) {
+        <p class="text-sm opacity-60 mt-1">
+          Destinatario: <strong>{{ notifyPayTarget()!.user_name }}</strong> · {{ notifyPayTarget()!.user_email }}
+        </p>
+      }
+    </div>
+
+    @if (notifyPayTarget()) {
+      <div class="space-y-4">
+
+        <!-- Canales -->
+        <div class="space-y-1.5">
+          <p class="text-xs font-semibold uppercase tracking-wider opacity-50">Canales de envío</p>
+          <div class="flex flex-wrap gap-2">
+            @for (ch of [
+              { key: 'in_app',   label: 'Panel',    icon: '🖥️' },
+              { key: 'email',    label: 'Email',    icon: '✉️' },
+              { key: 'whatsapp', label: 'WhatsApp', icon: '💬' },
+              { key: 'telegram', label: 'Telegram', icon: '📨' }
+            ]; track ch.key) {
+              <button type="button"
+                      class="btn btn-sm gap-1"
+                      [class.btn-primary]="notifyPayChannels().includes(ch.key)"
+                      [class.btn-outline]="!notifyPayChannels().includes(ch.key)"
+                      (click)="toggleNotifyChannel(ch.key)">
+                {{ ch.icon }} {{ ch.label }}
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- Asunto -->
+        <div class="space-y-1">
+          <p class="text-xs font-semibold uppercase tracking-wider opacity-50">Asunto</p>
+          <input type="text" class="input input-bordered input-sm w-full"
+                 [value]="notifyPaySubject()"
+                 (input)="notifyPaySubject.set($any($event.target).value)" />
+        </div>
+
+        <!-- Cuerpo editable -->
+        <div class="space-y-1">
+          <div class="flex items-center justify-between">
+            <p class="text-xs font-semibold uppercase tracking-wider opacity-50">Mensaje</p>
+            <button type="button" class="btn btn-ghost btn-xs opacity-50"
+                    (click)="notifyPayBody.set(_buildNotifyBody(notifyPayTarget()!))">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+              </svg>
+              Restaurar plantilla
+            </button>
+          </div>
+          <textarea class="textarea textarea-bordered w-full font-mono text-xs resize-y"
+                    rows="14"
+                    [value]="notifyPayBody()"
+                    (input)="notifyPayBody.set($any($event.target).value)"></textarea>
+        </div>
+
+        <!-- Resumen del pago (preview) -->
+        <div class="collapse collapse-arrow border rounded-xl bg-base-200/40">
+          <input type="checkbox" />
+          <div class="collapse-title text-sm font-medium py-3 min-h-0">
+            Vista previa del pago adjunto
+          </div>
+          <div class="collapse-content">
+            <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm pb-2">
+              <span class="opacity-60">ID:</span><span class="text-xs font-mono break-all">{{ notifyPayTarget()!.id }}</span>
+              <span class="opacity-60">Estado:</span>
+              <span><span class="badge badge-sm" [class]="stateClass(notifyPayTarget()!.state)">{{ notifyPayTarget()!.state }}</span></span>
+              <span class="opacity-60">Monto:</span>
+              <span class="font-semibold">{{ notifyPayTarget()!.plan.currencySymbol }}{{ notifyPayTarget()!.amount }}</span>
+              <span class="opacity-60">Método:</span><span>{{ notifyPayTarget()!.method }}</span>
+              <span class="opacity-60">Período:</span><span>{{ notifyPayTarget()!.period || '—' }}</span>
+              <span class="opacity-60">Servicio:</span>
+              <span>{{ notifyPayTarget()!.plan.service_sortName }} · {{ notifyPayTarget()!.plan.plan_title_prefix }} {{ notifyPayTarget()!.plan.plan_title_name }}</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="modal-action">
+        <button class="btn btn-ghost btn-sm" type="button" (click)="closeModal('notify_payment')">Cancelar</button>
+        <button class="btn btn-info btn-sm" type="button"
+                [disabled]="sendingPayNotify() || notifyPayChannels().length === 0"
+                (click)="sendPaymentNotify()">
+          @if (sendingPayNotify()) {
+            <span class="loading loading-spinner loading-xs"></span> Enviando…
+          } @else {
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
+            Enviar notificación
+          }
+        </button>
+      </div>
+    }
   </div>
   <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
 </dialog>
@@ -453,307 +773,482 @@
   <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
 </dialog> -->
 <dialog id="add_payment" class="modal">
-  <div class="modal-box max-w-2xl">
+  <div class="modal-box w-11/12 max-w-2xl max-h-[96vh] overflow-y-auto">
 
-    <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button></form>
-    <h2 class="text-lg font-bold">Cargar Pago</h2>
-    <p class="mb-4 text-sm opacity-70">Carga el pago de un cliente en especifico.</p>
-    <form class="grid gap-3 md:grid-cols-2" [formGroup]="userForm" (ngSubmit)="onSubmit()" novalidate autocomplete="on">
-
-      <!-- Client -->
-      <div class="w-full md:col-span-2">
-        <label for="user_id" class="block text-sm font-medium text-gray-700 mb-1">
-          Cliente
-        </label>
-        <div
-          class="flex items-center border border-gray-300 rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-blue-500 bg-white"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.5"
-            aria-hidden="true"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.25a8.25 8.25 0 0115 0v.75H4.5v-.75z"
-            />
-          </svg>
-          <select
-            class="w-full outline-none text-gray-700 placeholder-gray-400 bg-transparent"
-            formControlName="user_id"
-            (change)="onSelectClient($event)"
-            aria-label="Usuario"
-            required
-          >
-            <option value="" disabled>Selecciona un usuario…</option>
-            @for (item of this.ListUsers(); track item.id) {
-              <option [value]="item.id">
-
-                {{ item.firstNames }} {{ item.lastNames }} | {{ item.email }}&#10;
-                {{item.country.countryName}} | verified: {{item.verified}} | suspend: {{item.suspend}} | bloqued: {{item.bloqued}}
-              </option>
-            }
-          </select>
-        </div>
-        @if (userForm.get('user_id')?.touched && userForm.get('user_id')?.invalid) {
-          <p class="text-red-500 text-sm mt-1">Seleccione un usuario.</p>
-        }
-      </div>
-
-       <!-- Service | plan -->
-      <div class="w-full md:col-span-2">
-        <label for="user_id" class="block text-sm font-medium text-gray-700 mb-1">
-          Service | Plan
-        </label>
-        <div
-          class="flex items-center border border-gray-300 rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-blue-500 bg-white"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.5"
-            aria-hidden="true"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.25a8.25 8.25 0 0115 0v.75H4.5v-.75z"
-            />
-          </svg>
-          <select
-            class="w-full outline-none text-gray-700 placeholder-gray-400 bg-transparent"
-            formControlName="plan_id"
-            aria-label="Usuario"
-            required
-          >
-            <option value="" disabled>Selecciona un usuario…</option>
-            @for (item of this.SelectClient().services; track item.plan_id) {
-              <option [value]="item.plan_id">
-                {{ item.service_sortName }} - {{ item.service_longName }} | {{item.global ? 'GLOBAL' : item.country.countryName}} | {{ item.plan_title_prefix }} {{ item.plan_title_name }} | Dispotivios {{item.limitDevices}} | {{item.currencySymbol}} {{item.price}} / {{ item.kind }}
-              </option>
-            }
-          </select>
-        </div>
-        @if (userForm.get('plan_id')?.touched && userForm.get('plan_id')?.invalid) {
-          <p class="text-red-500 text-sm mt-1">Seleccione un usuario.</p>
-        }
-      </div>
-
-       <!-- Monto -->
-      <div class="w-full">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Monto</label>
-        <div class="flex items-center border border-gray-300 rounded-lg px-3 py-2
-             focus-within:ring-2 focus-within:ring-blue-500 bg-white">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" viewBox="0 0 24 24"
-            fill="none" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-            <circle cx="12" cy="7" r="4" />
-          </svg>
-          <input type="text"  formControlName="amount" placeholder="Escribe los nombres" required
-            autocomplete="given-name" class="w-full outline-none text-gray-700 placeholder-gray-400" />
-        </div>
-        @if (userForm.get('amount')?.touched && userForm.get('amount')?.invalid) {
-        <p class="text-red-500 text-sm mt-1">Ingrese el monto a pagar.</p>
-        }
-      </div>
-
-      <!-- Metodo de Pago -->
-      <div class="w-full">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Método de pago</label>
-        <div class="flex items-center border border-gray-300 rounded-lg px-3 py-2
-             focus-within:ring-2 focus-within:ring-blue-500 bg-white">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" viewBox="0 0 24 24"
-            fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M20 21v-2a4 4 0 0 0-3-3.87" />
-            <path d="M4 21v-2a4 4 0 0 1 3-3.87" />
-            <circle cx="12" cy="7" r="4" />
-          </svg>
-          <select formControlName="method" required class="w-full outline-none text-gray-700 bg-transparent">
-            <option value="" disabled selected hidden>Selecciona un método</option>
-            <option value="efectivo">Efectivo</option>
-            <option value="tranferencia bancaria">Tranferencia Bancaria</option>
-            <option value="crypto moneda">Crypto Moneda</option>
-            <option value="Monedero Local">Monedero Local</option>
-            <option value="otros">Otros</option>
-          </select>
-        </div>
-        @if (userForm.get('method')?.touched && userForm.get('method')?.invalid) {
-        <p class="text-red-500 text-sm mt-1">Seleccione un método.</p>
-        }
-      </div>
-
-      <!-- Cuantas de Pago -->
-      <div class="w-full">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Cuanta de pago</label>
-        <div class="flex items-center border border-gray-300 rounded-lg px-3 py-2
-             focus-within:ring-2 focus-within:ring-blue-500 bg-white">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" fill="none"
-            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="2" y1="12" x2="22" y2="12"></line>
-            <path d="M12 2a15 15 0 0 1 4 10 15 15 0 0 1-4 10 15 15 0 0 1-4-10 15 15 0 0 1 4-10z"></path>
-          </svg>
-          <select formControlName="methodPay" required class="w-full outline-none text-gray-700 bg-transparent">
-            <option value="" disabled selected hidden>Selecciona la cuenta de pago</option>
-            @for (item of this.ListBankAccount(); track item.id; let idx = $index) {
-            <option [value]="item.id">{{ item.country.countryName }} | Servicio: {{ item.name }} | {{ item.cardAccount
-              }} - {{ item.country.countryName }} </option>
-            }
-          </select>
-        </div>
-        @if (userForm.get('methodPay')?.touched && userForm.get('methodPay')?.invalid) {
-        <p class="text-red-500 text-sm mt-1">Selecciona la cuenta de pago.</p>
-        }
-      </div>
-
-      <!-- Estado -->
-      <div class="w-full">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
-        <div class="flex items-center border border-gray-300 rounded-lg px-3 py-2
-             focus-within:ring-2 focus-within:ring-blue-500 bg-white">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" viewBox="0 0 24 24"
-            fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M20 21v-2a4 4 0 0 0-3-3.87" />
-            <path d="M4 21v-2a4 4 0 0 1 3-3.87" />
-            <circle cx="12" cy="7" r="4" />
-          </svg>
-          <select formControlName="state" required class="w-full outline-none text-gray-700 bg-transparent">
-            <option value="" disabled selected hidden>Selecciona un estado</option>
-            <option value="Pendiente">Pendiente</option>
-            <option value="Aceptado">Aceptado</option>
-            <option value="Varificando">Varificando</option>
-            <option value="Devuelto">Devuelto</option>
-          </select>
-        </div>
-        @if (userForm.get('state')?.touched && userForm.get('state')?.invalid) {
-        <p class="text-red-500 text-sm mt-1">Seleccione un rol.</p>
-        }
-      </div>
-
-      <!-- Periodo -->
-      <div class="w-full md:col-span-2">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Periodo</label>
-
-        <div class="flex items-center border border-gray-300 rounded-lg px-3 py-2
-           focus-within:ring-2 focus-within:ring-blue-500 bg-white">
-          <!-- Ícono de calendario -->
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" viewBox="0 0 24 24"
-            fill="none">
-            <path stroke="currentColor" stroke-width="2" d="M8 7V3m8 4V3M3 11h18M5 5h14a2 2 0 0 1 2 2v14a2 2 0
-               0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z" />
-          </svg>
-
-          <!-- Campo tipo fecha -->
-          <input type="date" formControlName="period"
-            class="w-full outline-none text-gray-700 placeholder-gray-400" />
-        </div>
-
-        @if (userForm.get('period')?.touched && userForm.get('period')?.invalid) {
-        <p class="text-red-500 text-sm mt-1">
-          @if (userForm.get('createdAt')?.errors?.['required']) {
-          La fecha Periodo es obligatoria.
-          } @else if (userForm.get('createdAt')?.errors?.['futureDate']) {
-          No puedes ingresar una fecha futura.
-          }
-        </p>
-        }
-      </div>
-
-        <!-- 📎 EVIDENCIA DE PAGO (fila 4, ocupa 2 columnas) -->
-      <div class="p-6 rounded-2xl shadow-sm border transition-all duration-300 md:col-span-2"
-        [class.bg-white]="!selectedFile" [class.bg-green-50]="selectedFile" [class.border-gray-200]="!selectedFile"
-        [class.border-green-400]="selectedFile">
-        <h3 class="text-2xl font-semibold mb-4 text-gray-800 border-b pb-2 flex items-center">
-          📎 Evidencia de pago
-        </h3>
-
-        <p class="text-sm text-gray-600 mb-3">
-          Sube una <strong>captura o comprobante</strong> del pago realizado (imagen o PDF).
-        </p>
-
-        <div class="relative group">
-          <input
-          type="file"
-          id="paymentProof"
-          formControlName="file"
-          (change)="onUploadProof($event)"
-          accept="image/*,application/pdf"
-          class="block w-full text-sm text-gray-700 border border-gray-300 rounded-lg cursor-pointer
-             focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400
-             file:mr-4 file:py-2 file:px-4 file:rounded-md
-             file:border-0 file:text-sm file:font-semibold
-             file:bg-blue-600 file:text-white
-             hover:file:bg-blue-700 transition" />
-        </div>
-
-        @if (selectedFile) {
-        <div class="mt-3 flex items-center gap-2 text-sm text-green-600 font-medium animate-fade-in">
-          <span class="inline-block w-2 h-2 bg-green-500 rounded-full"></span>
-          Archivo seleccionado: {{ selectedFile.name }}
-        </div>
-        }
-      </div>
-
-      <!-- Observaciones -->
-    <div class="w-full  md:col-span-2">
-      <label class="block text-sm font-medium text-gray-700 mb-1">Nota</label>
-
-      <div
-        class="flex border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-blue-500"
-      >
-        <!-- Ícono opcional (nota o texto) -->
-        <svg xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0 mt-1"
-            viewBox="0 0 20 20" fill="none">
-          <path fill="currentColor"
-                d="M4 4a2 2 0 0 1 2-2h6.586A2 2 0 0 1 14 2.586L17.414 6A2 2 0 0 1 18 7.414V16a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4zm2 0v12h10V8h-3a1 1 0 0 1-1-1V4H6z"/>
-        </svg>
-
-        <!-- Campo textarea -->
-        <textarea
-          formControlName="note"
-          placeholder="Escribe aquí una breve nota..."
-          rows="4"
-          maxlength="500"
-          class="w-full outline-none text-gray-700 placeholder-gray-400 bg-transparent resize-none"
-        ></textarea>
-      </div>
-
-      @if (userForm.get('note')?.touched && userForm.get('note')?.invalid) {
-        <p class="text-red-500 text-sm mt-1">
-          @if (userForm.get('note')?.errors?.['required']) {
-            Este campo es obligatorio.
-          } @else if (userForm.get('note')?.errors?.['maxlength']) {
-            Has superado el máximo de caracteres permitidos.
-          }
-        </p>
-      }
-    </div>
-
-      <!-- Botones -->
-      <div class="modal-action md:col-span-2">
-        <button class="btn btn-ghost" type="button" (click)="cerrarDialogo()">Cancelar</button>
-        <button class="btn btn-primary" type="submit" [disabled]="userForm.invalid">Crear</button>
-      </div>
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar" (click)="_resetAddForm()">✕</button>
     </form>
 
-
-    @if (hasError()) {
-    <div role="alert" class="alert alert-error alert-soft animate-fadeIn fixed bottom-5 right-5 w-64">
-      <span>{{hasError()}}.</span>
+    <!-- Cabecera -->
+    <div class="mb-4">
+      <h2 class="text-lg font-bold flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2">
+          <rect x="2" y="5" width="20" height="14" rx="2"/>
+          <path d="M2 10h20"/>
+        </svg>
+        Registrar pago manual
+      </h2>
+      <!-- Aviso contextual -->
+      <div class="alert alert-info alert-soft mt-2 py-2 text-xs flex items-start gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>
+        </svg>
+        <span>Estás registrando un pago <strong>en nombre del cliente</strong>. El pago quedará marcado como gestionado por el administrador.</span>
+      </div>
     </div>
-    }
 
+    <form [formGroup]="userForm" (ngSubmit)="onSubmit()" novalidate class="space-y-5">
+
+      <!-- ── SECCIÓN 1: Cliente ─────────────────────────────────────────── -->
+      <div class="rounded-xl border bg-base-200/40 p-4 space-y-3">
+        <p class="text-xs font-semibold uppercase tracking-wider opacity-50">1 · Cliente</p>
+
+        @if (SelectClient().id) {
+          <!-- Estado: cliente seleccionado — mostrar tarjeta + botón cambiar -->
+          <div class="flex items-center gap-3 bg-base-100 rounded-xl border px-3 py-2.5">
+            <div class="avatar placeholder shrink-0">
+              <div class="bg-primary text-primary-content rounded-full w-10 h-10 text-sm font-bold">
+                {{ SelectClient().firstNames.charAt(0) }}{{ SelectClient().lastNames.charAt(0) }}
+              </div>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="font-semibold text-sm leading-tight">
+                {{ SelectClient().firstNames }} {{ SelectClient().lastNames }}
+              </p>
+              <p class="text-xs opacity-60 truncate">{{ SelectClient().email }}</p>
+              @if (SelectClient().dni) {
+                <p class="text-[10px] opacity-40">DNI: {{ SelectClient().dni }}</p>
+              }
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <span class="badge badge-sm" [class]="stateClass(SelectClient().state)">{{ SelectClient().state }}</span>
+              <button type="button" class="btn btn-ghost btn-xs" (click)="clearClientSelection()" title="Cambiar cliente">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        } @else {
+          <!-- Estado: sin selección — mostrar combobox de búsqueda -->
+          <div class="relative">
+            <label class="input input-bordered input-sm flex items-center gap-2 w-full"
+                   [class.input-primary]="showClientDropdown()">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 opacity-50 shrink-0" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <input type="text" placeholder="Buscar por nombre, email o DNI…"
+                     class="w-full"
+                     [value]="clientSearch()"
+                     (focus)="openClientDropdown()"
+                     (blur)="closeClientDropdown()"
+                     (input)="clientSearch.set($any($event.target).value); openClientDropdown()" />
+              @if (clientSearch()) {
+                <button type="button" class="btn btn-ghost btn-xs btn-circle shrink-0"
+                        (mousedown)="clientSearch.set('')">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 24 24" fill="none"
+                       stroke="currentColor" stroke-width="2.5">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                </button>
+              }
+            </label>
+
+            <!-- Dropdown con resultados -->
+            @if (showClientDropdown()) {
+              <div class="absolute z-[80] mt-1 w-full bg-base-100 border rounded-xl shadow-xl
+                          max-h-52 overflow-y-auto divide-y divide-base-200">
+                @if (filteredClients().length === 0) {
+                  <div class="px-4 py-3 text-sm opacity-50 text-center">Sin resultados</div>
+                }
+                @for (u of filteredClients(); track u.id) {
+                  <div class="flex items-center gap-3 px-3 py-2 hover:bg-base-200 cursor-pointer transition-colors"
+                       (mousedown)="selectClient(u)">
+                    <div class="avatar placeholder shrink-0">
+                      <div class="bg-neutral text-neutral-content rounded-full w-8 h-8 text-xs font-bold">
+                        {{ u.firstNames.charAt(0) }}{{ u.lastNames.charAt(0) }}
+                      </div>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm font-medium leading-tight truncate">
+                        {{ u.firstNames }} {{ u.lastNames }}
+                      </p>
+                      <p class="text-xs opacity-50 truncate">{{ u.email }}</p>
+                    </div>
+                    <span class="badge badge-xs shrink-0" [class]="stateClass(u.state)">{{ u.state }}</span>
+                  </div>
+                }
+                @if (ListUsers().length > 50 && filteredClients().length === 50) {
+                  <div class="px-3 py-1.5 text-[10px] opacity-40 text-center">
+                    Escribe para filtrar · mostrando primeros 50
+                  </div>
+                }
+              </div>
+            }
+          </div>
+
+          @if (userForm.get('user_id')?.touched && userForm.get('user_id')?.invalid) {
+            <p class="text-error text-xs">Selecciona un cliente.</p>
+          }
+
+          <p class="text-xs opacity-40 text-center">
+            {{ ListUsers().length }} clientes disponibles
+          </p>
+        }
+      </div>
+
+      <!-- ── SECCIÓN 2: Servicio y plan ─────────────────────────────────── -->
+      <div class="rounded-xl border bg-base-200/40 p-4 space-y-3">
+        <p class="text-xs font-semibold uppercase tracking-wider opacity-50">2 · Servicio y plan</p>
+
+        <select class="select select-bordered select-sm w-full"
+                formControlName="plan_id"
+                (change)="onPlanChange()">
+          <option value="" disabled>— Selecciona el plan a pagar —</option>
+          @for (svc of SelectClient().services; track svc.plan_id) {
+            <option [value]="svc.plan_id">
+              {{ svc.service_sortName || svc.service_longName }} ·
+              {{ svc.plan_title_prefix }} {{ svc.plan_title_name }} ·
+              {{ svc.currencySymbol }}{{ svc.price }}/{{ svc.kind }} ·
+              {{ svc.limitDevices }} disp.
+            </option>
+          }
+        </select>
+        @if (userForm.get('plan_id')?.touched && userForm.get('plan_id')?.invalid) {
+          <p class="text-error text-xs">Selecciona un plan.</p>
+        }
+        @if (!SelectClient().id) {
+          <p class="text-xs opacity-40 text-center py-1">Selecciona primero un cliente para ver sus planes.</p>
+        }
+
+        <!-- Preview del plan seleccionado -->
+        @if (selectedPlan()) {
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
+            <div class="bg-base-100 border rounded-lg px-2 py-2">
+              <p class="text-[10px] opacity-50 leading-none mb-0.5">Precio</p>
+              <p class="text-sm font-bold text-primary">{{ selectedPlan()!.currencySymbol }}{{ selectedPlan()!.price }}</p>
+              <p class="text-[10px] opacity-50">/{{ selectedPlan()!.kind }}</p>
+            </div>
+            <div class="bg-base-100 border rounded-lg px-2 py-2">
+              <p class="text-[10px] opacity-50 leading-none mb-0.5">Dispositivos</p>
+              <p class="text-sm font-bold">{{ selectedPlan()!.limitDevices }}</p>
+            </div>
+            <div class="bg-base-100 border rounded-lg px-2 py-2">
+              <p class="text-[10px] opacity-50 leading-none mb-0.5">Moneda</p>
+              <p class="text-sm font-bold">{{ selectedPlan()!.currencyCode }}</p>
+            </div>
+            <div class="bg-base-100 border rounded-lg px-2 py-2">
+              <p class="text-[10px] opacity-50 leading-none mb-0.5">Estado plan</p>
+              <p class="text-sm font-bold" [class.text-success]="selectedPlan()!.active" [class.text-error]="!selectedPlan()!.active">
+                {{ selectedPlan()!.active ? 'Activo' : 'Inactivo' }}
+              </p>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- ── SECCIÓN 3: Detalles del pago ───────────────────────────────── -->
+      <div class="rounded-xl border bg-base-200/40 p-4 space-y-3">
+        <p class="text-xs font-semibold uppercase tracking-wider opacity-50">3 · Detalles del pago</p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
+          <!-- Moneda + Monto -->
+          <div class="form-control w-full sm:col-span-2">
+            <div class="label pb-0.5">
+              <span class="label-text text-xs">Moneda y monto *</span>
+              @if (selectedPlan()) {
+                <span class="label-text-alt text-xs opacity-50">
+                  Precio del plan: {{ selectedPlan()!.currencySymbol }}{{ selectedPlan()!.price }} {{ selectedPlan()!.currencyCode }}
+                </span>
+              }
+            </div>
+            <div class="flex gap-0">
+              <!-- Selector de moneda -->
+              <select class="select select-bordered select-sm rounded-r-none border-r-0 w-36 shrink-0 font-mono text-xs"
+                      formControlName="currency">
+                <optgroup label="Américas">
+                  @for (c of CURRENCIES.slice(0, 25); track c.code) {
+                    <option [value]="c.code">{{ c.code }} {{ c.symbol }}</option>
+                  }
+                </optgroup>
+                <optgroup label="Europa">
+                  @for (c of CURRENCIES.slice(25, 45); track c.code) {
+                    <option [value]="c.code">{{ c.code }} {{ c.symbol }}</option>
+                  }
+                </optgroup>
+                <optgroup label="Asia / Pacífico">
+                  @for (c of CURRENCIES.slice(45, 65); track c.code) {
+                    <option [value]="c.code">{{ c.code }} {{ c.symbol }}</option>
+                  }
+                </optgroup>
+                <optgroup label="Oriente Medio">
+                  @for (c of CURRENCIES.slice(65, 77); track c.code) {
+                    <option [value]="c.code">{{ c.code }} {{ c.symbol }}</option>
+                  }
+                </optgroup>
+                <optgroup label="África">
+                  @for (c of CURRENCIES.slice(77, 91); track c.code) {
+                    <option [value]="c.code">{{ c.code }} {{ c.symbol }}</option>
+                  }
+                </optgroup>
+                <optgroup label="Criptomonedas">
+                  @for (c of CURRENCIES.slice(91); track c.code) {
+                    <option [value]="c.code">{{ c.code }} {{ c.symbol }}</option>
+                  }
+                </optgroup>
+              </select>
+              <!-- Input de monto -->
+              <label class="input input-bordered input-sm rounded-l-none flex-1 flex items-center gap-1">
+                <span class="text-xs opacity-50 font-mono shrink-0">
+                  {{ currencySymbol(userForm.get('currency')?.value) }}
+                </span>
+                <input type="number" step="0.01" min="0" formControlName="amount"
+                       placeholder="0.00" class="w-full" />
+              </label>
+            </div>
+            @if (userForm.get('amount')?.touched && userForm.get('amount')?.invalid) {
+              <div class="label pt-0.5"><span class="label-text-alt text-error text-xs">Campo obligatorio.</span></div>
+            }
+            <!-- Nombre completo de la moneda seleccionada -->
+            @if (currencyName(userForm.get('currency')?.value)) {
+              <p class="text-[10px] opacity-40 mt-0.5">{{ currencyName(userForm.get('currency')?.value) }}</p>
+            }
+          </div>
+
+          <!-- Estado -->
+          <label class="form-control w-full">
+            <div class="label pb-0.5"><span class="label-text text-xs">Estado del pago *</span></div>
+            <select class="select select-bordered select-sm w-full" formControlName="state">
+              <option value="Aceptado">Aceptado — pago confirmado</option>
+              <option value="Varificando">Verificando — en revisión</option>
+              <option value="Pendiente">Pendiente — sin confirmar</option>
+            </select>
+          </label>
+
+          <!-- Método de pago -->
+          <label class="form-control w-full">
+            <div class="label pb-0.5"><span class="label-text text-xs">Método de pago *</span></div>
+            <select class="select select-bordered select-sm w-full" formControlName="method">
+              <option value="" disabled>— Elige el método —</option>
+              <option value="efectivo">Efectivo</option>
+              <option value="transferencia bancaria">Transferencia bancaria</option>
+              <option value="crypto moneda">Criptomoneda</option>
+              <option value="Monedero Local">Monedero local</option>
+              <option value="otros">Otros</option>
+            </select>
+            @if (userForm.get('method')?.touched && userForm.get('method')?.invalid) {
+              <div class="label pt-0.5"><span class="label-text-alt text-error text-xs">Selecciona un método.</span></div>
+            }
+          </label>
+
+          <!-- Cuenta de destino -->
+          <div class="form-control w-full">
+            <div class="label pb-0.5"><span class="label-text text-xs">Cuenta de destino *</span></div>
+            <select class="select select-bordered select-sm w-full" formControlName="methodPay">
+              <option value="" disabled>— Selecciona la cuenta —</option>
+              @for (acc of ListBankAccount(); track acc.id) {
+                <option [value]="acc.id">{{ bankAccountLabel(acc) }}</option>
+              }
+            </select>
+            @if (userForm.get('methodPay')?.touched && userForm.get('methodPay')?.invalid) {
+              <div class="label pt-0.5"><span class="label-text-alt text-error text-xs">Selecciona la cuenta.</span></div>
+            }
+            <!-- Detalle de la cuenta cripto seleccionada -->
+            @if (selectedBankAccount() && isCryptoBank(selectedBankAccount())) {
+              @let ba = selectedBankAccount()!;
+              <div class="mt-2 rounded-lg border border-warning/30 bg-warning/5 p-2.5 space-y-1.5 text-xs">
+                <div class="flex items-center gap-1.5">
+                  <span class="font-bold text-warning">₿</span>
+                  <span class="font-semibold">{{ ba.name }}</span>
+                  @if (ba.currency) { <span class="badge badge-warning badge-xs">{{ ba.currency }}</span> }
+                  @if (ba.network)  { <span class="badge badge-ghost badge-xs">{{ ba.network }}</span> }
+                </div>
+                <div class="flex gap-2 items-start">
+                  <span class="opacity-60 shrink-0">Dirección:</span>
+                  <span class="font-mono break-all select-all bg-base-200 px-1.5 py-0.5 rounded text-[10px]">{{ ba.number }}</span>
+                </div>
+                @if (ba.min_amount > 0) {
+                  <div class="flex gap-2">
+                    <span class="opacity-60">Mín:</span>
+                    <span class="font-semibold">$ {{ ba.min_amount }}</span>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Período: desde → hasta -->
+          <div class="sm:col-span-2 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="label-text text-xs">Período del pago *</span>
+              <button type="button" class="btn btn-ghost btn-xs opacity-60"
+                      (click)="fillPeriodFromPlan()"
+                      [disabled]="!selectedPlan()">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-1" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2">
+                  <path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                </svg>
+                Auto-rellenar desde el plan
+              </button>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+              <label class="form-control w-full">
+                <div class="label pb-0.5"><span class="label-text text-xs">Desde</span></div>
+                <input type="date" class="input input-bordered input-sm w-full"
+                       formControlName="period_from"
+                       (change)="autoPeriodTo()" />
+                @if (userForm.get('period_from')?.touched && userForm.get('period_from')?.invalid) {
+                  <div class="label pt-0.5"><span class="label-text-alt text-error text-xs">Requerido.</span></div>
+                }
+              </label>
+
+              <label class="form-control w-full">
+                <div class="label pb-0.5">
+                  <span class="label-text text-xs">Hasta</span>
+                  <button type="button" class="label-text-alt btn btn-ghost btn-xs text-[10px] opacity-50 h-auto min-h-0 py-0 px-1"
+                          (click)="autoPeriodTo()" [disabled]="!userForm.get('period_from')?.value || !selectedPlan()">
+                    Calcular
+                  </button>
+                </div>
+                <input type="date" class="input input-bordered input-sm w-full"
+                       formControlName="period_to" />
+                @if (userForm.get('period_to')?.touched && userForm.get('period_to')?.invalid) {
+                  <div class="label pt-0.5"><span class="label-text-alt text-error text-xs">Requerido.</span></div>
+                }
+              </label>
+            </div>
+
+            <!-- Vista previa del rango -->
+            @if (periodPreview()) {
+              <div class="flex items-center gap-2 bg-base-100 border rounded-lg px-3 py-2 text-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-primary shrink-0" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+                </svg>
+                <span class="font-medium">{{ periodPreview()!.from }}</span>
+                <span class="opacity-40">→</span>
+                <span class="font-medium">{{ periodPreview()!.to }}</span>
+                @if (periodPreview()!.daysApart) {
+                  <span class="badge badge-ghost badge-sm ml-auto">{{ periodPreview()!.daysApart }} día(s)</span>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SECCIÓN 4: Comprobante ──────────────────────────────────────── -->
+      <div class="rounded-xl border bg-base-200/40 p-4 space-y-3">
+        <div class="flex items-center justify-between">
+          <p class="text-xs font-semibold uppercase tracking-wider opacity-50">4 · Comprobante de pago</p>
+          <span class="badge badge-ghost badge-sm">Opcional</span>
+        </div>
+
+        @if (!selectedFile) {
+          <label class="flex flex-col items-center gap-2 border-2 border-dashed rounded-xl p-5 cursor-pointer
+                        hover:border-primary transition-colors text-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 opacity-40" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="1.5">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <span class="text-sm font-medium">Haz clic para subir el comprobante</span>
+            <span class="text-xs opacity-50">Imagen (JPG, PNG, WEBP) o PDF · máx. 10 MB</span>
+            <input type="file" class="hidden" formControlName="file"
+                   accept="image/*,application/pdf"
+                   (change)="onUploadProof($event)" />
+          </label>
+        } @else {
+          <div class="flex items-start gap-3 bg-base-100 border border-success/40 rounded-xl p-3">
+            <!-- Preview imagen -->
+            @if (proofPreview()) {
+              <img [src]="proofPreview()" alt="Vista previa"
+                   class="w-24 h-24 object-cover rounded-lg border shrink-0" />
+            } @else {
+              <div class="w-14 h-14 rounded-lg border bg-base-200 flex items-center justify-center shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 opacity-40" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                </svg>
+              </div>
+            }
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium truncate">{{ selectedFile.name }}</p>
+              <p class="text-xs opacity-50">{{ (selectedFile.size / 1024).toFixed(1) }} KB</p>
+              <span class="badge badge-success badge-sm mt-1">Comprobante cargado</span>
+            </div>
+            <button type="button" class="btn btn-ghost btn-sm text-error" (click)="clearProof()">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2">
+                <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>
+              </svg>
+              Quitar
+            </button>
+          </div>
+        }
+
+        <!-- Barra de progreso de subida -->
+        @if (uploadProgress() > 0 && uploadProgress() < 100) {
+          <div>
+            <div class="flex justify-between text-xs opacity-60 mb-1">
+              <span>Subiendo comprobante…</span>
+              <span>{{ uploadProgress() }}%</span>
+            </div>
+            <progress class="progress progress-primary w-full" [value]="uploadProgress()" max="100"></progress>
+          </div>
+        }
+      </div>
+
+      <!-- ── SECCIÓN 5: Nota ─────────────────────────────────────────────── -->
+      <div class="rounded-xl border bg-base-200/40 p-4 space-y-2">
+        <div class="flex items-center justify-between">
+          <p class="text-xs font-semibold uppercase tracking-wider opacity-50">5 · Nota interna</p>
+          <span class="badge badge-ghost badge-sm">Opcional</span>
+        </div>
+        <textarea class="textarea textarea-bordered textarea-sm w-full resize-none"
+                  rows="3"
+                  formControlName="note"
+                  maxlength="500"
+                  placeholder="Ej: Cliente pagó en efectivo en oficina, verificado presencialmente…"></textarea>
+        <p class="text-[10px] opacity-40">Se añadirá automáticamente la etiqueta «Pago gestionado por administrador».</p>
+      </div>
+
+      <!-- ── Acciones ────────────────────────────────────────────────────── -->
+      <div class="flex items-center justify-between gap-2 pt-1 border-t">
+        <button type="button" class="btn btn-ghost btn-sm" (click)="_resetAddForm(); closeModal('add_payment')">
+          Cancelar
+        </button>
+        <button type="submit" class="btn btn-primary btn-sm"
+                [disabled]="userForm.invalid || uploadProgress() > 0">
+          @if (uploadProgress() > 0) {
+            <span class="loading loading-spinner loading-xs"></span> Subiendo…
+          } @else {
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2">
+              <path d="M5 13l4 4L19 7"/>
+            </svg>
+            Registrar pago
+          }
+        </button>
+      </div>
+
+      @if (hasError()) {
+        <div role="alert" class="alert alert-error alert-soft text-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+          <span>{{ hasError() }}</span>
+        </div>
+      }
+
+    </form>
   </div>
-  <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
+  <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar" (click)="_resetAddForm()">close</button></form>
 </dialog>
 
 <!-- Editar pago -->

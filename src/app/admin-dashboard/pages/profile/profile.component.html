@@ -1,0 +1,254 @@
+<section class="mt-4 space-y-4 max-w-3xl">
+
+  <!-- Toast -->
+  @if (toast()) {
+    <div class="toast toast-top toast-end z-50">
+      <div [class]="toast()!.ok ? 'alert alert-success' : 'alert alert-error'">
+        <span>{{ toast()!.msg }}</span>
+      </div>
+    </div>
+  }
+
+  <!-- Header -->
+  <div class="rounded-xl border bg-base-100 p-5 shadow-sm">
+    <h1 class="text-2xl font-extrabold tracking-tight">Mi Perfil</h1>
+    <p class="mt-1 text-sm text-base-content/60">Actualiza tus datos y contraseña de administrador.</p>
+  </div>
+
+  @if (hasError()) {
+    <div class="alert alert-error shadow-sm"><span>{{ hasError() }}</span></div>
+  }
+
+  @if (loading()) {
+    <div class="rounded-xl border bg-base-100 p-8 text-center shadow-sm">
+      <span class="loading loading-spinner loading-lg"></span>
+      <p class="mt-3 text-base-content/60">Cargando perfil...</p>
+    </div>
+  } @else {
+
+    <!-- Avatar + personal data card -->
+    <div class="card bg-base-100 shadow border border-base-200">
+      <div class="card-body gap-6">
+        <h2 class="card-title text-base">Datos personales</h2>
+
+        <!-- Avatar -->
+        <div class="flex items-center gap-4">
+          <div class="avatar">
+            <div class="w-20 rounded-full ring ring-base-300 ring-offset-2">
+              <img
+                [src]="picturePreview() || ('https://i.pravatar.cc/100?u=' + (profile()?.id || 'admin'))"
+                [alt]="profile()?.firstNames || 'Admin'"
+              />
+            </div>
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-base-content/60">Foto de perfil</label>
+            <input type="file" accept="image/*" (change)="handleFile($event)"
+              class="file-input file-input-sm file-input-bordered w-full max-w-xs" />
+            @if (picturePreview()) {
+              <button type="button" (click)="clearPicture()"
+                class="btn btn-ghost btn-xs text-error w-fit">Quitar foto</button>
+            }
+          </div>
+        </div>
+
+        <form [formGroup]="form" (ngSubmit)="saveProfile()" class="space-y-4">
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div class="form-control">
+              <label class="label"><span class="label-text">Nombres</span></label>
+              <input class="input input-bordered" formControlName="firstNames" placeholder="Carlos" />
+            </div>
+            <div class="form-control">
+              <label class="label"><span class="label-text">Apellidos</span></label>
+              <input class="input input-bordered" formControlName="lastNames" placeholder="VM" />
+            </div>
+            <div class="form-control sm:col-span-2">
+              <label class="label"><span class="label-text">Email</span></label>
+              <input class="input input-bordered opacity-60 cursor-not-allowed" [value]="profile()?.email || ''" readonly />
+            </div>
+          </div>
+
+          <!-- Telephones -->
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <label class="label-text font-medium">Teléfonos</label>
+              <button type="button" (click)="addPhone()" class="btn btn-xs btn-outline">+ Añadir</button>
+            </div>
+            @for (ctrl of phones.controls; track $index) {
+              <div class="flex gap-2">
+                <input class="input input-bordered input-sm flex-1" [formControl]="ctrl" placeholder="+51 999 999 999" />
+                <button type="button" (click)="removePhone($index)" class="btn btn-sm btn-ghost text-error">✕</button>
+              </div>
+            } @empty {
+              <p class="text-sm text-base-content/50">Sin teléfonos registrados.</p>
+            }
+          </div>
+
+          <!-- Status badges -->
+          <div class="flex flex-wrap gap-2 pt-1">
+            <span class="badge badge-primary">{{ profile()?.role }}</span>
+            <span [class]="profile()?.verified ? 'badge badge-success' : 'badge badge-ghost'">
+              {{ profile()?.verified ? 'Verificado' : 'No verificado' }}
+            </span>
+            <span [class]="profile()?.state === 'Activo' ? 'badge badge-success' : 'badge badge-warning'">
+              {{ profile()?.state || 'Sin estado' }}
+            </span>
+          </div>
+
+          <div class="flex justify-end gap-2 pt-2">
+            <button type="button" (click)="loadProfile()" class="btn btn-ghost btn-sm">Recargar</button>
+            <button type="submit"
+              [disabled]="form.invalid || form.pristine || saving()"
+              class="btn btn-primary">
+              @if (saving()) { <span class="loading loading-spinner loading-sm"></span> }
+              Guardar cambios
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Account info (readonly) -->
+    <div class="card bg-base-100 shadow border border-base-200">
+      <div class="card-body">
+        <h2 class="card-title text-base">Información de cuenta</h2>
+        <dl class="grid gap-3 sm:grid-cols-2 text-sm mt-2">
+          <div>
+            <dt class="text-base-content/50 text-xs uppercase tracking-wide">ID de administrador</dt>
+            <dd class="font-mono text-xs mt-0.5 break-all">{{ profile()?.id || '—' }}</dd>
+          </div>
+          <div>
+            <dt class="text-base-content/50 text-xs uppercase tracking-wide">Rol</dt>
+            <dd class="mt-0.5">
+              <span class="badge badge-primary badge-sm">{{ profile()?.role || 'Admin' }}</span>
+            </dd>
+          </div>
+          <div>
+            <dt class="text-base-content/50 text-xs uppercase tracking-wide">Estado de cuenta</dt>
+            <dd class="mt-0.5">
+              <span [class]="profile()?.state === 'Activo' ? 'badge badge-success badge-sm' : 'badge badge-warning badge-sm'">
+                {{ profile()?.state || 'Pendiente' }}
+              </span>
+            </dd>
+          </div>
+          <div>
+            <dt class="text-base-content/50 text-xs uppercase tracking-wide">Verificación</dt>
+            <dd class="mt-0.5">
+              <span [class]="profile()?.verified ? 'badge badge-success badge-sm' : 'badge badge-ghost badge-sm'">
+                {{ profile()?.verified ? 'Verificado' : 'Sin verificar' }}
+              </span>
+            </dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+
+    <!-- Password card -->
+    <div class="card bg-base-100 shadow border border-base-200">
+      <div class="card-body gap-4">
+        <h2 class="card-title text-base">Cambiar contraseña</h2>
+
+        <form [formGroup]="pwdForm" (ngSubmit)="changePassword()" class="space-y-4">
+          <div class="form-control">
+            <label class="label"><span class="label-text">Contraseña actual</span></label>
+            <input class="input input-bordered" type="password" formControlName="currentPassword"
+              placeholder="••••••••" autocomplete="current-password" />
+          </div>
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div class="form-control">
+              <label class="label"><span class="label-text">Nueva contraseña</span></label>
+              <input class="input input-bordered" type="password" formControlName="newPassword"
+                placeholder="••••••••" autocomplete="new-password" />
+            </div>
+            <div class="form-control">
+              <label class="label"><span class="label-text">Confirmar contraseña</span></label>
+              <input class="input input-bordered" type="password" formControlName="confirmPassword"
+                placeholder="••••••••" autocomplete="new-password" />
+            </div>
+          </div>
+
+          @if (pwdForm.value.newPassword && pwdForm.value.confirmPassword &&
+               pwdForm.value.newPassword !== pwdForm.value.confirmPassword) {
+            <p class="text-sm text-error">Las contraseñas no coinciden.</p>
+          }
+
+          <div class="flex justify-end">
+            <button type="submit"
+              [disabled]="pwdForm.invalid || savingPwd()"
+              class="btn btn-warning">
+              @if (savingPwd()) { <span class="loading loading-spinner loading-sm"></span> }
+              Cambiar contraseña
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+
+    <!-- Sessions card -->
+    <div class="card bg-base-100 shadow border border-base-200">
+      <div class="card-body gap-3">
+        <div class="flex items-center justify-between">
+          <h2 class="card-title text-base">Sesiones activas</h2>
+          <button class="btn btn-ghost btn-xs gap-1" (click)="loadSessions()" [disabled]="loadingSessions()">
+            @if (loadingSessions()) {
+              <span class="loading loading-spinner loading-xs"></span>
+            } @else {
+              <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+              </svg>
+            }
+            Actualizar
+          </button>
+        </div>
+
+        @if (loadingSessions()) {
+          <div class="flex justify-center py-4">
+            <span class="loading loading-spinner loading-md text-primary"></span>
+          </div>
+        } @else if (sessions().length === 0) {
+          <p class="text-sm text-base-content/40 text-center py-4">No se encontraron sesiones activas.</p>
+        } @else {
+          <div class="overflow-x-auto">
+            <table class="table table-sm w-full">
+              <thead>
+                <tr class="text-xs text-base-content/50 uppercase tracking-wide">
+                  <th>IP</th>
+                  <th>Dispositivo / User-Agent</th>
+                  <th>Creada</th>
+                  <th>Última actividad</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (s of sessions(); track s.id ?? $index) {
+                  <tr class="hover">
+                    <td class="font-mono text-xs">{{ s.ip || '—' }}</td>
+                    <td class="max-w-xs truncate text-xs text-base-content/70" [title]="s.userAgent || ''">
+                      {{ s.userAgent || '—' }}
+                    </td>
+                    <td class="text-xs text-base-content/60 whitespace-nowrap">
+                      {{ s.createdAt ? (s.createdAt | date:'dd/MM/yy HH:mm') : '—' }}
+                    </td>
+                    <td class="text-xs text-base-content/60 whitespace-nowrap">
+                      {{ s.lastActivity ? (s.lastActivity | date:'dd/MM/yy HH:mm') : '—' }}
+                    </td>
+                    <td>
+                      @if (s.active) {
+                        <span class="badge badge-success badge-sm">Activa</span>
+                      } @else {
+                        <span class="badge badge-ghost badge-sm">Inactiva</span>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <p class="text-xs text-base-content/40 text-right">{{ sessions().length }} sesión(es) encontrada(s).</p>
+        }
+      </div>
+    </div>
+
+  }
+</section>

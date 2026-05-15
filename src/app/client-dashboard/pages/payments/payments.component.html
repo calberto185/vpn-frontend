@@ -1,452 +1,820 @@
-<!-- ====== Pagos: Gestión ====== -->
+<!-- ====== Pagos ====== -->
 
-<!-- Stats -->
+<!-- Toast -->
+@if (toast()) {
+  <div class="toast toast-top toast-end z-[200]">
+    <div [class]="'alert ' + (toast()!.ok ? 'alert-success' : 'alert-error') + ' shadow-lg'">
+      <span>{{ toast()!.msg }}</span>
+    </div>
+  </div>
+}
+
+<!-- ── Stats ──────────────────────────────────────────────────────────────── -->
 <section class="container mx-auto max-w-7xl px-2 md:px-4 mt-4">
-  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-    <div class="stat bg-base-100/80 border rounded-xl shadow-sm">
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+
+    <div class="stat bg-base-100 border rounded-xl shadow-sm p-4">
       <div class="stat-figure text-primary">
-        <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 7h18M3 17h18M6 3h12v18H6z"/></svg>
+        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+        </svg>
       </div>
-      <div class="stat-title">Pagos</div>
-      <div class="stat-value text-2xl">{{this.summary.payments}}</div>
-      <div class="stat-desc">procesados</div>
+      <div class="stat-title text-xs">Total pagos</div>
+      <div class="stat-value text-2xl">{{ summary().total }}</div>
+      <div class="stat-desc">registrados</div>
     </div>
 
-    <div class="stat bg-base-100/80 border rounded-xl shadow-sm">
+    <div class="stat bg-base-100 border rounded-xl shadow-sm p-4">
       <div class="stat-figure text-success">
-        <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>
+        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path d="M5 13l4 4L19 7"/>
+        </svg>
       </div>
-      <div class="stat-title">Aceptados</div>
-      <div class="stat-value text-2xl">{{this.summary.accepts}}</div>
-      <div class="stat-desc">desde el origen</div>
+      <div class="stat-title text-xs">Aceptados</div>
+      <div class="stat-value text-2xl text-success">{{ summary().accepted }}</div>
+      <div class="stat-desc">confirmados</div>
     </div>
 
-    <div class="stat bg-base-100/80 border rounded-xl shadow-sm">
+    <div class="stat bg-base-100 border rounded-xl shadow-sm p-4">
       <div class="stat-figure text-warning">
-        <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v5M12 16h.01"/></svg>
+        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><path d="M12 8v5M12 16h.01"/>
+        </svg>
       </div>
-      <div class="stat-title">Pendientes</div>
-      <div class="stat-value text-2xl">{{this.summary.pending}}</div>
-      <div class="stat-desc">en revisión</div>
+      <div class="stat-title text-xs">En revisión</div>
+      <div class="stat-value text-2xl text-warning">{{ summary().pending }}</div>
+      <div class="stat-desc">pendientes</div>
     </div>
+
+    <div class="stat bg-base-100 border rounded-xl shadow-sm p-4">
+      <div class="stat-figure text-error">
+        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path d="M3 10h2l1 6h12l1-6h2M8 10V6a4 4 0 018 0v4"/>
+        </svg>
+      </div>
+      <div class="stat-title text-xs">Devueltos</div>
+      <div class="stat-value text-2xl text-error">{{ summary().returned }}</div>
+      <div class="stat-desc">rechazados</div>
+    </div>
+
   </div>
 </section>
 
-<!-- Action bar -->
-<section class="container hidden mx-auto max-w-7xl px-2 md:px-4 mt-4">
-  <div class="bg-base-100 border rounded-xl p-3 md:p-4 shadow-sm">
-    <div class="flex flex-wrap items-center gap-3">
-      <label class="input input-bordered flex items-center gap-2 w-full sm:w-[28rem]" aria-label="Buscar pagos">
-        <svg class="h-5 w-5 opacity-70" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-        <input id="search-payments" type="text" placeholder="Buscar por usuario, dispositivo, ID o cuenta" />
-      </label>
-
-      <div class="dropdown">
-        <button tabindex="0" class="btn btn-sm md:btn-md">Estado</button>
-        <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-56 z-[60]">
-          <li><a>Todos</a></li>
-          <li><a>Pendiente</a></li>
-          <li><a>Verificando</a></li>
-          <li><a>Aceptado</a></li>
-          <li><a>Devuelto</a></li>
-        </ul>
-      </div>
-
-      <div class="dropdown">
-        <button tabindex="0" class="btn btn-ghost btn-sm md:btn-md">Moneda</button>
-        <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-48 z-[60]">
-          <li><a>Todos</a></li>
-          <li><a>USD</a></li>
-          <li><a>PEN</a></li>
-          <li><a>BTC</a></li>
-          <li><a>USDT</a></li>
-        </ul>
-      </div>
-
-      <div class="dropdown">
-        <button tabindex="0" class="btn btn-ghost btn-sm md:btn-md">Periodo</button>
-        <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-48 z-[60]">
-          <li><a>Todos</a></li>
-          <li><a>Mensual</a></li>
-          <li><a>Trimestral</a></li>
-          <li><a>Anual</a></li>
-        </ul>
-      </div>
-
-      <div class="ml-auto flex items-center gap-2">
-        <div class="tooltip" data-tip="Seleccionar todo">
-          <input type="checkbox" class="checkbox checkbox-sm" aria-label="Seleccionar todo" />
-        </div>
-
-        <div class="dropdown dropdown-end">
-          <button tabindex="0" class="btn btn-ghost btn-sm md:btn-md">Acciones</button>
-          <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-64 z-[60]">
-            <li><a>Marcar verificando</a></li>
-            <li><a>Aceptar</a></li>
-            <li><a>Devolver</a></li>
-            <li><a>Exportar CSV</a></li>
-            <li><a class="text-error">Eliminar</a></li>
-          </ul>
-        </div>
-
-        <!-- Botón Agregar pago -->
-        <button class="btn btn-primary btn-sm md:btn-md" type="button"
-                onclick="document.getElementById('add_payment')?.showModal()">
-          <svg class="h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-               stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-          Agregar pago
-        </button>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- Tabla -->
+<!-- ── Action bar ─────────────────────────────────────────────────────────── -->
 <section class="container mx-auto max-w-7xl px-2 md:px-4 mt-4">
-  <div class="bg-base-100 border rounded-xl shadow-sm overflow-x-auto">
-    <table class="table table-sm w-full">
-      <thead>
-        <tr>
-          <th class="w-8"><input type="checkbox" class="checkbox checkbox-xs" aria-label="Seleccionar todas" /></th>
-          <th>Operación</th>
-          <!-- <th class="hidden lg:table-cell">Usuario</th> -->
-          <th class="hidden xl:table-cell">Servico</th>
-          <th>Monto</th>
-          <th>Estado</th>
-          <!-- <th class="hidden 2xl:table-cell">Periodo</th> -->
-          <!-- <th class="hidden 2xl:table-cell">Creado</th> -->
-          <!-- <th class="text-right w-48">Acciones</th> -->
-        </tr>
-      </thead>
-      <tbody>
-        <!-- Fila ejemplo (desde tu modelo) -->
-         @for (d of ListPayments(); track d.id) {
-          <tr class="hover">
+  <div class="bg-base-100 border rounded-xl p-3 shadow-sm space-y-3">
 
-            <td><input type="checkbox" class="checkbox checkbox-xs" aria-label="Seleccionar pago p-0001" /></td>
+    <!-- Row 1: title + buttons -->
+    <div class="flex items-center justify-between gap-3 flex-wrap">
+      <div>
+        <p class="text-sm font-semibold">Historial de pagos</p>
+        <p class="text-xs opacity-60">{{ filteredPayments().length }} de {{ payments().length }} transacciones</p>
+      </div>
+      <div class="flex gap-2 flex-wrap">
+        <!-- Download report -->
+        <button class="btn btn-outline btn-sm gap-2" type="button"
+                [disabled]="!filteredPayments().length"
+                (click)="downloadAllPayments()">
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path d="M12 10v6m0 0l-3-3m3 3l3-3M3 17v3a2 2 0 002 2h14a2 2 0 002-2v-3"/>
+          </svg>
+          Descargar reporte
+        </button>
+        @if (contractedServices().length > 0) {
+          <button class="btn btn-primary btn-sm gap-2" type="button" (click)="openNewPayment()">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path d="M12 5v14M5 12h14"/>
+            </svg>
+            Nuevo pago
+          </button>
+        }
+      </div>
+    </div>
 
-            <td>
-              <div class="flex items-center gap-3">
-                <div>
-                  <div class="font-medium leading-tight">{{ d.kind }}-{{ d.plan.startedAt | printperiod : d.plan.endedAt }}</div>
-                  <div class="text-[11px] opacity-70 break-all">{{d.createdAt | date:'dd MMM yyyy · HH:mm' }}</div>
-                </div>
-              </div>
-            </td>
+    <!-- Row 2: period tabs -->
+    <div class="flex items-center gap-1.5 flex-wrap">
+      <span class="text-xs opacity-50 font-medium mr-1">Filtrar:</span>
+      @for (tab of [
+        ['today','Hoy'],['week','Semana'],['month','Mes'],
+        ['year','Año'],['range','Rango'],['all','Todos']
+      ]; track tab[0]) {
+        <button type="button"
+          [class]="'btn btn-xs rounded-lg ' + (filterPeriod() === tab[0] ? 'btn-primary' : 'btn-ghost border border-base-300')"
+          (click)="setFilter($any(tab[0]))">{{ tab[1] }}</button>
+      }
 
-            <td class="hidden xl:table-cell">
-              <div class="leading-tight">
-                <div class="font-normal">{{d.plan.service_sortName}} {{d.plan.plan_title_prefix}} {{d.plan.plan_title_name}} {{d.plan.plan_title_suffix }}</div>
-                <div class="text-[11px] opacity-70">{{d.plan.currencySymbol}}{{d.plan.price}}/{{d.plan.kind}}</div>
-                <!-- <div class="text-[11px] opacity-70">{{!d.isPrePay ? "Adelantado" : "Al dia"}}</div> -->
-              </div>
-            </td>
+      <!-- Date range inputs (only when range selected) -->
+      @if (filterPeriod() === 'range') {
+        <input type="date" class="input input-bordered input-xs rounded-lg w-36"
+               [value]="filterFrom()"
+               (change)="filterFrom.set($any($event.target).value); currentPage.set(1)"/>
+        <span class="text-xs opacity-40">→</span>
+        <input type="date" class="input input-bordered input-xs rounded-lg w-36"
+               [value]="filterTo()"
+               (change)="filterTo.set($any($event.target).value); currentPage.set(1)"/>
+      }
 
-            <td>
-              <div class="tabular-nums font-medium">{{d.plan.currencySymbol}}{{d.amount}}</div>
-              <div class="text-[11px] opacity-70">{{d.amount/d.plan.price}} {{d.plan.kind}}</div>
-              <div class="text-[11px] opacity-70">{{!d.isPrePay ? "Adelantado" : "Al dia"}}</div>
-              <!-- <div class="text-[11px] opacity-70">{{d.methodPay.name}}</div>
-              <div class="text-[11px] opacity-70">{{d.method}}</div> -->
-            </td>
+      <!-- State filter -->
+      <select class="select select-bordered select-xs rounded-lg ml-auto"
+              [value]="filterState()"
+              (change)="filterState.set($any($event.target).value); currentPage.set(1)">
+        <option value="">Todos los estados</option>
+        <option value="Aceptado">Aceptado</option>
+        <option value="Varificando">En revisión</option>
+        <option value="Pendiente">Pendiente</option>
+        <option value="Devuelto">Devuelto</option>
+      </select>
+    </div>
 
-            <td>
-              <span class="badge badge-warning">{{d.state}}</span>
-            </td>
-
-            <!-- <td>
-              <div class="tabular-nums font-medium">{{d.createdAt}}</div>
-              <div class="text-[11px] opacity-70">Created: {{d.createdAt}}</div>
-            </td> -->
-            <!-- <td class="hidden 2xl:table-cell">Mensual</td>
-            <td class="hidden 2xl:table-cell">08 Ago 2025 · 22:30</td> -->
-
-            <!-- <td class="text-right">
-              <div class="flex items-center justify-end gap-1.5">
-                <div class="dropdown dropdown-end">
-                  <button class="btn btn-ghost btn-xs">Revisar</button>
-                  <ul class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-44 z-[60]">
-                    <li><a onclick="document.getElementById('view_payment')?.showModal()">Ver</a></li>
-                    <li><a onclick="document.getElementById('verify_payment')?.showModal()">Marcar verificando</a></li>
-                    <li><a onclick="document.getElementById('accept_payment')?.showModal()">Aceptar</a></li>
-                    <li><a onclick="document.getElementById('refund_payment')?.showModal()">Devolver</a></li>
-                  </ul>
-                </div>
-                <button class="btn btn-ghost btn-xs" type="button"
-                        onclick="document.getElementById('edit_payment')?.showModal()">
-                  <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
-                      viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
-                  </svg>
-                </button>
-                <button class="btn btn-ghost btn-xs text-error" type="button"
-                        onclick="document.getElementById('delete_payment')?.showModal()">
-                  <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
-                      viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path d="M3 6h18"/><path d="M8 6v14a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V6"/>
-                    <path d="M10 11v6M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
-                  </svg>
-                </button>
-              </div>
-            </td> -->
-
-          </tr>
-         }
-        <!-- /fila ejemplo -->
-      </tbody>
-    </table>
-  </div>
-
-  <!-- Paginación -->
-  <div class="mt-3 flex items-center justify-between">
-    <p class="text-sm opacity-70">Mostrando 1–1 de 1</p>
-    <nav class="join">
-      <button class="btn btn-xs join-item" disabled>«</button>
-      <button class="btn btn-xs join-item btn-active" aria-current="page">1</button>
-      <button class="btn btn-xs join-item" disabled>»</button>
-    </nav>
   </div>
 </section>
 
-<!-- ====== MODALES ====== -->
+<!-- ── Payment table ──────────────────────────────────────────────────────── -->
+<section class="container mx-auto max-w-7xl px-2 md:px-4 mt-3 mb-8">
+  <div class="bg-base-100 border rounded-xl shadow-sm overflow-x-auto">
 
-<!-- Ver pago -->
-<dialog id="view_payment" class="modal">
-  <div class="modal-box w-11/12 max-w-4xl">
-    <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button></form>
-    <h3 class="text-lg font-bold">Detalle del pago</h3>
-
-    <div class="grid gap-4 md:grid-cols-3 mt-3">
-      <div class="md:col-span-2 card border bg-base-200/60">
-        <div class="card-body p-4">
-          <h4 class="card-title text-sm">Información</h4>
-          <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-            <span class="opacity-70">ID:</span><span>p-0001</span>
-            <span class="opacity-70">Estado:</span><span>Pendiente</span>
-            <span class="opacity-70">Periodo:</span><span>Mensual</span>
-            <span class="opacity-70">Monto:</span><span>USD 12.00</span>
-            <span class="opacity-70">Moneda cliente:</span><span>USD</span>
-            <span class="opacity-70">Cuenta cliente:</span><span class="break-all">9876-****-321</span>
-            <span class="opacity-70">Moneda admin:</span><span>USD</span>
-            <span class="opacity-70">Cuenta admin:</span><span class="break-all">acc-0001</span>
-            <span class="opacity-70">Usuario:</span><span class="break-all">3ec951c0-491f-4078-beff-4f658b8ea7a1</span>
-            <span class="opacity-70">Dispositivo:</span><span>dev-0001 · Pixel 7</span>
-            <span class="opacity-70">Creado:</span><span>08 Ago 2025 · 22:30</span>
-          </div>
-          <div class="mt-3">
-            <h5 class="text-sm font-semibold">Nota</h5>
-            <p class="text-sm opacity-80">—</p>
-          </div>
-        </div>
+    @if (loading()) {
+      <div class="flex justify-center items-center py-16">
+        <span class="loading loading-spinner loading-md text-primary"></span>
       </div>
-
-      <div class="card border bg-base-200/60">
-        <div class="card-body p-4">
-          <h4 class="card-title text-sm">Evidencia</h4>
-          <div class="border rounded-lg overflow-hidden bg-base-100">
-            <img src="https://images.unsplash.com/photo-1516426122078-c23e76319801?q=80&w=800&fit=crop" alt="Evidencia del pago" />
-          </div>
-        </div>
+    } @else if (payments().length === 0) {
+      <div class="flex flex-col items-center justify-center py-16 gap-3 text-center">
+        <svg class="h-12 w-12 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+        </svg>
+        <p class="font-semibold opacity-60">Sin pagos registrados</p>
+        <p class="text-sm opacity-40">Cuando realices un pago aparecerá aquí.</p>
+        @if (contractedServices().length > 0) {
+          <button class="btn btn-primary btn-sm mt-2" (click)="openNewPayment()">Hacer mi primer pago</button>
+        }
       </div>
-    </div>
+    } @else if (filteredPayments().length === 0) {
+      <div class="flex flex-col items-center justify-center py-12 gap-2 text-center">
+        <svg class="h-10 w-10 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <p class="font-medium opacity-50">Sin resultados para este filtro</p>
+        <button class="btn btn-ghost btn-xs mt-1" (click)="setFilter('all'); filterState.set('')">Limpiar filtros</button>
+      </div>
+    } @else {
+      <table class="table table-sm w-full">
+        <thead class="bg-base-200/60">
+          <tr class="text-xs uppercase tracking-wide opacity-60">
+            <th class="py-3">Operación / Período</th>
+            <th class="hidden lg:table-cell">Servicio</th>
+            <th class="hidden sm:table-cell">Método</th>
+            <th>Moneda</th>
+            <th>Monto</th>
+            <th>Estado</th>
+            <th class="w-10"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (p of paginatedPayments(); track p.id) {
+            <tr class="hover cursor-pointer border-b border-base-200/60 last:border-0"
+                (click)="openDetail(p)">
 
-    <div class="modal-action">
-      <button class="btn" type="button" onclick="document.getElementById('verify_payment')?.showModal()">Marcar verificando</button>
-      <button class="btn btn-success" type="button" onclick="document.getElementById('accept_payment')?.showModal()">Aceptar</button>
-      <button class="btn btn-warning" type="button" onclick="document.getElementById('refund_payment')?.showModal()">Devolver</button>
-    </div>
-  </div>
-  <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
-</dialog>
+              <!-- Operación / Período -->
+              <td class="py-3">
+                <div class="font-semibold text-sm leading-tight">
+                  {{ p.kind | uppercase }}
+                  @if (p.isPrePay) { <span class="badge badge-xs badge-accent ml-1">Prepago</span> }
+                </div>
+                <div class="text-xs opacity-60 mt-0.5">
+                  {{ p.plan.startedAt | printperiod : p.plan.endedAt }}
+                </div>
+                <div class="text-[11px] opacity-40">{{ p.createdAt | date:'dd MMM yyyy · HH:mm' }}</div>
+              </td>
 
-<!-- Agregar pago -->
-<dialog id="add_payment" class="modal">
-  <div class="modal-box max-w-3xl">
-    <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button></form>
-    <h3 class="text-lg font-bold">Nuevo pago</h3>
-    <p class="text-sm opacity-70 mb-3">Registra un pago con su evidencia y datos asociados.</p>
+              <!-- Servicio -->
+              <td class="hidden lg:table-cell">
+                <div class="text-sm font-medium leading-tight">{{ p.plan.service_sortName }}</div>
+                <div class="text-xs opacity-60">{{ p.plan.plan_title_prefix }} {{ p.plan.plan_title_name }}</div>
+              </td>
 
-    <div class="grid gap-3 md:grid-cols-2">
-      <!-- <label class="input input-bordered w-full md:col-span-2"><input type="text" placeholder="ID (auto o GUID)" class="w-full" /></label> -->
+              <!-- Método -->
+              <td class="hidden sm:table-cell">
+                <div class="text-sm">{{ p.methodPay.name || p.method || '—' }}</div>
+                <div class="text-[11px] opacity-50">{{ p.methodPay.typeAccount || '' }}</div>
+              </td>
 
-      <!-- <label class="input input-bordered w-full"><input type="text" placeholder="user_id" class="w-full" required /></label> -->
-      <!-- <label class="input input-bordered w-full"><input type="text" placeholder="device_id" class="w-full" /></label> -->
+              <!-- Moneda -->
+              <td>
+                <span class="badge badge-ghost badge-sm font-mono font-semibold">
+                  {{ p.plan.currencyCode }}
+                </span>
+                <div class="text-[11px] opacity-50 mt-0.5">{{ p.plan.currencySymbol }} / {{ p.plan.kind }}</div>
+              </td>
 
-      <!-- <label class="input input-bordered w-full md:col-span-2"><input type="text" placeholder="device (nombre/alias)" class="w-full" /></label> -->
+              <!-- Monto -->
+              <td>
+                <div class="tabular-nums font-bold text-sm">
+                  {{ p.plan.currencySymbol }}{{ p.amount | number:'1.2-2' }}
+                </div>
+                <div class="text-[11px] opacity-50">
+                  {{ p.plan.currencySymbol }}{{ p.plan.price }}/{{ p.plan.kind }}
+                </div>
+              </td>
 
+              <!-- Estado -->
+              <td>
+                <span [class]="'badge badge-sm ' + stateClass(p.state)">
+                  {{ stateLabel(p.state) }}
+                </span>
+              </td>
 
-      <!-- País -->
-      <!-- <label class="select select-bordered w-full">
-        <select formControlName="country" aria-label="País" required>
-          @for (item of this.ListCountries(); track item.countryName; let idx = $index) {
-            <option [value]="item.countryName" [selected]="idx === 0">{{ item.countryName }}</option>
+              <!-- Ver -->
+              <td>
+                <button class="btn btn-ghost btn-xs btn-circle"
+                        (click)="openDetail(p); $event.stopPropagation()" title="Ver detalle">
+                  <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </button>
+              </td>
+
+            </tr>
           }
-        </select>
-      </label>
-      @if (userForm.get('country')?.touched && userForm.get('country')?.invalid) {
-        <p class="text-red-500 text-sm md:col-span-2">Seleccione un país.</p>
-      } -->
+        </tbody>
+      </table>
 
-      <label class="input input-bordered w-full">
-        <input type="number" step="0.01" min="0" placeholder="Monto" class="w-full" required />
-      </label>
+      <!-- ── Pagination ──────────────────────────────────────────────────── -->
+      <div class="flex items-center justify-between gap-3 px-4 py-3 border-t flex-wrap">
 
-      <label class="form-control w-full">
-        <select class="select select-bordered  w-full" aria-label="Moneda cliente">
-          <option selected>USD</option><option>PEN</option><option>BTC</option><option>USDT</option>
-        </select>
-      </label>
+        <!-- Page size -->
+        <div class="flex items-center gap-2">
+          <span class="text-xs opacity-50">Mostrar:</span>
+          @for (n of [20, 50, 100, 0]; track n) {
+            <button type="button"
+              [class]="'btn btn-xs rounded-lg ' + (pageSize() === n ? 'btn-primary' : 'btn-ghost border border-base-300')"
+              (click)="setPageSize(n)">{{ n === 0 ? 'Todos' : n }}</button>
+          }
+          <span class="text-xs opacity-40 ml-1">
+            {{ pageSize() === 0 ? filteredPayments().length : (currentPage()-1)*pageSize()+1 }}–{{ pageSize() === 0 ? filteredPayments().length : (currentPage()*pageSize() < filteredPayments().length ? currentPage()*pageSize() : filteredPayments().length) }}
+            de {{ filteredPayments().length }}
+          </span>
+        </div>
 
-      <!-- <label class="input input-bordered w-full"><input type="text" placeholder="clientAccount (cuenta del cliente)" class="w-full" /></label>
-      <label class="input input-bordered w-full"><input type="text" placeholder="adminAccount (cuenta de recepción)" class="w-full" /></label> -->
+        <!-- Page navigator -->
+        @if (totalPages() > 1) {
+          <div class="flex items-center gap-1">
+            <button class="btn btn-xs btn-ghost btn-circle" [disabled]="currentPage() === 1"
+                    (click)="setPage(currentPage()-1)">‹</button>
+            @for (pg of pageNumbers(); track $index) {
+              @if (pg === '…') {
+                <span class="px-1 text-xs opacity-40">…</span>
+              } @else {
+                <button type="button"
+                  [class]="'btn btn-xs btn-circle ' + (currentPage() === pg ? 'btn-primary' : 'btn-ghost')"
+                  (click)="setPage($any(pg))">{{ pg }}</button>
+              }
+            }
+            <button class="btn btn-xs btn-ghost btn-circle" [disabled]="currentPage() === totalPages()"
+                    (click)="setPage(currentPage()+1)">›</button>
+          </div>
+        }
 
-      <!-- <label class="select select-bordered w-full md:col-span-2">
-        <select class="w-full" aria-label="Periodo">
-          <option selected>Mensual</option><option>Trimestral</option><option>Anual</option>
-        </select>
-      </label> -->
-
-      <label class="textarea textarea-bordered w-full md:col-span-2">
-        <textarea class="w-full" rows="3" placeholder="Nota (opcional)"></textarea>
-      </label>
-
-      <div class="md:col-span-2">
-        <label class="block text-sm mb-1">Evidencia (imagen o captura)</label>
-        <input type="file" accept="image/*" class="file-input file-input-bordered w-full" />
       </div>
-    </div>
-
-    <div class="modal-action">
-      <button class="btn btn-ghost" type="button">Cancelar</button>
-      <button class="btn btn-primary" type="button">Crear</button>
-    </div>
-  </div>
-  <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
-</dialog>
-
-<!-- Editar pago -->
-<dialog id="edit_payment" class="modal">
-  <div class="modal-box max-w-3xl">
-    <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button></form>
-    <h3 class="text-lg font-bold">Editar pago</h3>
-
-    <div class="grid gap-3 md:grid-cols-2 mt-2">
-      <label class="input input-bordered w-full md:col-span-2"><input type="text" value="p-0001" class="w-full" disabled /></label>
-
-      <label class="input input-bordered w-full"><input type="text" value="3ec951c0-491f-4078-beff-4f658b8ea7a1" class="w-full" /></label>
-      <label class="input input-bordered w-full"><input type="text" value="dev-0001" class="w-full" /></label>
-
-      <label class="input input-bordered w-full md:col-span-2"><input type="text" value="Pixel 7" class="w-full" /></label>
-
-      <label class="input input-bordered w-full">
-        <input type="number" step="0.01" min="0" value="12.00" class="w-full" />
-      </label>
-
-      <div class="grid grid-cols-2 gap-2">
-        <label class="select select-bordered w-full">
-          <select class="w-full" aria-label="Moneda cliente">
-            <option selected>USD</option><option>PEN</option><option>BTC</option><option>USDT</option>
-          </select>
-        </label>
-        <label class="select select-bordered w-full">
-          <select class="w-full" aria-label="Moneda admin">
-            <option selected>USD</option><option>PEN</option><option>BTC</option><option>USDT</option>
-          </select>
-        </label>
-      </div>
-
-      <label class="input input-bordered w-full"><input type="text" value="9876-****-321" class="w-full" /></label>
-      <label class="input input-bordered w-full"><input type="text" value="acc-0001" class="w-full" /></label>
-
-      <label class="select select-bordered w-full md:col-span-2">
-        <select class="w-full" aria-label="Periodo">
-          <option selected>Mensual</option><option>Trimestral</option><option>Anual</option>
-        </select>
-      </label>
-
-      <label class="textarea textarea-bordered w-full md:col-span-2">
-        <textarea class="w-full" rows="3">—</textarea>
-      </label>
-
-      <div class="md:col-span-2">
-        <label class="block text-sm mb-1">Actualizar evidencia (opcional)</label>
-        <input type="file" accept="image/*" class="file-input file-input-bordered w-full" />
-      </div>
-    </div>
-
-    <div class="modal-action">
-      <button class="btn btn-ghost" type="button">Cancelar</button>
-      <button class="btn btn-primary" type="button">Guardar</button>
-    </div>
-  </div>
-  <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
-</dialog>
-
-<!-- Cambiar a "Verificando" -->
-<dialog id="verify_payment" class="modal">
-  <div class="modal-box">
-    <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button></form>
-    <h3 class="text-lg font-bold">Marcar como “Verificando”</h3>
-    <p class="py-2">El pago pasará a estado <b>Verificando</b>. ¿Continuar?</p>
-    <div class="modal-action">
-      <button class="btn" type="button">Cancelar</button>
-      <button class="btn btn-warning" type="button">Confirmar</button>
-    </div>
-  </div>
-  <form method="dialog" class="modal-backdrop"><button>close</button></form>
-</dialog>
-
-<!-- Aceptar pago -->
-<dialog id="accept_payment" class="modal">
-  <div class="modal-box">
-    <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button></form>
-    <h3 class="text-lg font-bold text-success">Aceptar pago</h3>
-    <p class="py-2">El pago se marcará como <b>Aceptado</b> y se activará el periodo correspondiente.</p>
-    <div class="modal-action">
-      <button class="btn" type="button">Cancelar</button>
-      <button class="btn btn-success" type="button">Aceptar</button>
-    </div>
-  </div>
-  <form method="dialog" class="modal-backdrop"><button>close</button></form>
-</dialog>
-
-<!-- Devolver pago -->
-<dialog id="refund_payment" class="modal">
-  <div class="modal-box">
-    <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button></form>
-    <h3 class="text-lg font-bold text-warning">Devolver pago</h3>
-    <p class="py-2">El pago será <b>Devuelto</b> al cliente. Puedes agregar una nota.</p>
-    <label class="textarea textarea-bordered w-full mt-2">
-      <textarea rows="3" placeholder="Motivo de la devolución (opcional)"></textarea>
-    </label>
-    <div class="modal-action">
-      <button class="btn" type="button">Cancelar</button>
-      <button class="btn btn-warning" type="button">Devolver</button>
-    </div>
-  </div>
-  <form method="dialog" class="modal-backdrop"><button>close</button></form>
-</dialog>
-
-<!-- Eliminar pago -->
-<dialog id="delete_payment" class="modal">
-  <div class="modal-box">
-    <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button></form>
-    <h3 class="text-lg font-bold text-error">Eliminar pago</h3>
-    <p class="py-2">Esta acción es permanente. ¿Deseas continuar?</p>
-    <div class="modal-action">
-      <button class="btn" type="button">Cancelar</button>
-      <button class="btn btn-error" type="button">Eliminar</button>
-    </div>
-  </div>
-  <form method="dialog" class="modal-backdrop"><button>close</button></form>
-</dialog>
-
-<!-- Atajo: Ctrl/Cmd + K enfoca búsqueda -->
-<script>
-  document.addEventListener('keydown', (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
-      const input = document.getElementById('search-payments');
-      if (input) { e.preventDefault(); input.focus(); }
     }
-  });
-</script>
+
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     MODAL: Nuevo pago
+════════════════════════════════════════════════════════════════════════════ -->
+<dialog id="pay_modal" class="modal">
+  <div class="modal-box w-11/12 max-w-2xl" [formGroup]="paymentForm">
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button>
+    </form>
+
+    <h3 class="text-lg font-bold mb-1">Registrar pago</h3>
+    <p class="text-sm opacity-60 mb-4">Sube tu comprobante y selecciona el método de pago que usaste.</p>
+
+    <!-- ── 1. Servicio & período ─────────────────────────────────────────── -->
+    <div class="card border bg-base-200/50 mb-4">
+      <div class="card-body p-4 gap-3">
+        <h4 class="font-semibold text-sm flex items-center gap-2">
+          <span class="badge badge-primary badge-sm">1</span> Servicio y período
+        </h4>
+
+        <!-- Selector de servicio -->
+        @if (contractedServices().length > 1) {
+          <label class="form-control w-full">
+            <div class="label py-0"><span class="label-text text-xs">Servicio a pagar</span></div>
+            <select class="select select-bordered select-sm w-full" formControlName="plan_id"
+                    (change)="onPlanChange($event)">
+              @for (svc of contractedServices(); track svc.plan_id) {
+                <option [value]="svc.plan_id">
+                  {{ svc.service_sortName }} — {{ svc.plan_title_prefix }} {{ svc.plan_title_name }}
+                  ({{ svc.currencySymbol }}{{ svc.price }}/{{ svc.kind }})
+                </option>
+              }
+            </select>
+          </label>
+        } @else if (contractedServices().length === 1) {
+          @let svc = contractedServices()[0];
+          <div class="flex items-center gap-3 p-2 bg-base-100 rounded-lg border">
+            <div class="text-2xl">📦</div>
+            <div>
+              <div class="font-semibold text-sm">{{ svc.service_sortName }}</div>
+              <div class="text-xs opacity-60">{{ svc.plan_title_prefix }} {{ svc.plan_title_name }} · {{ svc.currencySymbol }}{{ svc.price }}/{{ svc.kind }}</div>
+            </div>
+          </div>
+        }
+
+        <!-- Número de períodos -->
+        @if (selectedPlan()) {
+          <div>
+            <div class="label-text text-xs mb-1.5">¿Cuántos {{ selectedPlan()!.kind }}(s) quieres pagar?</div>
+            <div class="flex gap-2 flex-wrap">
+              @for (m of PERIOD_OPTIONS; track m) {
+                <button type="button"
+                        [class]="'btn btn-sm ' + (months() === m ? 'btn-primary' : 'btn-outline')"
+                        (click)="setMonths(m)">
+                  {{ m }} {{ m === 1 ? selectedPlan()!.kind : selectedPlan()!.kind + 's' }}
+                </button>
+              }
+            </div>
+          </div>
+
+          <!-- Rango de fechas del período -->
+          @if (periodRange()) {
+            <div class="rounded-xl border bg-base-100 overflow-hidden">
+              <div class="bg-primary/10 px-3 py-1.5 flex items-center gap-1.5">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-primary" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+                </svg>
+                <span class="text-xs font-semibold text-primary">Período que cubre este pago</span>
+                <span class="badge badge-primary badge-xs ml-auto">{{ periodRange()!.label }}</span>
+              </div>
+              <div class="px-3 py-2.5 flex items-center justify-between gap-2">
+                <div class="text-center">
+                  <p class="text-[10px] opacity-50 uppercase tracking-wide leading-none mb-0.5">Desde</p>
+                  <p class="text-sm font-bold">{{ periodRange()!.from }}</p>
+                </div>
+                <div class="flex-1 flex items-center justify-center gap-1 px-2">
+                  <div class="h-px flex-1 bg-base-300"></div>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 opacity-40" viewBox="0 0 24 24" fill="none"
+                       stroke="currentColor" stroke-width="2">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                  </svg>
+                  <div class="h-px flex-1 bg-base-300"></div>
+                </div>
+                <div class="text-center">
+                  <p class="text-[10px] opacity-50 uppercase tracking-wide leading-none mb-0.5">Hasta</p>
+                  <p class="text-sm font-bold">{{ periodRange()!.to }}</p>
+                </div>
+              </div>
+              <div class="border-t px-3 py-1.5 text-center">
+                <span class="text-xs opacity-50">{{ periodRange()!.days }} día(s) de cobertura</span>
+              </div>
+            </div>
+          }
+
+          <!-- Total -->
+          <div class="flex items-center justify-between bg-base-100 rounded-lg p-3 border">
+            <span class="text-sm opacity-70">Total a pagar</span>
+            <span class="text-xl font-bold text-primary">
+              {{ selectedPlan()!.currencySymbol }}{{ totalPrice() | number:'1.2-2' }}
+              <span class="text-xs font-normal opacity-60">{{ selectedPlan()!.currencyCode }}</span>
+            </span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- ── 2. Método de pago ─────────────────────────────────────────────── -->
+    <div class="card border bg-base-200/50 mb-4">
+      <div class="card-body p-4 gap-3">
+        <h4 class="font-semibold text-sm flex items-center gap-2">
+          <span class="badge badge-primary badge-sm">2</span> Método de pago
+        </h4>
+
+        @if (visibleBanks().length === 0) {
+          <div class="alert alert-warning text-sm">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><path d="M12 8v5M12 16h.01"/>
+            </svg>
+            No hay métodos de pago disponibles. Contacta al administrador.
+          </div>
+        } @else {
+          <div class="grid gap-2">
+            @for (bank of visibleBanks(); track bank.id) {
+              <label [class]="'flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ' +
+                              (selectedBank()?.id === bank.id ? 'border-primary bg-primary/5' : 'border-base-300 bg-base-100 hover:border-primary/50')">
+                <input type="radio" name="bank_radio" class="radio radio-primary radio-sm mt-0.5"
+                       [value]="bank.id"
+                       [checked]="selectedBank()?.id === bank.id"
+                       (change)="selectBank(bank.id)"/>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span class="text-base leading-none">{{ bankTypeIcon(bank) }}</span>
+                    <span class="font-semibold text-sm">{{ bank.name }}</span>
+                    <span class="badge badge-xs badge-ghost">{{ bank.typeAccount }}</span>
+                    @if (bank.country.countryName) {
+                      <span class="text-xs opacity-50">{{ bank.country.countryName }}</span>
+                    }
+                  </div>
+
+                  @if (selectedBank()?.id === bank.id) {
+                    <div class="mt-2 grid grid-cols-1 gap-1.5 text-sm">
+                      @if (isCrypto(bank)) {
+                        <!-- Dirección de wallet -->
+                        <div class="flex gap-2 items-start">
+                          <span class="opacity-60 shrink-0 text-xs pt-0.5">Dirección:</span>
+                          <span class="font-mono break-all text-xs bg-base-200 px-1.5 py-0.5 rounded select-all">{{ bank.number }}</span>
+                        </div>
+                        <!-- Red y moneda -->
+                        @if (bank.network || bank.currency) {
+                          <div class="flex gap-3 flex-wrap">
+                            @if (bank.network) {
+                              <span class="badge badge-outline badge-sm">Red: {{ bank.network }}</span>
+                            }
+                            @if (bank.currency) {
+                              <span class="badge badge-outline badge-sm">{{ bank.currency }}</span>
+                            }
+                          </div>
+                        }
+                        <!-- Monto mínimo -->
+                        @if (bank.min_amount > 0) {
+                          <div class="flex gap-2 text-xs">
+                            <span class="opacity-60">Mínimo:</span>
+                            <span class="font-semibold">$ {{ bank.min_amount }}</span>
+                          </div>
+                        }
+                        <!-- Confirmaciones -->
+                        @if (bank.confirmations > 1) {
+                          <div class="flex gap-2 text-xs">
+                            <span class="opacity-60">Confirmaciones:</span>
+                            <span>{{ bank.confirmations }}</span>
+                          </div>
+                        }
+                        <!-- QR -->
+                        @if (bank.qr_code) {
+                          <div class="mt-1 flex flex-col items-center gap-1">
+                            <p class="text-xs opacity-60">Escanea para pagar</p>
+                            <img [src]="bank.qr_code" alt="QR de pago"
+                                 class="w-36 h-36 border rounded-xl object-contain bg-white p-1" />
+                          </div>
+                        }
+                      } @else {
+                        @if (bank.number) {
+                          <div class="flex gap-2">
+                            <span class="opacity-60 shrink-0 text-xs">Número:</span>
+                            <span class="font-mono text-xs">{{ bank.number }}</span>
+                          </div>
+                        }
+                        @if (bank.cardAccount) {
+                          <div class="flex gap-2">
+                            <span class="opacity-60 shrink-0 text-xs">CCI/CBU:</span>
+                            <span class="font-mono text-xs">{{ bank.cardAccount }}</span>
+                          </div>
+                        }
+                      }
+                      @if (bank.note) {
+                        <div class="alert alert-info py-1.5 text-xs mt-1">{{ bank.note }}</div>
+                      }
+                    </div>
+                  }
+                </div>
+              </label>
+            }
+          </div>
+
+          <!-- Hidden reactive form field synced via onBankChange -->
+          <input type="hidden" formControlName="bank_id" />
+        }
+      </div>
+    </div>
+
+    <!-- ── 3. Comprobante ────────────────────────────────────────────────── -->
+    <div class="card border bg-base-200/50 mb-4">
+      <div class="card-body p-4 gap-3">
+        <h4 class="font-semibold text-sm flex items-center gap-2">
+          <span class="badge badge-primary badge-sm">3</span> Comprobante de pago
+        </h4>
+
+        @if (selectedBank()) {
+          <p class="text-xs opacity-60">
+            @if (isCrypto(selectedBank()!)) {
+              Adjunta una captura de pantalla de la transacción desde tu billetera.
+            } @else {
+              Adjunta la imagen o PDF del voucher de transferencia / depósito.
+            }
+          </p>
+        }
+
+        <div class="border-2 border-dashed rounded-xl p-4 text-center transition-colors"
+             [class.border-primary]="!!selectedFile"
+             [class.border-base-300]="!selectedFile">
+          <input type="file" id="voucher_input" accept="image/*,application/pdf"
+                 class="hidden" (change)="onFileChange($event)" />
+          <label for="voucher_input" class="cursor-pointer flex flex-col items-center gap-2">
+            @if (selectedFile) {
+              <svg class="h-8 w-8 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <span class="text-sm font-medium text-success">{{ selectedFile.name }}</span>
+              <span class="text-xs opacity-60">Haz clic para cambiar el archivo</span>
+            } @else {
+              <svg class="h-8 w-8 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+              </svg>
+              <span class="text-sm font-medium">Seleccionar comprobante</span>
+              <span class="text-xs opacity-50">Imagen (JPG, PNG) o PDF · máx. 100 MB</span>
+            }
+          </label>
+        </div>
+
+        <!-- Upload progress -->
+        @if (saving() && uploadProgress() > 0) {
+          <progress class="progress progress-primary w-full" [value]="uploadProgress()" max="100"></progress>
+          <p class="text-xs text-center opacity-60">Subiendo... {{ uploadProgress() }}%</p>
+        }
+      </div>
+    </div>
+
+    <!-- ── 4. Datos personales (si faltan) ───────────────────────────────── -->
+    @if (needsPersonalData()) {
+      <div class="card border border-warning bg-warning/5 mb-4">
+        <div class="card-body p-4 gap-3">
+          <h4 class="font-semibold text-sm flex items-center gap-2 text-warning">
+            <span class="badge badge-warning badge-sm">4</span> Datos personales requeridos
+          </h4>
+          <p class="text-xs opacity-70">Tu perfil no tiene país y/o teléfono. Completa estos datos para procesar tu pago.</p>
+          <div class="grid gap-3 sm:grid-cols-2">
+            <div class="form-control">
+              <label class="label py-0"><span class="label-text text-xs">País de residencia</span></label>
+              <input class="input input-bordered input-sm" placeholder="Nombre del país" formControlName="pd_country" />
+            </div>
+            <div class="form-control">
+              <label class="label py-0"><span class="label-text text-xs">Teléfono</span></label>
+              <input class="input input-bordered input-sm" placeholder="Ej. 912345678" formControlName="pd_tel_number" type="tel" />
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ── 5. Términos ───────────────────────────────────────────────────── -->
+    <div class="card border bg-base-200/50 mb-4">
+      <div class="card-body p-4 gap-2">
+        <h4 class="font-semibold text-sm flex items-center gap-2">
+          <span class="badge badge-primary badge-sm">{{ needsPersonalData() ? 5 : 4 }}</span> Términos y condiciones
+        </h4>
+
+        @if (activeTerms().length === 0) {
+          <p class="text-xs opacity-60">No se encontraron términos activos.</p>
+        } @else if (activeTerms().length === 1) {
+          <div class="flex items-start gap-3">
+            <input type="checkbox" class="checkbox checkbox-primary checkbox-sm mt-0.5"
+                   (change)="onTermsCheck($any($event.target).checked)" />
+            <div>
+              <p class="text-sm font-medium">{{ activeTerms()[0].title }}</p>
+              @if (activeTerms()[0].description) {
+                <p class="text-xs opacity-60 mt-0.5">{{ activeTerms()[0].description }}</p>
+              }
+            </div>
+          </div>
+        } @else {
+          <label class="form-control w-full">
+            <select class="select select-bordered select-sm w-full" formControlName="terms_id">
+              <option value="">Seleccionar términos y condiciones</option>
+              @for (term of activeTerms(); track term.id) {
+                <option [value]="term.id">{{ term.title }}</option>
+              }
+            </select>
+          </label>
+        }
+      </div>
+    </div>
+
+    <!-- ── Nota (opcional) ────────────────────────────────────────────────── -->
+    <label class="form-control w-full mb-4">
+      <div class="label py-0"><span class="label-text text-xs">Nota (opcional)</span></div>
+      <textarea class="textarea textarea-bordered textarea-sm w-full" rows="2"
+                formControlName="note" placeholder="Información adicional para el administrador"></textarea>
+    </label>
+
+    <!-- ── Acciones ───────────────────────────────────────────────────────── -->
+    <div class="modal-action pt-0">
+      <form method="dialog">
+        <button class="btn btn-ghost" type="submit">Cancelar</button>
+      </form>
+      <button class="btn btn-primary" type="button"
+              [disabled]="!canSubmit()"
+              (click)="onPaySubmit()">
+        @if (saving()) {
+          <span class="loading loading-spinner loading-sm"></span> Enviando...
+        } @else {
+          <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+          </svg>
+          Enviar pago
+        }
+      </button>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
+</dialog>
+
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     MODAL: Detalle del pago
+════════════════════════════════════════════════════════════════════════════ -->
+<dialog id="detail_modal" class="modal">
+  <div class="modal-box w-11/12 max-w-2xl p-0 overflow-hidden flex flex-col max-h-[90vh]">
+
+    @if (selectedPayment(); as p) {
+
+      <!-- ── Header ───────────────────────────────────────────────────────── -->
+      <div class="bg-gradient-to-r from-primary to-primary/80 px-6 py-5 shrink-0">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <p class="text-primary-content/70 text-xs font-medium uppercase tracking-widest mb-1">Comprobante de Pago</p>
+            <h3 class="text-white font-bold text-lg leading-tight">
+              {{ p.plan.service_sortName }}
+              <span class="font-normal opacity-80">· {{ p.plan.plan_title_prefix }} {{ p.plan.plan_title_name }}</span>
+            </h3>
+            <p class="text-primary-content/60 text-xs mt-1">ID: {{ p.id }}</p>
+          </div>
+          <button class="btn btn-sm btn-circle bg-white/10 border-0 text-white hover:bg-white/20"
+                  (click)="closeDetail()" aria-label="Cerrar">✕</button>
+        </div>
+
+        <!-- Estado + fecha -->
+        <div class="flex items-center gap-3 mt-3 flex-wrap">
+          <span [class]="'badge badge-sm font-semibold ' + stateClass(p.state)">{{ stateLabel(p.state) }}</span>
+          @if (p.isPrePay) { <span class="badge badge-accent badge-sm">Prepago</span> }
+          <span class="text-primary-content/60 text-xs">{{ p.createdAt | date:'dd MMM yyyy · HH:mm' }}</span>
+        </div>
+      </div>
+
+      <!-- ── Body (scrollable) ─────────────────────────────────────────────── -->
+      <div class="overflow-y-auto flex-1 px-6 py-5 space-y-5">
+
+        <!-- Monto destacado -->
+        <div class="flex items-center justify-between bg-base-200/60 rounded-xl px-4 py-3 border">
+          <div>
+            <p class="text-xs opacity-50 mb-0.5">Monto pagado</p>
+            <p class="text-2xl font-bold text-primary">
+              {{ p.plan.currencySymbol }}{{ p.amount | number:'1.2-2' }}
+              <span class="text-sm font-normal opacity-60">{{ p.plan.currencyCode }}</span>
+            </p>
+          </div>
+          <div class="text-right">
+            <p class="text-xs opacity-50 mb-0.5">Período</p>
+            <p class="text-sm font-semibold">{{ p.plan.startedAt | printperiod : p.plan.endedAt }}</p>
+          </div>
+        </div>
+
+        <!-- Datos del pago -->
+        <div>
+          <p class="text-xs font-bold uppercase tracking-widest opacity-50 mb-2">Datos del pago</p>
+          <div class="rounded-xl border divide-y overflow-hidden">
+            <div class="flex items-center justify-between px-4 py-2.5 text-sm">
+              <span class="opacity-60">Servicio</span>
+              <span class="font-medium text-right">{{ p.plan.service_sortName }}</span>
+            </div>
+            <div class="flex items-center justify-between px-4 py-2.5 text-sm">
+              <span class="opacity-60">Plan</span>
+              <span class="font-medium text-right">{{ p.plan.plan_title_prefix }} {{ p.plan.plan_title_name }}</span>
+            </div>
+            <div class="flex items-center justify-between px-4 py-2.5 text-sm">
+              <span class="opacity-60">Precio del plan</span>
+              <span class="font-medium text-right">{{ p.plan.currencySymbol }}{{ p.plan.price }}/{{ p.plan.kind }}</span>
+            </div>
+            <div class="flex items-center justify-between px-4 py-2.5 text-sm">
+              <span class="opacity-60">Método de pago</span>
+              <span class="font-medium text-right">{{ p.methodPay.name || p.method || '—' }}</span>
+            </div>
+            @if (p.methodPay.number) {
+              <div class="flex items-center justify-between px-4 py-2.5 text-sm">
+                <span class="opacity-60">Cuenta destino</span>
+                <span class="font-mono text-xs text-right break-all max-w-[55%]">{{ p.methodPay.number }}</span>
+              </div>
+            }
+            @if (p.methodPay.typeAccount) {
+              <div class="flex items-center justify-between px-4 py-2.5 text-sm">
+                <span class="opacity-60">Tipo de cuenta</span>
+                <span class="text-right">{{ p.methodPay.typeAccount }}</span>
+              </div>
+            }
+            @if (p.note) {
+              <div class="flex items-start justify-between px-4 py-2.5 text-sm gap-4">
+                <span class="opacity-60 shrink-0">Nota</span>
+                <span class="italic text-right">{{ p.note }}</span>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Historial de estados -->
+        @if (p.states.length) {
+          <div>
+            <p class="text-xs font-bold uppercase tracking-widest opacity-50 mb-2">Historial de estados</p>
+            <div class="flex flex-wrap gap-2">
+              @for (s of p.states; track $index) {
+                <span [class]="'badge badge-sm ' + stateClass(s.state)">{{ stateLabel(s.state) }}</span>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Comprobante de pago (imagen) -->
+        @if (p.picture) {
+          <div>
+            <p class="text-xs font-bold uppercase tracking-widest opacity-50 mb-2">Comprobante de pago</p>
+            <div class="rounded-xl border overflow-hidden bg-base-200/40">
+              @if (voucherLoading()) {
+                <div class="flex items-center justify-center h-40">
+                  <span class="loading loading-spinner loading-md text-primary"></span>
+                </div>
+              } @else if (voucherBlobUrl()) {
+                <img [src]="voucherBlobUrl()!" alt="Comprobante"
+                     class="w-full max-h-72 object-contain cursor-zoom-in"
+                     (click)="$any($event.target).requestFullscreen?.()"/>
+              } @else {
+                <div class="flex flex-col items-center justify-center h-32 gap-2 text-base-content/40">
+                  <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                  </svg>
+                  <span class="text-sm">No se pudo cargar la imagen</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+      </div><!-- /body -->
+
+      <!-- ── Footer: acciones ──────────────────────────────────────────────── -->
+      <div class="shrink-0 border-t px-6 py-4 bg-base-100 space-y-3">
+
+        <!-- Descargar PDF -->
+        <button class="btn btn-primary w-full gap-2" type="button" (click)="downloadPaymentPdf(p)">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <path d="M9 15l3 3 3-3M12 12v6"/>
+          </svg>
+          Descargar comprobante como PDF
+        </button>
+
+        <!-- Compartir -->
+        <div>
+          <p class="text-xs opacity-50 font-medium mb-2 text-center">Compartir comprobante</p>
+          <div class="grid grid-cols-4 gap-2">
+
+            <!-- Telegram -->
+            <button type="button" (click)="shareViaTelegram(p)"
+                    class="flex flex-col items-center gap-1 py-2 rounded-xl bg-[#0088cc]/10 hover:bg-[#0088cc]/20 text-[#0088cc] transition-colors text-xs font-medium">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.248l-2.026 9.542c-.149.677-.543.843-1.1.524l-3.037-2.237-1.464 1.41c-.162.162-.297.297-.61.297l.217-3.087 5.617-5.075c.244-.217-.054-.337-.377-.12L6.59 14.635l-2.988-.935c-.648-.204-.662-.648.135-.962l11.677-4.503c.539-.196 1.011.131.838.95l-.69.063z"/>
+              </svg>
+              Telegram
+            </button>
+
+            <!-- WhatsApp -->
+            <button type="button" (click)="shareViaWhatsApp(p)"
+                    class="flex flex-col items-center gap-1 py-2 rounded-xl bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#25D366] transition-colors text-xs font-medium">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+              </svg>
+              WhatsApp
+            </button>
+
+            <!-- Email -->
+            <button type="button" (click)="shareViaEmail(p)"
+                    class="flex flex-col items-center gap-1 py-2 rounded-xl bg-base-200 hover:bg-base-300 text-base-content transition-colors text-xs font-medium">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+              </svg>
+              Email
+            </button>
+
+            <!-- Sistema (mensajes) -->
+            <button type="button" (click)="shareViaMessages(p)"
+                    class="flex flex-col items-center gap-1 py-2 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary transition-colors text-xs font-medium">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+              </svg>
+              Mensajes
+            </button>
+
+          </div>
+        </div>
+
+        <!-- Cerrar -->
+        <button class="btn btn-ghost btn-sm w-full" type="button" (click)="closeDetail()">Cerrar</button>
+
+      </div><!-- /footer -->
+    }
+
+  </div>
+  <div class="modal-backdrop" (click)="closeDetail()"><button aria-label="Cerrar">close</button></div>
+</dialog>

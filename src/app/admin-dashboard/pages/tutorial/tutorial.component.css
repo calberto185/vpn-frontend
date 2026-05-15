@@ -1,0 +1,10 @@
+.tree-node-active {
+  background-color: oklch(var(--p) / 0.15) !important;
+  color: oklch(var(--p) / 1) !important;
+  font-weight: 700;
+  box-shadow: inset 3px 0 0 oklch(var(--p) / 1);
+  border-radius: 0.375rem;
+}
+.tree-node-active i {
+  color: oklch(var(--p) / 1);
+}

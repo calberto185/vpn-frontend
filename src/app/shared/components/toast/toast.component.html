@@ -1,0 +1,82 @@
+<!-- Stack de toasts — bottom-right -->
+<div class="fixed bottom-5 right-5 z-[9998] flex flex-col gap-3 w-80 pointer-events-none"
+     aria-live="polite" aria-label="Notificaciones">
+
+  @for (t of toasts(); track t.id) {
+    <div
+      class="pointer-events-auto flex overflow-hidden rounded-xl border shadow-lg transition-all duration-300 animate-slideIn"
+      [class]="cfg(t.type).bg + ' ' + cfg(t.type).border + ' border'"
+      role="alert"
+    >
+      <!-- Barra lateral de color -->
+      <div class="w-1 shrink-0 rounded-l-xl" [class]="cfg(t.type).bar"></div>
+
+      <!-- Ícono + Contenido -->
+      <div class="flex items-start gap-3 p-3.5 w-full">
+
+        <!-- Ícono animado -->
+        <div class="shrink-0 mt-0.5" [class]="cfg(t.type).icon">
+          @if (t.type === 'success') {
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <circle cx="12" cy="12" r="10"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="m8 12 3 3 5-5"/>
+            </svg>
+          }
+          @if (t.type === 'warning') {
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+          }
+          @if (t.type === 'error') {
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <circle cx="12" cy="12" r="10"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="m15 9-6 6M9 9l6 6"/>
+            </svg>
+          }
+          @if (t.type === 'info') {
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <circle cx="12" cy="12" r="10"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 16v-4M12 8h.01"/>
+            </svg>
+          }
+        </div>
+
+        <!-- Texto -->
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-semibold leading-snug" [class]="cfg(t.type).text">
+            {{ t.title }}
+          </p>
+          @if (t.message) {
+            <p class="text-xs opacity-70 mt-0.5 leading-relaxed" [class]="cfg(t.type).text">
+              {{ t.message }}
+            </p>
+          }
+        </div>
+
+        <!-- Cerrar -->
+        <button
+          class="shrink-0 p-0.5 rounded opacity-50 hover:opacity-100 transition-opacity"
+          [class]="cfg(t.type).text"
+          (click)="dismiss(t.id)"
+          aria-label="Cerrar notificación">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  }
+</div>
+
+<style>
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(24px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.animate-slideIn {
+  animation: slideIn 0.28s cubic-bezier(0.16,1,0.3,1) both;
+}
+</style>

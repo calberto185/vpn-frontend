@@ -1,454 +1,360 @@
-<!-- NAVBAR -->
-<header class="bg-base-100/95 backdrop-blur border-b sticky top-0 z-50">
-  <div class="container mx-auto max-w-6xl px-4 navbar">
-    <div class="navbar-start">
-      <a class="btn btn-ghost text-xl font-extrabold tracking-tight">VPN<span class="text-primary">CarlosVM</span></a>
+@if (homeContent(); as content) {
+  <header class="sticky top-0 z-50 border-b border-base-200 bg-base-100/95 backdrop-blur-md">
+    <div class="container mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
+      <a class="flex items-center gap-2 font-extrabold text-lg tracking-tight select-none">
+        @if (brandingState.logoUrl()) {
+          <img [src]="brandingState.logoUrl()!" [alt]="brandingState.name()" class="h-8 w-auto object-contain" />
+        } @else {
+          <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-primary shadow-sm">
+            <svg class="h-4 w-4 text-primary-content" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+            </svg>
+          </div>
+          <span class="text-primary">{{ brandingState.name() || display(content.navbar.brandName) }}</span>
+          @if (!brandingState.name() && content.navbar.brandAccent) {
+            <span class="text-base-content/70">{{ display(content.navbar.brandAccent) }}</span>
+          }
+        }
+      </a>
+
+      <nav class="hidden items-center gap-1 text-base font-medium lg:flex">
+        <a href="#contenido" class="rounded-lg px-4 py-2 text-base-content/70 transition-colors hover:bg-base-200 hover:text-base-content">{{ 'pub.nav.content' | translate }}</a>
+        <a href="#ventajas" class="rounded-lg px-4 py-2 text-base-content/70 transition-colors hover:bg-base-200 hover:text-base-content">{{ 'pub.nav.advantages' | translate }}</a>
+        <a href="#planes" class="rounded-lg px-4 py-2 text-base-content/70 transition-colors hover:bg-base-200 hover:text-base-content">{{ 'pub.nav.plans' | translate }}</a>
+      </nav>
+
+      <div class="flex items-center gap-2">
+        <app-language-coin></app-language-coin>
+        <a routerLink="/auth/register" class="btn btn-ghost btn-sm hidden sm:flex">{{ display(content.hero.primaryCtaLabel) }}</a>
+        <details class="dropdown dropdown-end">
+          <summary class="btn btn-primary btn-sm list-none">{{ 'pub.nav.login' | translate }}</summary>
+          <div class="dropdown-content z-[100] mt-1 w-80 rounded-2xl border border-base-200 bg-base-100 p-5 shadow-xl">
+            <app-login-page></app-login-page>
+          </div>
+        </details>
+      </div>
+    </div>
+  </header>
+
+  <section class="relative overflow-hidden">
+    <div class="pointer-events-none absolute inset-0 -z-10">
+      <div class="absolute right-0 top-0 h-[700px] w-[700px] translate-x-1/4 -translate-y-1/4 rounded-full bg-primary/6 blur-3xl"></div>
+      <div class="absolute bottom-0 left-0 h-[500px] w-[500px] -translate-x-1/3 translate-y-1/3 rounded-full bg-secondary/8 blur-3xl"></div>
     </div>
 
-    <div class="navbar-center hidden lg:flex">
-      <ul class="menu menu-horizontal gap-2">
-        <li><a href="#beneficios">Beneficios</a></li>
-        <li><a href="#precios">Precios</a></li>
-        <li><a href="#seguridad">Seguridad</a></li>
-      </ul>
-    </div>
-
-
-    <!-- Toolbar selectors -->
-    <div class="navbar-end flex items-center gap-3">
-      <app-language-coin></app-language-coin>
-    </div>
-
-    <div class=" gap-2">
-      <a routerLink="/auth/register" class="btn btn-ghost">Crear cuenta</a>
-      <!-- <a routerLink="/auth/login" class="btn btn-primary">Iniciar sesión</a> -->
-
-
-
-
-
-      <!-- <div class="navbar-end gap-2"> -->
-
-      <!-- Crear cuenta -->
-      <!-- <details class="relative">
-    <summary class="btn btn-ghost cursor-pointer">Crear cuenta</summary>
-    <div class="absolute right-0 mt-3 w-80 bg-base-100 border shadow-xl rounded-2xl p-5">
-      <app-register-page></app-register-page>
-      <h3 class="text-lg font-bold mb-3">Registro</h3>
-      <input type="text" placeholder="Usuario" class="input input-bordered w-full mb-2" />
-      <input type="email" placeholder="Correo" class="input input-bordered w-full mb-2" />
-      <input type="password" placeholder="Contraseña" class="input input-bordered w-full mb-4" />
-      <button class="btn btn-primary w-full">Crear cuenta</button>
-    </div>
-  </details> -->
-
-      <!-- Iniciar sesión -->
-      <details class="relative">
-        <summary class="btn btn-primary cursor-pointer">Iniciar sesión</summary>
-        <div class="absolute right-0 mt-3 w-80 bg-base-100 border shadow-xl rounded-2xl p-5">
-          <app-login-page></app-login-page>
-          <!-- <h3 class="text-lg font-bold mb-3">Iniciar sesión</h3>
-      <input type="email" placeholder="Correo" class="input input-bordered w-full mb-2" />
-      <input type="password" placeholder="Contraseña" class="input input-bordered w-full mb-4" />
-      <button class="btn btn-primary w-full">Entrar</button> -->
+    <div class="container mx-auto grid max-w-6xl gap-14 px-6 pb-24 pt-28 lg:grid-cols-[1fr_420px] lg:items-center lg:pt-36 lg:pb-32">
+      <div>
+        <div class="mb-7 inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/8 px-4 py-1.5 text-xs font-semibold tracking-wide text-primary">
+          <span class="h-1.5 w-1.5 rounded-full bg-primary animate-pulse"></span>
+          {{ display(content.hero.badge) }}
         </div>
-      </details>
 
-      <!-- Switch tema -->
-      <!-- <label class="swap swap-rotate ml-2">
-    <input type="checkbox" aria-label="Cambiar tema" onchange="changeTheme()">
-  </label> -->
-
-    </div>
-
-
-
-
-
-
-
-    <!-- <label class="swap swap-rotate ml-2">
-        <input type="checkbox" aria-label="Cambiar tema" (change)="changeTheme()">
-       <svg class="swap-on h-6 w-6 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M160 256a96 96 0 1096-96 96.11 96.11 0 00-96 96z"/><path d="M256 48a24 24 0 0124 24v32a24 24 0 01-48 0V72a24 24 0 0124-24zm0 328a24 24 0 00-24 24v32a24 24 0 0048 0v-32a24 24 0 00-24-24zM394.35 117.65a24 24 0 00-33.94 0l-22.63 22.63a24 24 0 1033.94 33.94l22.63-22.63a24 24 0 000-33.94zM117.65 394.35a24 24 0 000 33.94l22.63 22.63a24 24 0 0033.94-33.94l-22.63-22.63a24 24 0 00-33.94 0zM464 232h-32a24 24 0 000 48h32a24 24 0 000-48zM80 232H48a24 24 0 000 48h32a24 24 0 000-48zM394.35 394.35a24 24 0 010 33.94l-22.63 22.63a24 24 0 01-33.94-33.94l22.63-22.63a24 24 0 0133.94 0zM117.65 117.65a24 24 0 0133.94 0l22.63 22.63a24 24 0 11-33.94 33.94l-22.63-22.63a24 24 0 010-33.94z"/></svg>
-        <svg
-        class="swap-off h-6 w-6 fill-current"
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-    stroke-linejoin="round">
-    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-  </svg>
-</label> -->
-  </div>
-  <!-- </div> -->
-</header>
-
-<!-- HERO -->
-<section class="relative overflow-hidden">
-  <div class="absolute inset-0 -z-10 opacity-20 pointer-events-none">
-    <div class="absolute -top-24 -right-24 w-[520px] h-[520px] rounded-full blur-3xl bg-primary/30"></div>
-    <div class="absolute -bottom-24 -left-24 w-[520px] h-[520px] rounded-full blur-3xl bg-secondary/20"></div>
-  </div>
-
-  <div class="container mx-auto max-w-6xl px-4 py-24">
-    <div class="grid lg:grid-cols-12 gap-12 items-center">
-      <div class="lg:col-span-7">
-        <div class="badge badge-primary badge-lg mb-6">VPN para LATAM</div>
-        <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.1]">
-          Privacidad impecable, <span class="text-primary">rendimiento</span> de clase mundial
+        <h1 class="text-5xl font-extrabold leading-[1.05] tracking-[-0.02em] md:text-6xl lg:text-7xl">
+          {{ display(content.hero.title) }}
         </h1>
-        <p class="mt-5 text-lg text-base-content/70 max-w-2xl leading-relaxed">
-          Cifra todo tu tráfico, evita rastreos y accede a contenido global con una red de baja latencia diseñada para
-          trabajo y ocio.
+        @if (content.hero.accentText) {
+          <p class="mt-3 text-xl font-semibold text-primary md:text-2xl">{{ display(content.hero.accentText) }}</p>
+        }
+        <p class="mt-6 max-w-xl text-xl leading-relaxed text-base-content/60">
+          {{ display(content.hero.description) }}
         </p>
-        <div class="mt-8 flex flex-wrap gap-3">
-          <a routerLink="/auth/register" class="btn btn-primary btn-lg btn-wide">Comenzar ahora</a>
-          <a href="#precios" class="btn btn-outline btn-lg">Ver planes</a>
+
+        <div class="mt-10 flex flex-wrap items-center gap-3">
+          <a [routerLink]="content.hero.primaryCtaRoute" class="btn btn-primary btn-lg rounded-xl px-8 font-bold">
+            {{ display(content.hero.primaryCtaLabel) }}
+          </a>
+          <a [href]="content.hero.secondaryCtaHref" class="btn btn-ghost btn-lg rounded-xl text-base-content/70">
+            {{ display(content.hero.secondaryCtaLabel) }} &rarr;
+          </a>
         </div>
 
-        <div class="mt-12 grid grid-cols-2 gap-4 max-w-md">
-          <div class="stat bg-base-100/70 backdrop-blur rounded-2xl shadow-sm p-4 sm:p-6">
-            <div class="stat-title">Disponibilidad</div>
-            <div class="stat-value">99.9%</div>
-            <div class="stat-desc">SLA</div>
+        <div class="mt-10 flex flex-wrap gap-6 text-base text-base-content/55">
+          @for (highlight of content.hero.highlights; track $index) {
+            <span class="flex items-center gap-1.5">
+              <svg class="h-4 w-4 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+              </svg>
+              {{ display(highlight) }}
+            </span>
+          }
+        </div>
+      </div>
+
+      <div class="rounded-3xl border border-base-200 bg-base-100 p-5 shadow-2xl">
+        <div class="mb-5 flex items-center justify-between border-b border-base-200 pb-4">
+          <div class="flex items-center gap-2">
+            <div class="h-2 w-2 rounded-full bg-success"></div>
+            <span class="text-xs font-semibold text-base-content/60">{{ display(content.hero.panelLabel) }}</span>
           </div>
-          <div class="stat bg-base-100/70 backdrop-blur rounded-2xl shadow-sm p-4 sm:p-6">
-            <div class="stat-title">Soporte</div>
-            <div class="stat-value">24/7</div>
-            <div class="stat-desc">en español</div>
-          </div>
+          <span class="rounded-full bg-success/10 px-2.5 py-1 text-xs font-mono text-success">{{ display(content.hero.panelStatus) }}</span>
         </div>
-      </div>
 
-      <div class="lg:col-span-5">
-        <div class="card bg-base-100 shadow-xl border rounded-2xl">
-          <div class="card-body">
-            <h3 class="card-title">Conéctate en 3 pasos</h3>
-            <ul class="steps steps-vertical lg:steps-horizontal mt-2">
-              <li class="step step-primary">Crear cuenta</li>
-              <li class="step step-primary">Elegir plan</li>
-              <li class="step step-primary">Conectarse</li>
-            </ul>
-            <div class="divider my-4"></div>
-            <p class="text-sm text-base-content/70">
-              Apps para Windows, macOS, Linux, iOS, Android y perfiles .ovpn.
-            </p>
-            <!-- <a routerLink="/auth/register" class="btn btn-primary w-full">Probar sin riesgo</a> -->
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- BENEFICIOS -->
-<section id="beneficios" class="container mx-auto max-w-6xl px-4 py-20">
-  <div class="text-center max-w-2xl mx-auto">
-    <h2 class="text-3xl md:text-4xl font-bold tracking-tight">Todo lo que necesitas</h2>
-    <p class="mt-3 text-base-content/70">Seguridad sólida, rendimiento estable y privacidad por diseño.</p>
-  </div>
-
-  <div class="mt-12 grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-    <div class="card bg-base-100 shadow-lg hover:shadow-xl transition rounded-2xl">
-      <div class="card-body">
-        <div class="w-10 h-10 rounded-xl bg-primary/10 grid place-content-center mb-3">
-          <svg class="w-6 h-6 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-            stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M12 6.253l7.5 3.375V12c0 5.25-3.75 9-7.5 9S4.5 17.25 4.5 12V9.628L12 6.253z" />
-          </svg>
-        </div>
-        <h3 class="card-title">Cifrado moderno</h3>
-        <p class="text-base-content/70">AES-256 + TLS 1.3 y PFS para blindar tus datos.</p>
-      </div>
-    </div>
-
-    <div class="card bg-base-100 shadow-lg hover:shadow-xl transition rounded-2xl">
-      <div class="card-body">
-        <div class="w-10 h-10 rounded-xl bg-primary/10 grid place-content-center mb-3">
-          <svg class="w-6 h-6 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-            stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M13.875 18.825A10.05 10.05 0 0112 19.5C7.5 19.5 3.75 16.5 2.25 12c.45-1.26 1.125-2.415 1.98-3.405M9.88 9.88A3 3 0 0012 15a3 3 0 002.121-.879M6.75 6.75L17.25 17.25" />
-          </svg>
-        </div>
-        <h3 class="card-title">No-logs</h3>
-        <p class="text-base-content/70">Privacidad por defecto. No registramos tu actividad.</p>
-      </div>
-    </div>
-
-    <div class="card bg-base-100 shadow-lg hover:shadow-xl transition rounded-2xl">
-      <div class="card-body">
-        <div class="w-10 h-10 rounded-xl bg-primary/10 grid place-content-center mb-3">
-          <svg class="w-6 h-6 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-            stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-          </svg>
-        </div>
-        <h3 class="card-title">Velocidad real</h3>
-        <p class="text-base-content/70">Optimizada para streaming y gaming con baja latencia.</p>
-      </div>
-    </div>
-
-    <div class="card bg-base-100 shadow-lg hover:shadow-xl transition rounded-2xl">
-      <div class="card-body">
-        <div class="w-10 h-10 rounded-xl bg-primary/10 grid place-content-center mb-3">
-          <svg class="w-6 h-6 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-            stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M18 13v6a2 2 0 01-2 2H8a2 2 0 01-2-2v-6m12-5a4 4 0 10-8 0v5h8v-5z" />
-          </svg>
-        </div>
-        <h3 class="card-title">Kill Switch</h3>
-        <p class="text-base-content/70">Si la VPN cae, bloquea el tráfico y evita filtraciones.</p>
-      </div>
-    </div>
-
-    <div class="card bg-base-100 shadow-lg hover:shadow-xl transition rounded-2xl">
-      <div class="card-body">
-        <div class="w-10 h-10 rounded-xl bg-primary/10 grid place-content-center mb-3">
-          <svg class="w-6 h-6 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-            stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h8m-8 4h6" />
-          </svg>
-        </div>
-        <h3 class="card-title">Multiplataforma</h3>
-        <p class="text-base-content/70">Múltiples dispositivos. Apps y perfiles .ovpn.</p>
-      </div>
-    </div>
-
-    <div class="card bg-base-100 shadow-lg hover:shadow-xl transition rounded-2xl">
-      <div class="card-body">
-        <div class="w-10 h-10 rounded-xl bg-primary/10 grid place-content-center mb-3">
-          <svg class="w-6 h-6 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-            stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M8 10h.01M12 10h.01M16 10h.01M9 16h6m2 4H7a2 2 0 01-2-2V6a2 2 0 012-2h7l5 5v9a2 2 0 01-2 2z" />
-          </svg>
-        </div>
-        <h3 class="card-title">Soporte</h3>
-        <p class="text-base-content/70">Asistencia 24/7 por chat y correo.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- SEGURIDAD -->
-<section id="seguridad" class="bg-base-200/60">
-  <div class="container mx-auto max-w-6xl px-4 py-20">
-    <div class="grid lg:grid-cols-12 gap-12 items-center">
-      <div class="lg:col-span-6">
-        <h3 class="text-2xl md:text-3xl font-bold tracking-tight">Arquitectura centrada en privacidad</h3>
-        <p class="mt-3 text-base-content/70">Bloqueo de fugas IPv6 y configuración endurecida.</p>
-        <ul class="mt-6 space-y-3 text-base">
-          <li class="flex items-center gap-3"><span class="badge badge-success">TLS 1.3</span><span>Handshake
-              moderno</span></li>
-          <li class="flex items-center gap-3"><span class="badge badge-success">PFS</span><span>Perfect Forward
-              Secrecy</span></li>
-          <li class="flex items-center gap-3"><span
-              class="badge badge-success">Leak-Safe</span><span>DNS/WebRTC/IPv6</span></li>
-        </ul>
-      </div>
-      <div class="lg:col-span-6">
-        <div class="mockup-code shadow-2xl rounded-2xl">
-          <pre data-prefix="$"><code>openvpn --config perfil.ovpn</code></pre>
-          <pre data-prefix=">" class="text-success"><code>Conectado ✓  (latencia: 21ms)</code></pre>
-          <pre data-prefix=">" class="text-info"><code>Kill Switch activo · DNS privado</code></pre>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- PRECIOS -->
-<section id="precios" class="container mx-auto max-w-6xl px-4 py-24">
-  <div class="text-center max-w-2xl mx-auto mb-12">
-    <h2 class="text-3xl md:text-4xl font-bold tracking-tight">Planes y precios</h2>
-    <p class="mt-3 text-base-content/70">Sin contratos. Cancela cuando quieras.</p>
-  </div>
-
-  <div class="grid items-stretch gap-6 lg:gap-8 md:grid-cols-3" >
-
-    @for(p of this.ListPlans(); track p.id; let index = $index) {
-      @if(p.main) {
-        <article
-          class="card bg-base-100 border rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-200 hover:-translate-y-0.5">
-
-          <div class="card-body flex flex-col gap-4">
-
-            <!-- HEADER -->
-            <header class="flex items-start justify-between gap-3">
-              <div>
-                <h3 class="text-2xl font-bold tracking-tight">
-                  {{ p.title_prefix }} {{ p.title_name }}
-                </h3>
-                  <p class="text-sm opacity-90">{{ p.title_suffix }}</p>
-              </div>
-              <!-- Badge invisible para mantener alineación -->
-              <span class="invisible badge"></span>
-            </header>
-
-            <!-- PRECIO -->
-            <div>
-              <div class="text-5xl font-extrabold leading-none tracking-tight">
-                {{ p.price }}{{ p.currencySymbol }}
-                <span class="text-sm text-base-content/80 font-medium">/ {{ p.kind }}</span>
-              </div>
-
-              <p class="mt-1 text-xs text-base-content/60">
-                {{ p.description }}
-              </p>
+        <div class="grid grid-cols-2 gap-3">
+          @for (metric of content.hero.metrics; track metric.label) {
+            <div class="rounded-2xl bg-base-200/50 p-4">
+              <p class="mb-1 text-sm text-base-content/45">{{ display(metric.label) }}</p>
+              <p class="text-2xl font-extrabold">{{ metric.value }}</p>
+              @if (metric.caption) {
+                <p class="mt-0.5 text-sm text-base-content/40">{{ display(metric.caption) }}</p>
+              }
             </div>
+          }
+        </div>
+      </div>
+    </div>
+  </section>
 
-            <div class="divider my-3"></div>
+  <section class="border-y border-base-200 bg-base-200/30">
+    <div class="container mx-auto grid max-w-6xl grid-cols-2 gap-6 px-6 py-10 md:grid-cols-3">
+      @for (stat of content.stats; track stat.label) {
+        <div class="text-center">
+          <p class="text-4xl font-extrabold text-primary">{{ stat.value }}</p>
+          <p class="mt-1 text-base text-base-content/55">{{ display(stat.label) }}</p>
+        </div>
+      }
+    </div>
+  </section>
 
-            <!-- FEATURES -->
-            <ul class="flex-1 space-y-2 text-sm">
-              @for(f of p.features; track f; let in = $index) {
-              <li class="flex items-start gap-2">
+  <section id="contenido" class="container mx-auto max-w-6xl px-6 py-24">
+    <div class="mb-12 max-w-2xl">
+      <p class="mb-3 text-xs font-bold uppercase tracking-widest text-primary">{{ 'pub.nav.content' | translate }}</p>
+      <h2 class="text-4xl font-extrabold tracking-tight">{{ display(content.mediaShowcase.title) }}</h2>
+      <p class="mt-4 text-lg leading-relaxed text-base-content/60">{{ display(content.mediaShowcase.description) }}</p>
+    </div>
 
-                <svg class="w-5 h-5 text-success flex-shrink-0 mt-0.5"
-                  viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0" />
-                </svg>
-
-                <span>{{ f }}</span>
-              </li>
-              }
-            </ul>
-
-            <!-- BOTÓN -->
-            <button class="btn btn-outline btn-lg w-full mt-2" (click)="SelectPlan(p)">
-              {{ p.button_name }}
-            </button>
-
+    <div class="grid gap-6 lg:grid-cols-2">
+      @for (item of content.mediaShowcase.items; track item.id) {
+        <article class="overflow-hidden rounded-3xl border border-base-200 bg-base-100 shadow-lg">
+          <div class="aspect-video bg-base-200">
+            @if (item.type === 'video') {
+              <video class="h-full w-full object-cover" controls playsinline [poster]="item.poster || ''">
+                <source [src]="item.url" type="video/mp4" />
+              </video>
+            } @else {
+              <img class="h-full w-full object-cover" [src]="item.url" [alt]="display(item.title)" />
+            }
           </div>
-        </article>
-
-      } @else {
-        <article
-          class="card rounded-3xl shadow-2xl transition-all duration-200 hover:-translate-y-0.5 bg-gradient-to-b from-primary to-primary-focus text-primary-content ring-1 ring-primary/20">
-
-          <div class="card-body flex flex-col gap-4">
-
-            <!-- HEADER -->
-            <header class="flex items-start justify-between gap-3">
-              <div>
-                <h3 class="text-2xl font-extrabold tracking-tight">
-                  {{ p.title_prefix }} {{ p.title_name }}
-                </h3>
-                <p class="text-sm opacity-90">{{ p.title_suffix }}</p>
-              </div>
-
-              <!-- CHIP (solo si quieres marcar "más popular") -->
-              @if(p.limitDevices === 3) {
-                <span class="badge badge-accent shrink-0 mt-1">
-                  Más popular
-                </span>
-              }
-            </header>
-
-            <!-- PRECIO -->
-            <div>
-              <div class="text-5xl font-extrabold leading-none tracking-tight">
-                {{ p.price }}{{ p.currencySymbol }}
-                <span class="text-sm opacity-80 font-medium">/ {{ p.kind }}</span>
-              </div>
-              <p class="mt-1 text-xs opacity-80">
-                {{ p.description }}
-              </p>
-            </div>
-
-            <div class="divider my-3 opacity-40"></div>
-
-            <!-- FEATURES -->
-            <ul class="flex-1 space-y-2 text-sm">
-              @for(f of p.features; track f; let in = $index) {
-              <li class="flex items-start gap-2">
-
-                <svg class="w-5 h-5 text-success flex-shrink-0 mt-0.5"
-                  viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0" />
-                </svg>
-
-                <span>{{ f }}</span>
-              </li>
-              }
-            </ul>
-
-            <!-- BOTÓN -->
-            <button class="btn btn-accent btn-lg w-full mt-2" (click)="SelectPlan(p)">
-              {{ p.button_name }}
-            </button>
-
+          <div class="space-y-3 p-6">
+            <h3 class="text-2xl font-bold">{{ display(item.title) }}</h3>
+            <p class="text-base leading-relaxed text-base-content/60">{{ display(item.description) }}</p>
+            @if (item.ctaLabel && item.ctaHref) {
+              <a [href]="item.ctaHref" class="btn btn-primary btn-sm rounded-xl">{{ display(item.ctaLabel) }}</a>
+            }
           </div>
         </article>
       }
+    </div>
+  </section>
 
-    }
+  <section id="ventajas" class="container mx-auto max-w-6xl px-6 py-24">
+    <div class="mb-16 max-w-2xl">
+      <p class="mb-3 text-xs font-bold uppercase tracking-widest text-primary">{{ display(content.advantages.eyebrow) }}</p>
+      <h2 class="text-4xl font-extrabold tracking-tight">{{ display(content.advantages.title) }}</h2>
+      <p class="mt-4 text-lg leading-relaxed text-base-content/60">{{ display(content.advantages.description) }}</p>
+    </div>
 
-
-  </div>
-
-
-  <div class="mt-10 flex items-center justify-center gap-4 text-sm text-base-content/60">
-    <span class="badge badge-ghost">Garantía 7 días</span>
-    <span class="badge badge-ghost">Pago seguro</span>
-    <span class="badge badge-ghost">Sin permanencia</span>
-    <span class="badge badge-ghost">América en General</span>
-  </div>
-</section>
-
-  <!-- <app-show-client-plans></app-show-client-plans> -->
-
-
-<!-- CTA FINAL -->
-<section class="bg-gradient-to-b from-base-100 to-base-200">
-  <div class="container mx-auto max-w-6xl px-4 py-20">
-    <div class="hero bg-base-200 rounded-box shadow">
-      <div class="hero-content text-center">
-        <div class="max-w-2xl">
-          <h2 class="text-3xl md:text-4xl font-bold">Protege tu conexión hoy</h2>
-          <p class="mt-3 text-base-content/70">Empieza gratis y cambia o cancela cuando quieras.</p>
-          <div class="mt-6 flex flex-wrap gap-3 justify-center">
-            <a routerLink="/auth/register" class="btn btn-primary btn-wide">Crear cuenta</a>
+    <div class="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+      @for (item of content.advantages.items; track item.id) {
+        <div class="rounded-2xl border border-base-200 bg-base-100 p-6 transition-all duration-200 hover:border-primary/30 hover:shadow-lg">
+          <div class="mb-5 flex h-11 w-11 items-center justify-center rounded-xl bg-primary/8">
+            <svg class="h-5 w-5 text-primary" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+            </svg>
           </div>
+          <h3 class="mb-2 text-xl font-bold">{{ display(item.title) }}</h3>
+          <p class="text-base leading-relaxed text-base-content/60">{{ display(item.description) }}</p>
         </div>
+      }
+    </div>
+  </section>
+
+  <section class="border-y border-base-200 bg-base-200/30">
+    <div class="container mx-auto max-w-6xl px-6 py-24">
+      <div class="mx-auto mb-16 max-w-xl text-center">
+        <p class="mb-3 text-xs font-bold uppercase tracking-widest text-primary">{{ display(content.howItWorks.eyebrow) }}</p>
+        <h2 class="text-4xl font-extrabold tracking-tight">{{ display(content.howItWorks.title) }}</h2>
+        <p class="mt-4 text-lg text-base-content/60">{{ display(content.howItWorks.description) }}</p>
+      </div>
+
+      <div class="grid gap-8 md:grid-cols-3 lg:gap-12">
+        @for (step of content.howItWorks.steps; track step.id; let idx = $index) {
+          <div class="relative">
+            <div class="mb-5 flex items-center gap-4">
+              <div class="grid h-12 w-12 flex-shrink-0 place-content-center rounded-2xl bg-primary text-lg font-extrabold text-primary-content shadow-md">
+                {{ idx + 1 }}
+              </div>
+              @if (!$last) {
+                <div class="hidden h-px flex-1 bg-base-300 md:block"></div>
+              }
+            </div>
+            <h3 class="mb-2 text-lg font-bold">{{ display(step.title) }}</h3>
+            <p class="text-base leading-relaxed text-base-content/60">{{ display(step.description) }}</p>
+          </div>
+        }
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- FOOTER -->
-<footer class="bg-base-200 text-base-content">
-  <div class="container mx-auto max-w-6xl px-4">
-    <div class="footer p-10">
-      <aside>
-        <a class="btn btn-ghost text-xl font-extrabold p-0 h-auto min-h-0">VPN<span
-            class="text-primary">CarlosVM</span></a>
-        <p class="text-sm">Privacidad real para todos.<br />© <span id="year"></span> VPN CarlosVM</p>
-      </aside>
-      <nav>
-        <h6 class="footer-title">Producto</h6>
-        <a href="#beneficios" class="link link-hover">Beneficios</a>
-        <a href="#precios" class="link link-hover">Precios</a>
-      </nav>
-      <nav>
-        <h6 class="footer-title">Cuenta</h6>
-        <a routerLink="/auth/login" class="link link-hover">Iniciar sesión</a>
-        <a routerLink="/auth/register" class="link link-hover">Crear cuenta</a>
-      </nav>
+  <section id="planes" class="bg-base-200/30 border-y border-base-200">
+    <div class="container mx-auto max-w-6xl px-6 py-24">
+      <div class="mb-16 mx-auto max-w-xl text-center">
+        <p class="mb-3 text-xs font-bold uppercase tracking-widest text-primary">{{ 'pub.prices.label' | translate }}</p>
+        <h2 class="text-4xl font-extrabold tracking-tight">{{ 'pub.prices.title' | translate }}</h2>
+        <p class="mt-4 text-lg text-base-content/60">{{ 'pub.prices.desc' | translate }}</p>
+      </div>
+
+      <div class="grid items-stretch gap-6 md:grid-cols-3">
+        @for (p of this.ListPlans(); track p.id) {
+          @if (p.main) {
+            <article class="flex flex-col gap-5 rounded-3xl border border-base-200 bg-base-100 p-7 transition-all duration-200 hover:border-base-300 hover:shadow-lg">
+              <div>
+                <h3 class="text-2xl font-bold">
+                  {{ localeService.displayI18n(p.title_prefix_i18n, p.title_prefix) }}
+                  {{ localeService.displayI18n(p.title_name_i18n, p.title_name) }}
+                </h3>
+                <p class="mt-0.5 text-sm text-base-content/50">{{ localeService.displayI18n(p.title_suffix_i18n, p.title_suffix) }}</p>
+              </div>
+              <div>
+                <p class="text-5xl font-extrabold tracking-tight">{{ p.price }}<span class="text-lg font-semibold text-base-content/50">{{ p.currencySymbol }}</span></p>
+                <p class="mt-1 text-sm text-base-content/45">{{ 'pub.prices.per' | translate }} {{ p.kind }}</p>
+                <p class="mt-1 text-xs text-base-content/40">{{ localeService.displayI18n(p.description_i18n, p.description) }}</p>
+              </div>
+              <div class="divider my-0"></div>
+              <ul class="flex-1 space-y-3 text-base">
+                @for (f of ((p.features_i18n?.[localeService.currentLanguageCode()] || p.features || [])); track f) {
+                  <li class="flex items-start gap-2.5">
+                    <svg class="mt-0.5 h-4 w-4 flex-shrink-0 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0"/>
+                    </svg>
+                    <span class="text-base-content/70">{{ f }}</span>
+                  </li>
+                }
+              </ul>
+              <button class="btn btn-outline w-full rounded-xl font-bold" (click)="SelectPlan(p)">{{ localeService.displayI18n(p.button_name_i18n, p.button_name) }}</button>
+            </article>
+          } @else {
+            <article class="relative flex flex-col gap-5 rounded-3xl bg-primary p-7 text-primary-content shadow-2xl shadow-primary/25">
+              @if (p.limitDevices === 3) {
+                <div class="absolute left-1/2 top-[-1rem] -translate-x-1/2 whitespace-nowrap">
+                  <span class="badge badge-accent badge-lg font-bold shadow-lg">{{ 'pub.prices.popular' | translate }}</span>
+                </div>
+              }
+              <div>
+                <h3 class="text-xl font-extrabold">
+                  {{ localeService.displayI18n(p.title_prefix_i18n, p.title_prefix) }}
+                  {{ localeService.displayI18n(p.title_name_i18n, p.title_name) }}
+                </h3>
+                <p class="mt-0.5 text-sm opacity-70">{{ localeService.displayI18n(p.title_suffix_i18n, p.title_suffix) }}</p>
+              </div>
+              <div>
+                <p class="text-5xl font-extrabold tracking-tight">{{ p.price }}<span class="text-lg font-semibold opacity-60">{{ p.currencySymbol }}</span></p>
+                <p class="mt-1 text-sm opacity-60">{{ 'pub.prices.per' | translate }} {{ p.kind }}</p>
+                <p class="mt-1 text-xs opacity-50">{{ localeService.displayI18n(p.description_i18n, p.description) }}</p>
+              </div>
+              <div class="my-0 border-t border-primary-content/20"></div>
+              <ul class="flex-1 space-y-3 text-base">
+                @for (f of ((p.features_i18n?.[localeService.currentLanguageCode()] || p.features || [])); track f) {
+                  <li class="flex items-start gap-2.5">
+                    <svg class="mt-0.5 h-4 w-4 flex-shrink-0 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0"/>
+                    </svg>
+                    <span class="opacity-85">{{ f }}</span>
+                  </li>
+                }
+              </ul>
+              <button class="btn btn-accent w-full rounded-xl font-bold" (click)="SelectPlan(p)">{{ localeService.displayI18n(p.button_name_i18n, p.button_name) }}</button>
+            </article>
+          }
+        }
+      </div>
     </div>
-  </div>
-</footer>
+  </section>
 
-<script>
-  document.getElementById('year').textContent = new Date().getFullYear();
-</script>
+  <section class="container mx-auto max-w-6xl px-6 py-20">
+    <div class="relative overflow-hidden rounded-3xl bg-primary">
+      <div class="pointer-events-none absolute inset-0">
+        <div class="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-white/5"></div>
+        <div class="absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-white/5"></div>
+      </div>
+
+      <div class="relative px-8 py-20 text-center text-primary-content">
+        <div class="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-white/15">
+          <svg class="h-8 w-8" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+          </svg>
+        </div>
+        <h2 class="text-4xl font-extrabold tracking-tight md:text-5xl">{{ display(content.cta.title) }}</h2>
+        <p class="mx-auto mt-4 max-w-xl text-xl opacity-75">{{ display(content.cta.description) }}</p>
+        <div class="mt-10 flex flex-wrap justify-center gap-4">
+          <a [routerLink]="content.cta.primaryRoute" class="btn btn-accent btn-lg rounded-xl px-10 font-bold shadow-lg">
+            {{ display(content.cta.primaryLabel) }}
+          </a>
+          <a [href]="content.cta.secondaryHref" class="btn btn-lg rounded-xl border-primary-content/25 bg-white/5 font-bold text-primary-content hover:bg-white/10">
+            {{ display(content.cta.secondaryLabel) }}
+          </a>
+        </div>
+        <p class="mt-5 text-sm opacity-50">{{ display(content.cta.note) }}</p>
+      </div>
+    </div>
+  </section>
+
+  <footer class="border-t border-base-200 bg-base-100">
+    <div class="container mx-auto max-w-6xl px-6 py-16">
+      <div class="grid gap-10 md:grid-cols-[2fr_1fr_1fr]">
+        <div>
+          <div class="mb-3 flex items-center gap-2">
+            @if (brandingState.logoUrl()) {
+              <img [src]="brandingState.logoUrl()!" [alt]="brandingState.name()" class="h-8 w-auto object-contain" />
+            } @else {
+              <div class="grid h-8 w-8 place-content-center rounded-lg bg-primary">
+                <svg class="h-4 w-4 text-primary-content" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+                </svg>
+              </div>
+              <span class="text-lg font-extrabold">
+                <span class="text-primary">{{ brandingState.name() || display(content.footer.brandName) }}</span>
+                @if (!brandingState.name() && content.footer.brandSuffix) {
+                  <span> {{ display(content.footer.brandSuffix) }}</span>
+                }
+              </span>
+            }
+          </div>
+          <p class="max-w-[280px] text-base leading-relaxed text-base-content/50">
+            {{ brandingState.tagline() || display(content.footer.description) }}
+          </p>
+          <p class="mt-4 text-sm text-base-content/35">© {{ year }} {{ brandingState.name() || display(content.footer.brandName) }}</p>
+        </div>
+
+        <div>
+          <p class="mb-4 text-xs font-bold uppercase tracking-widest text-base-content/40">{{ 'pub.nav.sections' | translate }}</p>
+          <ul class="space-y-2.5 text-sm">
+            <li><a href="#contenido" class="text-base text-base-content/60 transition-colors hover:text-base-content">{{ 'pub.nav.content' | translate }}</a></li>
+            <li><a href="#ventajas" class="text-base text-base-content/60 transition-colors hover:text-base-content">{{ 'pub.nav.advantages' | translate }}</a></li>
+            <li><a href="#planes" class="text-base text-base-content/60 transition-colors hover:text-base-content">{{ 'pub.nav.plans' | translate }}</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <p class="mb-4 text-xs font-bold uppercase tracking-widest text-base-content/40">{{ 'pub.footer.account' | translate }}</p>
+          <ul class="space-y-2.5 text-sm">
+            <li><a routerLink="/auth/register" class="text-base text-base-content/60 transition-colors hover:text-base-content">{{ 'pub.nav.create_account' | translate }}</a></li>
+            <li><a href="#top" class="text-base text-base-content/60 transition-colors hover:text-base-content">{{ 'pub.nav.back_top' | translate }}</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="mt-12 border-t border-base-200 pt-6 text-center">
+        <p class="text-xs text-base-content/35">{{ display(content.footer.bottomText) }}</p>
+      </div>
+    </div>
+  </footer>
+
+} @else {
+  <section class="container mx-auto max-w-6xl px-6 py-24">
+    <div class="rounded-3xl border border-base-200 bg-base-100 p-10 text-center shadow-sm">
+      <div class="mx-auto mb-5 h-12 w-12 animate-spin rounded-full border-4 border-primary/20 border-t-primary"></div>
+      <h2 class="text-2xl font-bold">{{ 'pub.loading' | translate }}</h2>
+      <p class="mt-2 text-base-content/60">{{ 'pub.loading_sub' | translate }}</p>
+    </div>
+  </section>
+}

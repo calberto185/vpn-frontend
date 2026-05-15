@@ -1,0 +1,11 @@
+:host {
+  display: block;
+}
+
+.form-control .label-text {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: color-mix(in srgb, currentColor 70%, transparent);
+  margin-bottom: 0.35rem;
+  display: inline-block;
+}

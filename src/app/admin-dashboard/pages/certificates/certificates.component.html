@@ -5,25 +5,31 @@
   <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
     <div class="stat bg-base-100/80 border rounded-xl shadow-sm">
       <div class="stat-figure text-primary">
-        <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 6l7 4-7 4-7-4 7-4z"/><path d="M12 14l7-4v8l-7 4-7-4v-8l7 4z"/></svg>
+        <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path d="M12 6l7 4-7 4-7-4 7-4z"/><path d="M12 14l7-4v8l-7 4-7-4v-8l7 4z"/>
+        </svg>
       </div>
       <div class="stat-title">Certificados</div>
       <div class="stat-value text-2xl">{{ ListCertificates().length }}</div>
-      <div class="stat-desc">cargado desde modelo</div>
+      <div class="stat-desc">total registrados</div>
     </div>
 
     <div class="stat bg-base-100/80 border rounded-xl shadow-sm">
       <div class="stat-figure text-success">
-        <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>
+        <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path d="M5 13l4 4L19 7"/>
+        </svg>
       </div>
       <div class="stat-title">Activos</div>
       <div class="stat-value text-2xl">{{ countActive() }}</div>
-      <div class="stat-desc">no suspendidos & no revocados</div>
+      <div class="stat-desc">no suspendidos ni revocados</div>
     </div>
 
     <div class="stat bg-base-100/80 border rounded-xl shadow-sm">
       <div class="stat-figure text-warning">
-        <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v5M12 16h.01"/></svg>
+        <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><path d="M12 8v5M12 16h.01"/>
+        </svg>
       </div>
       <div class="stat-title">Por expirar</div>
       <div class="stat-value text-2xl">{{ countExpiringSoon(7) }}</div>
@@ -32,11 +38,13 @@
 
     <div class="stat bg-base-100/80 border rounded-xl shadow-sm">
       <div class="stat-figure text-error">
-        <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path d="M18 6L6 18M6 6l12 12"/>
+        </svg>
       </div>
       <div class="stat-title">Revocados</div>
       <div class="stat-value text-2xl">{{ countRevoked() }}</div>
-      <div class="stat-desc">últimos 30 días</div>
+      <div class="stat-desc">acceso invalidado</div>
     </div>
   </div>
 </section>
@@ -45,67 +53,66 @@
 <section class="container mx-auto max-w-7xl px-2 md:px-4 mt-4">
   <div class="bg-base-100 border rounded-xl p-3 md:p-4 shadow-sm">
     <div class="flex flex-wrap items-center gap-3">
+
       <label class="input input-bordered flex items-center gap-2 w-full sm:w-[28rem]" aria-label="Buscar certificados">
-        <svg class="h-5 w-5 opacity-70" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-        <input id="search-certs" type="text" placeholder="Buscar por usuario, device, server, ID o tag" />
+        <svg class="h-5 w-5 opacity-70" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+        </svg>
+        <input id="search-certs" type="text" placeholder="Buscar por usuario, dispositivo, servidor, ID o tag"
+               (input)="searchQuery.set($any($event.target).value)" />
       </label>
 
       <div class="dropdown">
-        <button tabindex="0" class="btn btn-sm md:btn-md" type="button">Estado</button>
-        <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-56 z-[60]">
-          <li><button type="button">Todos</button></li>
-          <li><button type="button">Activos</button></li>
-          <li><button type="button">Suspendidos</button></li>
-          <li><button type="button">Revocados</button></li>
-          <li><button type="button">Por expirar (≤7d)</button></li>
-          <li><button type="button">Expirados</button></li>
-        </ul>
-      </div>
-
-      <div class="dropdown">
-        <button tabindex="0" class="btn btn-ghost btn-sm md:btn-md" type="button">Cifrado</button>
-        <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-48 z-[60]">
-          <li><button type="button">Todos</button></li>
-          <li><button type="button">AES-256-CBC</button></li>
-          <li><button type="button">CHACHA20-POLY1305</button></li>
-        </ul>
-      </div>
-
-      <div class="dropdown">
-        <button tabindex="0" class="btn btn-ghost btn-sm md:btn-md" type="button">Perfil</button>
-        <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-48 z-[60]">
-          <li><button type="button">Todos</button></li>
-          <li><button type="button">personal</button></li>
-          <li><button type="button">corporativo</button></li>
-        </ul>
-      </div>
-
-      <div class="ml-auto flex items-center gap-2">
-        <div class="tooltip" data-tip="Seleccionar todo">
-          <input type="checkbox" class="checkbox checkbox-sm" aria-label="Seleccionar todo" />
-        </div>
-
-        <div class="dropdown dropdown-end">
-          <button tabindex="0" class="btn btn-ghost btn-sm md:btn-md" type="button">Acciones</button>
-          <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-64 z-[60]">
-            <li><button type="button">Suspender</button></li>
-            <li><button type="button">Reactivar</button></li>
-            <li><button type="button">Revocar</button></li>
-            <li><button type="button">Exportar CSV</button></li>
-            <li><button type="button" class="text-error">Eliminar</button></li>
-          </ul>
-        </div>
-
-        <!-- Botón Agregar certificado -->
-        <button class="btn btn-primary btn-sm md:btn-md" type="button" (click)="openDialog('add_cert')">
-          <svg class="h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-               stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-          Nuevo certificado
+        <button tabindex="0" class="btn btn-sm md:btn-md" type="button">
+          {{ filterEstado() || 'Estado' }}
         </button>
+        <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 z-[60]">
+          <li><a (click)="filterEstado.set('')">Todos</a></li>
+          <li><a (click)="filterEstado.set('activo')">Activos</a></li>
+          <li><a (click)="filterEstado.set('suspendido')">Suspendidos</a></li>
+          <li><a (click)="filterEstado.set('revocado')">Revocados</a></li>
+          <li><a (click)="filterEstado.set('expirando')">Por expirar (≤7d)</a></li>
+          <li><a (click)="filterEstado.set('expirado')">Expirados</a></li>
+        </ul>
       </div>
+
+      @if (searchQuery() || filterEstado()) {
+        <button class="btn btn-ghost btn-sm" (click)="searchQuery.set(''); filterEstado.set('')">✕ Limpiar</button>
+      }
+
+      @if (canCreate()) {
+        <div class="ml-auto">
+          <button class="btn btn-primary btn-sm md:btn-md" type="button" (click)="openDialog('add_cert')">
+            <svg class="h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path d="M12 5v14M5 12h14"/>
+            </svg>
+            Nuevo certificado
+          </button>
+        </div>
+      }
     </div>
   </div>
 </section>
+
+<!-- Aviso en tiempo real -->
+@if (staleUserIds().size > 0) {
+  <section class="container mx-auto max-w-7xl px-2 md:px-4 mt-2">
+    <div class="alert alert-warning shadow-sm flex items-center justify-between gap-3 py-2">
+      <div class="flex items-center gap-2 text-sm">
+        <svg class="h-4 w-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"/><path d="M12 8v5M12 16h.01"/>
+        </svg>
+        <span>
+          <strong>{{ staleUserIds().size }}</strong> usuario(s) cambió de estado mientras tienes esta pantalla abierta.
+          Los certificados marcados con
+          <span class="badge badge-warning badge-xs">!</span>
+          pueden necesitar revisión.
+        </span>
+      </div>
+      <button class="btn btn-xs btn-ghost" (click)="clearStale()">Descartar</button>
+    </div>
+  </section>
+}
 
 <!-- Tabla -->
 <section class="container mx-auto max-w-7xl px-2 md:px-4 mt-4">
@@ -113,137 +120,417 @@
     <table class="table table-sm w-full">
       <thead>
         <tr>
-          <th class="w-8"><input type="checkbox" class="checkbox checkbox-xs" aria-label="Seleccionar todas" /></th>
           <th>Certificado</th>
           <th class="hidden lg:table-cell">Usuario</th>
           <th class="hidden xl:table-cell">Dispositivo</th>
           <th>Servidor</th>
           <th>Estado</th>
           <th class="hidden 2xl:table-cell">Expira</th>
-          <th class="text-right w-56">Acciones</th>
+          <th class="text-right w-48">Acciones</th>
         </tr>
       </thead>
       <tbody>
-        @for (c of ListCertificates(); track c.id) {
-          <tr class="hover">
-            <td>
-              <input type="checkbox" class="checkbox checkbox-xs" [attr.aria-label]="'Seleccionar cert ' + (c.id || '—')" />
-            </td>
-
-            <!-- Certificado -->
+        @for (c of filteredCerts(); track c.id) {
+          <tr [ngClass]="isStale(c) ? 'hover bg-warning/5' : 'hover'">
             <td>
               <div class="leading-tight">
-                <div class="font-medium">{{ c.id || '—' }}</div>
-                <div class="text-[11px] opacity-70 break-all">_id: {{ c.id || '—' }}</div>
+                <div class="flex items-center gap-1">
+                  <span class="font-medium text-xs break-all">{{ c.id || '—' }}</span>
+                  @if (isStale(c)) {
+                    <span class="badge badge-warning badge-xs shrink-0" title="El usuario cambió de estado">!</span>
+                  }
+                </div>
                 <div class="text-[11px] opacity-70">
-                  perfil: {{ c.profile_type || '—' }} ·
-                  {{ c.cipher || 'AES-256-CBC' }} / {{ c.auth || 'SHA256' }}
+                  {{ c.profile_type || '—' }} · {{ c.cipher || 'AES-256-CBC' }} / {{ c.auth || 'SHA256' }}
                 </div>
               </div>
             </td>
 
-            <!-- Usuario -->
             <td class="hidden lg:table-cell">
-              <div class="leading-tight">
-                <div class="capitalize">{{ c.user || '—' }}</div>
-                <div class="text-[11px] opacity-70 break-all">user_id: {{ c.user_id }}</div>
-              </div>
+              <div class="capitalize text-sm">{{ c.user || '—' }}</div>
+              <div class="text-[11px] opacity-60 break-all">{{ c.user_id }}</div>
             </td>
 
-            <!-- Dispositivo -->
             <td class="hidden xl:table-cell">
-              <div class="leading-tight">
-                <div>{{ c.device || '—' }}</div>
-                <div class="text-[11px] opacity-70 break-all">device_id: {{ c.device_id }}</div>
-              </div>
+              <div class="text-sm">{{ c.device || '—' }}</div>
+              <div class="text-[11px] opacity-60 break-all">{{ c.device_id }}</div>
             </td>
 
-            <!-- Servidor -->
             <td>
-              <div class="leading-tight">
-                <div>{{ c.server || c.hostname || '—' }}</div>
-                <div class="text-[11px] opacity-70 break-all">ip: {{ c.ip || '—' }}</div>
-              </div>
+              <div class="text-sm">{{ c.server || c.hostname || '—' }}</div>
+              <div class="text-[11px] opacity-60">{{ c.ip || '—' }}</div>
             </td>
 
-            <!-- Estado -->
             <td>
-              <div class="flex flex-wrap gap-1">
-                <span
-                  class="badge"
-                  [class.badge-success]="!truthy(c.revoked) && !truthy(c.suspended)"
-                  [class.badge-warning]="truthy(c.suspended)"
-                  [class.badge-error]="truthy(c.revoked)"
-                  [class.badge-ghost]="truthy(c.revoked) || truthy(c.suspended) ? false : true"
-                >
-                  {{ truthy(c.revoked) ? 'Revocado' : truthy(c.suspended) ? 'Suspendido' : 'Activo' }}
-                </span>
-              </div>
+              <span class="badge"
+                [class.badge-success]="!truthy(c.revoked) && !truthy(c.suspended)"
+                [class.badge-warning]="truthy(c.suspended) && !truthy(c.revoked)"
+                [class.badge-error]="truthy(c.revoked)">
+                {{ truthy(c.revoked) ? 'Revocado' : truthy(c.suspended) ? 'Suspendido' : 'Activo' }}
+              </span>
             </td>
 
-            <!-- Expira -->
-           <td class="hidden 2xl:table-cell">
+            <td class="hidden 2xl:table-cell">
               @if (expireAt(c)) {
-                <span class="tabular-nums">{{ expireAt(c) | date:'yyyy-MM-dd HH:mm' }} UTC</span>
-                <div class="text-[11px] opacity-70">
-                  válido {{ c.valid_days || c.expires_at }} días
-                </div>
-              } @else {
-                —
-              }
+                <span class="tabular-nums text-sm">{{ expireAt(c) | date:'dd MMM yyyy' }}</span>
+                <div class="text-[11px] opacity-60">{{ c.valid_days || c.expires_at }} días</div>
+              } @else { — }
             </td>
 
-
-
-            <!-- Acciones -->
             <td class="text-right">
-              <div class="flex items-center justify-end gap-1.5">
+              <div class="flex items-center justify-end gap-1">
                 <div class="dropdown dropdown-end">
-                  <button class="btn btn-ghost btn-xs" type="button">Revisar</button>
+                  <button class="btn btn-ghost btn-xs" type="button">Acciones</button>
                   <ul class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-48 z-[60]">
-                    <li><button type="button" (click)="openDialog('view_cert', c)">Ver</button></li>
+                    <li><button type="button" (click)="openDialog('view_cert', c)">Ver detalle</button></li>
                     <li><button type="button" (click)="openDialog('download_cert', c)">Descargar .ovpn</button></li>
-                    @if(!c.suspended.length) {
-                      <li><button type="button" (click)="openDialog('suspend_cert', c)">Suspender</button></li>
-                    } @else {
-                      <li><button type="button" (click)="openDialog('reactivar_cert', c)">Reactivar</button></li>
+                    @if (canUpdate()) {
+                      @if (!truthy(c.suspended)) {
+                        <li><button type="button" (click)="openDialog('suspend_cert', c)">Suspender</button></li>
+                      } @else {
+                        <li><button type="button" (click)="openDialog('reactivar_cert', c)">Reactivar</button></li>
+                      }
                     }
-                    <li><button type="button" (click)="openDialog('revoke_cert', c)">Revocar</button></li>
+                    @if (canDelete() && !truthy(c.revoked)) {
+                      <li><button type="button" class="text-error" (click)="openDialog('revoke_cert', c)">Revocar</button></li>
+                    }
                   </ul>
                 </div>
-                <button class="btn btn-ghost btn-xs" type="button" (click)="openDialog('edit_cert', c)" aria-label="Editar">
-                  <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
-                  </svg>
-                </button>
-                <button class="btn btn-ghost btn-xs text-error" type="button" (click)="openDialog('delete_cert', c)" aria-label="Eliminar">
-                  <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path d="M3 6h18"/><path d="M8 6v14a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V6"/>
-                    <path d="M10 11v6M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
-                  </svg>
-                </button>
               </div>
             </td>
           </tr>
         } @empty {
-          <tr><td colspan="8" class="text-center py-10 text-sm opacity-70">No hay certificados.</td></tr>
+          <tr><td colspan="7" class="text-center py-10 text-sm opacity-70">No hay certificados.</td></tr>
         }
       </tbody>
     </table>
   </div>
 
-  <!-- Paginación -->
-  <div class="mt-3 flex items-center justify-between">
-    <p class="text-sm opacity-70">Mostrando 1–{{ ListCertificates().length }} de {{ ListCertificates().length }}</p>
-    <nav class="join">
-      <button class="btn btn-xs join-item" disabled>«</button>
-      <button class="btn btn-xs join-item btn-active" aria-current="page">1</button>
-      <button class="btn btn-xs join-item" disabled>»</button>
-    </nav>
+  <div class="mt-3">
+    <p class="text-sm opacity-70">{{ filteredCerts().length }} de {{ ListCertificates().length }} certificado(s)</p>
   </div>
 </section>
 
+
 <!-- ====== MODALES ====== -->
+
+<!-- Nuevo certificado -->
+<dialog id="add_cert" class="modal">
+  <div class="modal-box w-11/12 max-w-3xl">
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button>
+    </form>
+    <h3 class="text-lg font-bold">Nuevo certificado</h3>
+    <p class="text-sm opacity-60 mb-4">
+      Vincula un dispositivo a uno o más servidores VPN. Se crea un certificado por cada servidor · protocolo seleccionado.
+    </p>
+
+    <form class="space-y-5" [formGroup]="certificateForm" (ngSubmit)="onSubmit()" novalidate>
+
+      <!-- Usuario -->
+      <div class="form-control">
+        <label class="label"><span class="label-text font-medium">Usuario *</span></label>
+        <select class="select select-bordered w-full" formControlName="user_id"
+                (change)="onFormUserChange($event)" required>
+          <option value="" disabled>Selecciona un usuario…</option>
+          @for (u of ListUsers(); track u.id) {
+            <option [value]="u.id">{{ u.firstNames }} {{ u.lastNames }} — {{ u.email }}</option>
+          }
+        </select>
+        @if (certificateForm.get('user_id')?.touched && certificateForm.get('user_id')?.invalid) {
+          <span class="label-text-alt text-error mt-1">Requerido</span>
+        }
+      </div>
+
+      <!-- Dispositivo (filtrado por usuario) -->
+      <div class="form-control">
+        <label class="label">
+          <span class="label-text font-medium">Dispositivo *</span>
+          @if (existingDeviceCerts().length > 0) {
+            <span class="label-text-alt text-warning">
+              {{ existingDeviceCerts().length }} certificado(s) existente(s)
+            </span>
+          } @else if (formDevice()) {
+            <span class="label-text-alt text-success">Sin certificados previos</span>
+          }
+        </label>
+        <select class="select select-bordered w-full" formControlName="device_id"
+                (change)="onFormDeviceChange($event)" required
+                [attr.disabled]="!formUser() ? true : null">
+          <option value="" disabled>
+            {{ !formUser() ? 'Primero selecciona un usuario…' : 'Selecciona un dispositivo…' }}
+          </option>
+          @for (d of devicesForUser(); track d.id) {
+            <option [value]="d.id">
+              {{ d.device }} — {{ d.typeDevice }}
+              @if (!d.active || d.revoked) { ({{ d.revoked ? 'revocado' : 'inactivo' }}) }
+            </option>
+          }
+        </select>
+        @if (formUser() && devicesForUser().length === 0) {
+          <span class="label-text-alt text-warning mt-1">Este usuario no tiene dispositivos registrados.</span>
+        }
+        @if (certificateForm.get('device_id')?.touched && certificateForm.get('device_id')?.invalid) {
+          <span class="label-text-alt text-error mt-1">Requerido</span>
+        }
+      </div>
+
+      <!-- ══ PASO: certificados existentes del dispositivo ══ -->
+      @if (addCertStep() === 'existing_check') {
+        <div class="rounded-xl border border-warning/50 bg-warning/5 p-4 space-y-3">
+
+          <!-- Encabezado -->
+          <div class="flex items-start gap-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-warning flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+            </svg>
+            <div>
+              <p class="font-semibold text-sm">Este dispositivo ya tiene {{ existingDeviceCerts().length }} certificado(s)</p>
+              <p class="text-xs opacity-70 mt-0.5">Selecciona los que quieres revisar o usar, o crea uno nuevo.</p>
+            </div>
+          </div>
+
+          <!-- Lista de certs existentes -->
+          <div class="space-y-2 max-h-56 overflow-y-auto pr-1">
+            @for (c of existingDeviceCerts(); track c.id) {
+              <button type="button"
+                      class="w-full flex items-center gap-3 p-3 rounded-lg border text-left transition-all"
+                      [class.border-primary]="isExistingCertSelected(c.id)"
+                      [class.bg-primary]="isExistingCertSelected(c.id)"
+                      [class.bg-opacity-5]="isExistingCertSelected(c.id)"
+                      [class.border-base-300]="!isExistingCertSelected(c.id)"
+                      [class.bg-base-100]="!isExistingCertSelected(c.id)"
+                      (click)="toggleExistingCert(c.id)">
+
+                <!-- Custom checkbox -->
+                <div class="w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0"
+                     [class.border-primary]="isExistingCertSelected(c.id)"
+                     [class.bg-primary]="isExistingCertSelected(c.id)"
+                     [class.border-base-300]="!isExistingCertSelected(c.id)">
+                  @if (isExistingCertSelected(c.id)) {
+                    <svg class="w-3 h-3 text-white" viewBox="0 0 12 12" fill="none">
+                      <path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  }
+                </div>
+
+                <!-- Cert info -->
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span class="font-medium text-sm truncate">{{ c.server || c.hostname || '—' }}</span>
+                    <span class="badge badge-xs"
+                          [class.badge-success]="!truthy(c.revoked) && !truthy(c.suspended)"
+                          [class.badge-warning]="truthy(c.suspended)"
+                          [class.badge-error]="truthy(c.revoked)">
+                      {{ truthy(c.revoked) ? 'Revocado' : truthy(c.suspended) ? 'Suspendido' : 'Activo' }}
+                    </span>
+                  </div>
+                  <div class="text-[11px] opacity-60 truncate">
+                    IP: {{ c.ip || '—' }} ·
+                    Expira: {{ expireAt(c) ? (expireAt(c) | date:'dd MMM yyyy') : '—' }}
+                  </div>
+                  <div class="text-[11px] opacity-40 break-all">ID: {{ c.id }}</div>
+                </div>
+              </button>
+            }
+          </div>
+
+          <!-- Acciones del paso -->
+          <div class="flex items-center gap-2 pt-1 flex-wrap">
+            @if (selectedExistingCertIds().size > 0) {
+              <button type="button" class="btn btn-primary btn-sm"
+                      (click)="onUseExistingCerts()">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                </svg>
+                Ver seleccionado(s) ({{ selectedExistingCertIds().size }})
+              </button>
+            }
+            <button type="button" class="btn btn-outline btn-sm"
+                    (click)="onRequestCreateNew()">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+              </svg>
+              Crear nuevo certificado
+            </button>
+          </div>
+        </div>
+      }
+
+      <!-- ══ PASO: confirmar crear nuevo aunque existan certs ══ -->
+      @if (addCertStep() === 'confirm_new') {
+        <div class="rounded-xl border border-info/50 bg-info/5 p-4 space-y-3">
+          <div class="flex items-start gap-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-info flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <div>
+              <p class="font-semibold text-sm">¿Crear un nuevo certificado?</p>
+              <p class="text-xs opacity-70 mt-0.5">
+                Este dispositivo ya tiene <strong>{{ existingDeviceCerts().length }}</strong> certificado(s) y no seleccionaste ninguno.
+                ¿Deseas generar uno adicional?
+              </p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button type="button" class="btn btn-primary btn-sm"
+                    (click)="onConfirmCreateNew()">Sí, crear nuevo</button>
+            <button type="button" class="btn btn-ghost btn-sm"
+                    (click)="addCertStep.set('existing_check')">Volver</button>
+          </div>
+        </div>
+      }
+
+      <!-- ══ PASO: selección de servidores y protocolos ══ -->
+      @if (addCertStep() === 'server_select') {
+        <!-- Selección multi-servidor + protocolo -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Servidores y protocolos *</span>
+            @if (serverSelections().length > 0) {
+              <span class="label-text-alt text-primary">
+                {{ serverSelections().length }} servidor(es) · {{ totalCertsToCreate() }} certificado(s)
+              </span>
+            }
+          </label>
+
+          @if (serversForDevice().length === 0) {
+            <div class="alert alert-warning text-sm">
+              No hay servidores disponibles para el plan de este dispositivo.
+            </div>
+          } @else {
+            <div class="space-y-2">
+              @for (srv of serversForDevice(); track srv.id) {
+                <div class="border rounded-xl transition-all"
+                     [class.border-primary]="isServerSelected(srv.id)"
+                     [class.border-base-300]="!isServerSelected(srv.id)">
+
+                  <button type="button"
+                          class="w-full flex items-center gap-3 p-3 text-left"
+                          (click)="toggleServer(srv)">
+                    <div class="w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors"
+                         [class.border-primary]="isServerSelected(srv.id)"
+                         [class.bg-primary]="isServerSelected(srv.id)"
+                         [class.border-base-300]="!isServerSelected(srv.id)">
+                      @if (isServerSelected(srv.id)) {
+                        <svg class="w-3 h-3 text-white" viewBox="0 0 12 12" fill="none">
+                          <path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                      }
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <div class="font-medium text-sm flex items-center gap-2">
+                        <span>{{ srv.name }}</span>
+                        <span class="badge badge-ghost badge-xs">{{ srv.country.countryCode }}</span>
+                        <span class="badge badge-outline badge-xs"
+                              [class.badge-info]="srv.protocol === 's-ui'"
+                              [class.badge-warning]="srv.protocol === 'openvpn'"
+                              [class.badge-success]="srv.protocol === 'both'">
+                          {{ srv.protocol }}
+                        </span>
+                      </div>
+                      <div class="text-[11px] opacity-60 truncate">{{ srv.country.countryName }} · {{ srv.host }}</div>
+                    </div>
+                    @if (srv.active) {
+                      <span class="badge badge-success badge-xs flex-shrink-0">activo</span>
+                    } @else {
+                      <span class="badge badge-ghost badge-xs flex-shrink-0">inactivo</span>
+                    }
+                  </button>
+
+                  @if (isServerSelected(srv.id)) {
+                    <div class="px-3 pb-3 flex items-center gap-2 border-t border-base-200 pt-2">
+                      <span class="text-xs opacity-60 mr-1">Protocolo:</span>
+                      @if (serverSupports(srv, 's-ui')) {
+                        <button type="button"
+                                class="btn btn-xs gap-1"
+                                [class.btn-info]="hasProtocol(srv.id, 's-ui')"
+                                [class.btn-ghost]="!hasProtocol(srv.id, 's-ui')"
+                                (click)="toggleProtocol(srv.id, 's-ui', $event)">
+                          @if (hasProtocol(srv.id, 's-ui')) {
+                            <svg class="w-3 h-3" viewBox="0 0 12 12" fill="none">
+                              <path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                          }
+                          S-UI
+                        </button>
+                      }
+                      @if (serverSupports(srv, 'openvpn')) {
+                        <button type="button"
+                                class="btn btn-xs gap-1"
+                                [class.btn-warning]="hasProtocol(srv.id, 'openvpn')"
+                                [class.btn-ghost]="!hasProtocol(srv.id, 'openvpn')"
+                                (click)="toggleProtocol(srv.id, 'openvpn', $event)">
+                          @if (hasProtocol(srv.id, 'openvpn')) {
+                            <svg class="w-3 h-3" viewBox="0 0 12 12" fill="none">
+                              <path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                          }
+                          OpenVPN
+                        </button>
+                      }
+                      @if (!hasProtocol(srv.id, 's-ui') && !hasProtocol(srv.id, 'openvpn')) {
+                        <span class="text-xs text-error">Elige al menos un protocolo</span>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Nota -->
+        <div class="form-control">
+          <label class="label"><span class="label-text font-medium">Nota</span></label>
+          <textarea class="textarea textarea-bordered" rows="2"
+                    placeholder="Opcional: notas sobre este certificado…"
+                    formControlName="note"></textarea>
+        </div>
+
+        <!-- Resumen -->
+        @if (serverSelections().length > 0) {
+          <div class="alert alert-info text-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <div>
+              Se crearán <strong>{{ totalCertsToCreate() }} certificado(s)</strong> para <strong>{{ formDevice()?.device }}</strong>:
+              @for (sel of serverSelections(); track sel.server.id) {
+                <span class="block text-xs mt-0.5">
+                  · {{ sel.server.name }}:
+                  @for (p of sel.protocols; track p) { <span class="badge badge-xs ml-1">{{ p }}</span> }
+                </span>
+              }
+            </div>
+          </div>
+        }
+      }
+
+      <!-- Acciones finales (solo en server_select) -->
+      <div class="modal-action">
+        <button class="btn btn-ghost" type="button" (click)="onCancel()">Cancelar</button>
+        @if (addCertStep() === 'server_select') {
+          <button class="btn btn-primary" type="submit"
+                  [disabled]="certificateForm.invalid || serverSelections().length === 0 || isSubmitting()">
+            @if (isSubmitting()) {
+              <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+              </svg>
+              Creando...
+            } @else {
+              Crear certificado(s)
+            }
+          </button>
+        }
+      </div>
+    </form>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
+</dialog>
+
 
 <!-- Ver certificado -->
 <dialog id="view_cert" class="modal">
@@ -256,40 +543,35 @@
         <div class="card-body p-4">
           <h4 class="card-title text-sm">Metadatos</h4>
           <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+            <span class="opacity-70">ID:</span><span class="break-all text-xs">{{ modalData?.id || '—' }}</span>
             <span class="opacity-70">version:</span><span>{{ modalData?.version || '—' }}</span>
             <span class="opacity-70">user:</span><span>{{ modalData?.user || '—' }}</span>
-            <span class="opacity-70">user_id:</span><span class="break-all">{{ modalData?.user_id || '—' }}</span>
             <span class="opacity-70">device:</span><span>{{ modalData?.device || '—' }}</span>
-            <span class="opacity-70">device_id:</span><span class="break-all">{{ modalData?.device_id || '—' }}</span>
             <span class="opacity-70">server:</span><span>{{ modalData?.server || '—' }}</span>
-            <span class="opacity-70">server_id:</span><span>{{ modalData?.server_id || '—' }}</span>
-            <span class="opacity-70">hostname:</span><span>{{ modalData?.hostname || '—' }}</span>
             <span class="opacity-70">ip:</span><span>{{ modalData?.ip || '—' }}</span>
-            <span class="opacity-70">created_at:</span><span>{{ modalData?.createdAt || modalData?.created_at || '—' }}</span>
-            <span class="opacity-70">expires_at:</span><span>{{ expireAt(modalData) || '—' }}</span>
-            <span class="opacity-70">valid_days:</span><span>{{ modalData?.valid_days || modalData?.expires_at || '—' }}</span>
-            <span class="opacity-70">revoked:</span><span>{{ truthy(modalData?.revoked) }}</span>
-            <span class="opacity-70">suspended:</span><span>{{ truthy(modalData?.suspended) }}</span>
-            <span class="opacity-70">tls_auth:</span><span>{{ truthy(modalData?.tls_auth) }}</span>
             <span class="opacity-70">cipher:</span><span>{{ modalData?.cipher || 'AES-256-CBC' }}</span>
             <span class="opacity-70">auth:</span><span>{{ modalData?.auth || 'SHA256' }}</span>
-            <span class="opacity-70">restrict_client:</span><span>{{ truthy(modalData?.restrict_client) }}</span>
+            <span class="opacity-70">tls_auth:</span><span>{{ truthy(modalData?.tls_auth) }}</span>
+            <span class="opacity-70">valid_days:</span><span>{{ modalData?.valid_days || '—' }}</span>
+            <span class="opacity-70">expires_at:</span><span>{{ expireAt(modalData) | date:'dd MMM yyyy' }}</span>
+            <span class="opacity-70">revoked:</span><span>{{ truthy(modalData?.revoked) }}</span>
+            <span class="opacity-70">suspended:</span><span>{{ truthy(modalData?.suspended) }}</span>
             <span class="opacity-70">profile_type:</span><span>{{ modalData?.profile_type || '—' }}</span>
           </div>
-
           <div class="mt-3">
-            <h5 class="text-sm font-semibold">Tags</h5>
-            <div class="flex flex-wrap gap-1 mt-1">
+            <h5 class="text-sm font-semibold mb-1">Tags</h5>
+            <div class="flex flex-wrap gap-1">
               @for (tag of (modalData?.tags?.split?.(',') || []); track tag) {
-                <span class="badge">{{ tag }}</span>
-              } @empty { <span class="opacity-70 text-sm">—</span> }
+                <span class="badge badge-ghost badge-sm">{{ tag }}</span>
+              } @empty { <span class="opacity-60 text-sm">—</span> }
             </div>
           </div>
-
-          <div class="mt-3">
-            <h5 class="text-sm font-semibold">Nota</h5>
-            <p class="text-sm opacity-80 break-words">{{ modalData?.note || '—' }}</p>
-          </div>
+          @if (modalData?.note) {
+            <div class="mt-3">
+              <h5 class="text-sm font-semibold mb-1">Nota</h5>
+              <p class="text-sm opacity-80">{{ modalData?.note }}</p>
+            </div>
+          }
         </div>
       </div>
 
@@ -297,285 +579,107 @@
         <div class="card-body p-4">
           <h4 class="card-title text-sm">Acciones rápidas</h4>
           <div class="flex flex-col gap-2">
-            <button class="btn btn-outline btn-sm" type="button" (click)="openDialog('download_cert', modalData ?? undefined)">Descargar .ovpn</button>
-            @if(!modalData?.suspended) {
-              <button class="btn btn-warning btn-sm" type="button" (click)="openDialog('suspend_cert', modalData ?? undefined)">Suspender</button>
-            } @else {
-              <button class="btn btn-warning btn-sm" type="button" (click)="openDialog('reactivar_cert', modalData ?? undefined)">Reactivar</button>
+            <button class="btn btn-outline btn-sm" type="button" (click)="openDialog('download_cert', modalData ?? undefined)">
+              Descargar .ovpn
+            </button>
+            @if (canUpdate()) {
+              @if (!truthy(modalData?.suspended)) {
+                <button class="btn btn-warning btn-sm" type="button" (click)="openDialog('suspend_cert', modalData ?? undefined)">
+                  Suspender
+                </button>
+              } @else {
+                <button class="btn btn-success btn-sm" type="button" (click)="openDialog('reactivar_cert', modalData ?? undefined)">
+                  Reactivar
+                </button>
+              }
             }
-            <button class="btn btn-error btn-sm" type="button" (click)="openDialog('revoke_cert', modalData ?? undefined)">Revocar</button>
+            @if (canDelete() && !truthy(modalData?.revoked)) {
+              <button class="btn btn-error btn-sm" type="button" (click)="openDialog('revoke_cert', modalData ?? undefined)">
+                Revocar
+              </button>
+            }
           </div>
         </div>
       </div>
     </div>
 
     <div class="modal-action">
-      <button class="btn" type="button" (click)="openDialog('edit_cert', modalData ?? undefined)">Editar</button>
-      <button class="btn btn-error" type="button" (click)="openDialog('delete_cert', modalData ?? undefined)">Eliminar</button>
+      <button class="btn btn-ghost" type="button" onclick="document.getElementById('view_cert')?.close()">Cerrar</button>
     </div>
   </div>
   <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
 </dialog>
+
 
 <!-- Descargar .ovpn -->
 <dialog id="download_cert" class="modal">
   <div class="modal-box max-w-3xl">
     <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button></form>
     <h3 class="text-lg font-bold">Descargar certificado .ovpn</h3>
-    <p class="text-sm opacity-70">Previsualiza el encabezado y descarga el archivo.</p>
-    <pre class="mt-3 p-3 bg-base-200 rounded-lg text-xs overflow-auto">
-      {{this.fileCertText()}}
-<!-- client
-dev tun
-proto udp
-remote {{ modalData?.ip || '0.0.0.0' }} 1194
-cipher {{ modalData?.cipher || 'AES-256-CBC' }}
-auth {{ modalData?.auth || 'SHA256' }}
-key-direction 1
-# &lt;inline keys here&gt; -->
-    </pre>
+    <p class="text-sm opacity-70 mb-3">Previsualiza el encabezado y descarga el archivo.</p>
+    <pre class="p-3 bg-base-200 rounded-lg text-xs overflow-auto max-h-64">{{ fileCertText() || '— Cargando…' }}</pre>
     <div class="modal-action">
-      <button class="btn" type="button" (click)="copyOvpn(modalData)">Copiar</button>
+      <button class="btn btn-ghost" type="button" (click)="copyOvpn(modalData)">Copiar</button>
       <button class="btn btn-primary" type="button" (click)="downloadOvpn(modalData)">Descargar .ovpn</button>
     </div>
   </div>
   <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
 </dialog>
 
-<!-- Agregar certificado (form reactivo ok) -->
-<dialog id="add_cert" class="modal">
-  <div class="modal-box max-w-2xl">
-    <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button></form>
-    <h3 class="text-lg font-bold">Nuevo certificado</h3>
-    <p class="text-sm opacity-70 mb-3">Crea un nuevo perfil .ovpn</p>
 
-    <form
-  class="grid gap-3 md:grid-cols-2"
-  [formGroup]="certificateForm"
-  (ngSubmit)="onSubmit()"
-  novalidate
-  autocomplete="on"
->
-  <!-- Usuario -->
-  <div class="w-full md:col-span-2">
-    <label for="user_id" class="block text-sm font-medium text-gray-700 mb-1">
-      Usuario
-    </label>
-    <div class="flex items-center border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-blue-500">
-      <!-- ícono persona -->
-      <svg xmlns="http://www.w3.org/2000/svg"
-           class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0"
-           viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-        <path stroke-linecap="round" stroke-linejoin="round"
-              d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.25a8.25 8.25 0 0115 0" />
-      </svg>
-
-      <select id="user_id"
-              formControlName="user_id"
-              class="w-full outline-none text-gray-700 bg-transparent"
-              aria-label="Usuario"
-              required>
-        <option value="" disabled selected hidden>Selecciona un usuario…</option>
-        @for (item of ListUsers(); track item.id) {
-          <option [value]="item.id">{{ item.firstNames }} {{ item.lastNames }} — DNI: {{ item.dni }}</option>
-        }
-      </select>
-    </div>
-
-    @if (certificateForm.get('user_id')?.touched && certificateForm.get('user_id')?.invalid) {
-      <p class="text-red-500 text-sm mt-1">Seleccione un usuario.</p>
-    }
-  </div>
-
-  <!-- Dispositivo -->
-  <div class="w-full md:col-span-2">
-    <label for="device_id" class="block text-sm font-medium text-gray-700 mb-1">
-      Dispositivo
-    </label>
-    <div class="flex items-center border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-blue-500">
-      <!-- ícono dispositivo -->
-      <svg xmlns="http://www.w3.org/2000/svg"
-           class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0"
-           viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-        <path stroke-linecap="round" stroke-linejoin="round"
-              d="M9.75 3h4.5a2.25 2.25 0 012.25 2.25v13.5A2.25 2.25 0 0114.25 21h-4.5A2.25 2.25 0 017.5 18.75V5.25A2.25 2.25 0 019.75 3z"/>
-      </svg>
-
-      <select id="device_id"
-              formControlName="device_id"
-              class="w-full outline-none text-gray-700 bg-transparent"
-              aria-label="Dispositivo"
-              required>
-        <option value="" disabled selected hidden>Selecciona un dispositivo…</option>
-        @for (item of ListDevices(); track item.id) {
-          <option [value]="item.id">{{ item.device }} — ID: {{ item.id }}</option>
-        }
-      </select>
-    </div>
-
-    @if (certificateForm.get('device_id')?.touched && certificateForm.get('device_id')?.invalid) {
-      <p class="text-red-500 text-sm mt-1">Seleccione un dispositivo.</p>
-    }
-  </div>
-
-  <!-- Servidor -->
-  <div class="w-full md:col-span-2">
-    <label for="server_id" class="block text-sm font-medium text-gray-700 mb-1">
-      Servidor
-    </label>
-    <div class="flex items-center border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-blue-500">
-      <!-- ícono servidor -->
-      <svg xmlns="http://www.w3.org/2000/svg"
-           class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0"
-           viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-        <path stroke-linecap="round" stroke-linejoin="round"
-              d="M4.5 6.75A1.5 1.5 0 016 5.25h12a1.5 1.5 0 011.5 1.5v3a1.5 1.5 0 01-1.5 1.5H6A1.5 1.5 0 014.5 9.75v-3zM4.5 14.25A1.5 1.5 0 016 12.75h12a1.5 1.5 0 011.5 1.5v3a1.5 1.5 0 01-1.5 1.5H6a1.5 1.5 0 01-1.5-1.5v-3z"/>
-      </svg>
-
-      <select id="server_id"
-              formControlName="server_id"
-              class="w-full outline-none text-gray-700 bg-transparent"
-              aria-label="Servidor"
-              required>
-        <option value="" disabled selected hidden>Selecciona el servidor…</option>
-        @for (item of ListServers(); track item.id) {
-          <option [value]="item.id">{{ item.name }} — {{ item.country.countryName }} — IP: {{ item.host }}</option>
-        }
-      </select>
-    </div>
-
-    @if (certificateForm.get('server_id')?.touched && certificateForm.get('server_id')?.invalid) {
-      <p class="text-red-500 text-sm mt-1">Seleccione un servidor.</p>
-    }
-  </div>
-
-  <!-- Plan -->
-  <div class="w-full md:col-span-2">
-    <label for="plan_id" class="block text-sm font-medium text-gray-700 mb-1">
-      Plan
-    </label>
-    <div class="flex items-center border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-blue-500">
-      <!-- ícono plan / tag -->
-      <svg xmlns="http://www.w3.org/2000/svg"
-           class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0"
-           viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-        <path stroke-linecap="round" stroke-linejoin="round"
-              d="M7.5 7.5L3 12l4.5 4.5L21 3.75 7.5 7.5z"/>
-      </svg>
-
-      <select id="plan_id"
-              formControlName="plan_id"
-              class="w-full outline-none text-gray-700 bg-transparent"
-              aria-label="Plan"
-              aria-describedby="plan_id_error"
-              required>
-        <option value="" disabled selected hidden>Selecciona el plan…</option>
-        @for (item of ListPlans(); track item.id) {
-          <option [value]="item.id"> Servicio: {{item.service.sortName}} | {{ item.title_prefix }} - {{ item.title_name }} - {{ item.title_suffix }} — {{item.currencySymbol}}{{ item.price| number:'1.2-2' }} · devices: {{ item.limitDevices }} | Pais {{item.service.country.countryName}}</option>
-        } @empty {
-          <option value="" disabled>No hay planes disponibles</option>
-        }
-      </select>
-    </div>
-
-    @if (certificateForm.get('plan_id')?.touched && certificateForm.get('plan_id')?.invalid) {
-      <p id="plan_id_error" class="text-red-500 text-sm mt-1">Seleccione un plan.</p>
-    }
-  </div>
-
-  <!-- Nota -->
-  <div class="w-full md:col-span-2">
-    <label for="note" class="block text-sm font-medium text-gray-700 mb-1">
-      Nota
-    </label>
-    <div class="flex items-start border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-blue-500">
-      <!-- ícono nota -->
-      <svg xmlns="http://www.w3.org/2000/svg"
-           class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0 mt-1"
-           viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-        <path stroke-linecap="round" stroke-linejoin="round"
-              d="M12 20h9M16.5 3h-9A2.25 2.25 0 005.25 5.25v13.5A2.25 2.25 0 007.5 21h9a2.25 2.25 0 002.25-2.25V5.25A2.25 2.25 0 0016.5 3z"/>
-      </svg>
-
-      <textarea id="note"
-                formControlName="note"
-                rows="4"
-                placeholder="Opcional: escribe una nota..."
-                aria-label="Nota"
-                class="w-full outline-none text-gray-700 placeholder-gray-400 resize-vertical"></textarea>
-    </div>
-  </div>
-
-  <!-- Acciones -->
-  <div class="modal-action md:col-span-2">
-    <button class="btn btn-ghost" type="button" (click)="onCancel()">Cancelar</button>
-    <button class="btn btn-primary" type="submit" [disabled]="certificateForm.invalid">Crear</button>
-  </div>
-</form>
-
-  </div>
-  <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
-</dialog>
-
-<!-- Editar / Suspender / Revocar / Eliminar (botones ya usan openDialog) -->
-<dialog id="edit_cert" class="modal">
-  <div class="modal-box max-w-3xl">
-    <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button></form>
-    <h3 class="text-lg font-bold">Editar certificado</h3>
-    <div class="modal-action">
-      <button class="btn btn-ghost" type="button">Cancelar</button>
-      <button class="btn btn-primary" type="button">Guardar</button>
-    </div>
-  </div>
-  <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
-</dialog>
-
+<!-- Suspender -->
 <dialog id="suspend_cert" class="modal">
   <div class="modal-box">
     <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button></form>
-    <h3 class="text-lg font-bold">Cambiar estado de suspensión</h3>
-    <p class="py-2">¿Deseas <b>suspender</b> este certificado?</p>
+    <h3 class="text-lg font-bold text-warning">Suspender certificado</h3>
+    <p class="py-3">¿Suspender el certificado de <strong>{{ modalData?.device || '—' }}</strong>? El acceso VPN quedará temporalmente bloqueado.</p>
     <div class="modal-action">
-      <button class="btn" type="button">Cancelar</button>
-      <button class="btn btn-warning" type="button" (click)="confirmSuspend(modalData)">Confirmar</button>
+      <button class="btn btn-ghost" type="button" onclick="document.getElementById('suspend_cert')?.close()">Cancelar</button>
+      <button class="btn btn-warning" type="button" (click)="confirmSuspend(modalData)">Suspender</button>
     </div>
   </div>
   <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
 </dialog>
 
+
+<!-- Reactivar -->
 <dialog id="reactivar_cert" class="modal">
   <div class="modal-box">
     <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button></form>
-    <h3 class="text-lg font-bold">Cambiar estado de suspensión</h3>
-    <p class="py-2">¿Deseas <b>reactivar</b> este certificado?</p>
+    <h3 class="text-lg font-bold text-success">Reactivar certificado</h3>
+    <p class="py-3">¿Reactivar el certificado de <strong>{{ modalData?.device || '—' }}</strong>?</p>
     <div class="modal-action">
-      <button class="btn" type="button">Cancelar</button>
-      <button class="btn btn-warning" type="button" (click)="confirmReactivar(modalData)">Confirmar</button>
+      <button class="btn btn-ghost" type="button" onclick="document.getElementById('reactivar_cert')?.close()">Cancelar</button>
+      <button class="btn btn-success" type="button" (click)="confirmReactivar(modalData)">Reactivar</button>
     </div>
   </div>
   <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
 </dialog>
 
+
+<!-- Revocar -->
 <dialog id="revoke_cert" class="modal">
   <div class="modal-box">
     <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button></form>
     <h3 class="text-lg font-bold text-error">Revocar certificado</h3>
-    <p class="py-2">Esta acción es permanente: el certificado quedará inválido.</p>
+    <p class="py-3">Esta acción es <strong>permanente</strong>: el certificado quedará inválido y no podrá reactivarse.</p>
     <div class="modal-action">
-      <button class="btn" type="button">Cancelar</button>
+      <button class="btn btn-ghost" type="button" onclick="document.getElementById('revoke_cert')?.close()">Cancelar</button>
       <button class="btn btn-error" type="button" (click)="confirmRevoke(modalData)">Revocar</button>
     </div>
   </div>
   <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
 </dialog>
 
+
+<!-- Eliminar -->
 <dialog id="delete_cert" class="modal">
   <div class="modal-box">
     <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button></form>
     <h3 class="text-lg font-bold text-error">Eliminar certificado</h3>
-    <p class="py-2">Esta acción no se puede deshacer. ¿Deseas continuar?</p>
+    <p class="py-3">Esta acción no se puede deshacer.</p>
     <div class="modal-action">
-      <button class="btn" type="button">Cancelar</button>
+      <button class="btn btn-ghost" type="button" onclick="document.getElementById('delete_cert')?.close()">Cancelar</button>
       <button class="btn btn-error" type="button" (click)="confirmDelete(modalData)">Eliminar</button>
     </div>
   </div>

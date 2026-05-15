@@ -13,6 +13,8 @@ class PaymentEntity {
   state = "Varificando"; // [ "Prepagado", "Pagado", "Aceptado", "Varificando", "Devuelto", "Pendiente"]
   states: PaymentStateDto[] = []; // new PaymentStateDto();
   amount = 0;
+  currencyCode = "USD";
+  amountInBase = 0;
   method = ""; // ["efectivo", "tranferencia bancaria", "crypto", "modeneroLocal" "unknow"]
   methodPay = new PaymentMethodPayDto();
   note = "";
@@ -32,6 +34,8 @@ class PaymentEntity {
     state,
     states,
     amount,
+    currencyCode,
+    amountInBase,
     method,
     methodPay,
     note,
@@ -48,7 +52,9 @@ class PaymentEntity {
     this.isPrePay = isPrePay ?? this.isPrePay;
     this.state = state ?? this.state;
     this.states = states ?? this.states;
-    this.amount = amount ?? this.amount;
+    this.amount       = amount       ?? this.amount;
+    this.currencyCode = (currencyCode as any) ?? this.currencyCode;
+    this.amountInBase = (amountInBase as any) ?? this.amountInBase;
     this.method = method ?? this.method;
     this.methodPay = methodPay ?? this.methodPay;
     this.note = note ?? this.note;

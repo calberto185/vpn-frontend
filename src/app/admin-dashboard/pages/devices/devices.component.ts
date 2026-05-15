@@ -1,132 +1,259 @@
-import { CommonModule, DatePipe, NgClass } from '@angular/common';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { DatePipe, UpperCasePipe } from '@angular/common';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DeviceService } from '../../services/devices/devices.service';
-import DeviceEntity from '../../interfaces/device.interface'
-import UsersEntity from '../../interfaces/user.interface'
 import { UsersService } from '../../services/users/users.service';
+import DeviceEntity from '../../interfaces/device.interface';
+import UserEntity from '../../interfaces/user.interface';
 import PlanClientDto from '../../interfaces/planClient.interface';
+import { PermissionsService } from '../../services/permissions/permissions.service';
 
 @Component({
   selector: 'app-devices',
-  imports: [NgClass, DatePipe, ReactiveFormsModule, CommonModule],
+  imports: [DatePipe, UpperCasePipe, ReactiveFormsModule],
   templateUrl: './devices.component.html',
   styleUrl: './devices.component.css'
 })
-export class DevicesComponent implements OnInit{
+export class DevicesComponent implements OnInit {
 
+  // ── Permissions ────────────────────────────────────────────────────────────
+  private permissions = inject(PermissionsService);
+  canCreate = computed(() => this.permissions.canDo('devices', 'create'));
+  canUpdate = computed(() => this.permissions.canDo('devices', 'update'));
+  canDelete = computed(() => this.permissions.canDo('devices', 'delete'));
 
-  usersService = inject(UsersService);
-  devicesService = inject(DeviceService);
+  private devicesService = inject(DeviceService);
+  private usersService   = inject(UsersService);
+  private fb             = inject(FormBuilder);
+
+  // ── Lists ─────────────────────────────────────────────────────────────────
   ListDevices = signal<DeviceEntity[]>([]);
-  clientSelected = signal<UsersEntity>(new UsersEntity());
-  planSelected = signal<PlanClientDto>(new PlanClientDto());
-  // ListServers = signal<any[]>([]);
-    // countryService = inject(CountriesService);
+  ListUsers   = signal<UserEntity[]>([]);
 
-  // ListCountries = signal<CountryEntity[]>([]);
-  ListUsers = signal<UsersEntity[]>([]);
-  hasError = signal("");
-  fb = inject(FormBuilder);
-deviceForm = this.fb.group({
-      // id: [''], // opcional
-      user_id: ['', Validators.required],
-      plan_id: ['', Validators.required],
-      server_id: ['', Validators.required],
-      device: ['', Validators.required],
-      typeDevice: ['', Validators.required],
-      active: [false],
-      // certificate: [''],
-      // suspendedAt: [{ value: '', disabled: true }],
-      // revokedAt: [{ value: '', disabled: true }]
-  })
+  // ── Filters ───────────────────────────────────────────────────────────────
+  searchQuery  = signal('');
+  filterEstado = signal('');   // '' | 'activo' | 'suspendido' | 'revocado'
 
-  ngOnInit(): void {
-    // this.fillListCountries();
-    this.fillListDevices();
-    this. fillListUsers();
-  }
-
-  // fillListCountries() {
-  //   this.countryService.getAllCountries().subscribe((resp) => {
-  //     console.log("resp countries: ", resp)
-  //     this.ListCountries.set(resp.data ?? [])
-  //   })
-  // }
-
- fillListUsers() {
-    this.usersService.getUsers().subscribe((resp) => {
-      // console.log("resp users: ", resp)
-      this.ListUsers.set(resp.data ?? [])
-      // console.log("this.ListUsers: ", this.ListUsers())
-    })
-  }
-  async fillListDevices() {
-    this.devicesService.getDevices().subscribe((resp) => {
-      // console.log("resp: ", resp)
-      this.ListDevices.set(resp.data  ?? [])
+  filteredDevices = computed(() => {
+    const q      = this.searchQuery().toLowerCase().trim();
+    const estado = this.filterEstado();
+    return this.ListDevices().filter(d => {
+      const userName = this.userNameById(d.user_id).toLowerCase();
+      const matchQ = !q || (
+        d.device.toLowerCase().includes(q) ||
+        d.id.toLowerCase().includes(q) ||
+        d.user_id.toLowerCase().includes(q) ||
+        userName.includes(q) ||
+        (d.sui_email ?? '').toLowerCase().includes(q)
+      );
+      const matchEstado =
+        !estado ||
+        (estado === 'activo'     && d.active && !d.revoked && !d.suspend) ||
+        (estado === 'suspendido' && d.suspend) ||
+        (estado === 'revocado'   && d.revoked) ||
+        (estado === 'inactivo'   && !d.active);
+      return matchQ && matchEstado;
     });
+  });
+
+  // ── Stats ─────────────────────────────────────────────────────────────────
+  devicesTotal     = computed(() => this.ListDevices().length);
+  devicesActivos   = computed(() => this.ListDevices().filter(d => d.active && !d.revoked && !d.suspend).length);
+  devicesRevocados = computed(() => this.ListDevices().filter(d => d.revoked).length);
+
+  // ── User map for display ──────────────────────────────────────────────────
+  private usersMap = computed(() => new Map(this.ListUsers().map(u => [u.id, u])));
+
+  userNameById(id: string): string {
+    const u = this.usersMap().get(id);
+    return u ? `${u.firstNames} ${u.lastNames}` : id;
   }
 
-    onSubmit() {
-    if(this.deviceForm.invalid) {
-      this.hasError.set("Formulario invalido");
-      setTimeout(() => {
-        this.hasError.set("");
-      }, 3000);
+  // ── Selection ─────────────────────────────────────────────────────────────
+  selectedDevice  = signal<DeviceEntity | null>(null);
+  clientSelected  = signal<UserEntity>(new UserEntity());
+  planSelected    = signal<PlanClientDto>(new PlanClientDto());
+
+  toast = signal<{ msg: string; ok: boolean } | null>(null);
+  hasError = signal('');
+
+  // ── Add form ──────────────────────────────────────────────────────────────
+  deviceForm = this.fb.group({
+    user_id:    ['', Validators.required],
+    plan_id:    ['', Validators.required],
+    server_id:  ['', Validators.required],
+    protocol:   ['s-ui', Validators.required],
+    device:     ['', Validators.required],
+    typeDevice: ['', Validators.required],
+    active:     [true],
+  });
+
+  // ── Edit form ─────────────────────────────────────────────────────────────
+  editForm = this.fb.group({
+    device:     ['', Validators.required],
+    typeDevice: ['', Validators.required],
+    active:     [false],
+    suspend:    [false],
+  });
+
+  // ── Lifecycle ─────────────────────────────────────────────────────────────
+  ngOnInit(): void {
+    this.fillListDevices();
+    if (this.permissions.canDo('users', 'view')) this.fillListUsers();
+  }
+
+  fillListDevices() {
+    this.devicesService.getDevices().subscribe(resp => this.ListDevices.set(resp.data ?? []));
+  }
+
+  fillListUsers() {
+    this.usersService.getUsers().subscribe(resp => this.ListUsers.set(resp.data ?? []));
+  }
+
+  // ── Add device ────────────────────────────────────────────────────────────
+  onSelectedUser(event: Event) {
+    const id = (event.target as HTMLSelectElement).value;
+    const user = this.ListUsers().find(u => u.id === id);
+    if (user) {
+      this.clientSelected.set(user);
+      this.deviceForm.patchValue({ plan_id: '', server_id: '' });
+      this.planSelected.set(new PlanClientDto());
+    }
+  }
+
+  onSelectedPlan(event: Event) {
+    const plan_id = (event.target as HTMLSelectElement).value;
+    const plan = this.clientSelected().services.find(p => p.plan_id === plan_id);
+    if (plan) {
+      this.planSelected.set(plan);
+      this.deviceForm.patchValue({ server_id: '' });
+    }
+  }
+
+  onSubmit() {
+    if (this.deviceForm.invalid) {
+      this.hasError.set('Formulario inválido');
+      setTimeout(() => this.hasError.set(''), 3000);
       return;
     }
-    const data: DeviceEntity | any = this.deviceForm.value;
-    const dataToSave = new DeviceEntity();
-    // const plan = this.clientSelected().services.find(d => d.plan_id == data.plan_id);
-    // const server = plan?.servers;
-    dataToSave.set(data);
-    // dataToSave.plan_id =
-    dataToSave.service_id = this.planSelected().service_id;
-    // dataToSave.server_id = this.planSelected().ser;
-    this.devicesService.register(dataToSave.get()).subscribe((resp) => {
+    const { user_id, plan_id, server_id, protocol, device, typeDevice, active } = this.deviceForm.value;
+    const payload = {
+      user_id,
+      plan_id,
+      service_id: this.planSelected().service_id,
+      server_id,
+      protocol,
+      device,
+      typeDevice,
+      active: active ?? false,
+    };
+
+    this.devicesService.register(payload).subscribe({
+      next: () => {
+        this.showToast('Dispositivo registrado', true);
         this.fillListDevices();
-        this. fillListUsers();
-        if(resp?.error?.message) {
-          this.hasError.set(resp?.error?.message)
-          setTimeout(() => {
-          this.hasError.set("")
-          }, 4000);
-          return;
-        }
+        this.closeModal('add_device');
+        this.deviceForm.reset({ protocol: 's-ui', active: true });
+        this.clientSelected.set(new UserEntity());
+        this.planSelected.set(new PlanClientDto());
+      },
+      error: err => this.showToast(err?.error?.message ?? 'Error al registrar', false),
     });
-    this.onCancel();
   }
-selectedUser(event: Event) {
-  const id = (event.target as HTMLSelectElement).value;
-  // const id = this.deviceForm.get('user_id')?.value;
-  let existClient = this.ListUsers().find(u => u.id ==id);
-  if(!existClient) return;
-  this.clientSelected.set(existClient);
-}
-selectedPlan(event: Event) {
-  const id = (event.target as HTMLSelectElement).value;
-  // const id = this.deviceForm.get('user_id')?.value;
-  let existPlan = this.clientSelected().services.find(u => u.plan_id ==id);
-  if(!existPlan) return;
-  this.planSelected.set(existPlan);
-}
-onCancel() {
-  const dialogo: any = document.getElementById('add_device');
-  if (dialogo && dialogo.open) {
-    dialogo.close();
+
+  onCancelAdd() {
+    this.closeModal('add_device');
+    this.deviceForm.reset({ protocol: 's-ui', active: true });
+    this.clientSelected.set(new UserEntity());
+    this.planSelected.set(new PlanClientDto());
   }
-}
 
-// private usersIndex = new Map(this.ListUsers().map(u => [u.id, u]));
+  // ── Edit device ───────────────────────────────────────────────────────────
+  openEdit(d: DeviceEntity) {
+    this.selectedDevice.set(d);
+    this.editForm.patchValue({
+      device:     d.device,
+      typeDevice: d.typeDevice,
+      active:     d.active,
+      suspend:    d.suspend,
+    });
+    this.openModal('edit_device');
+  }
 
-// userNameById(id: string): string | null {
-//   const u = this.usersIndex.get(id);
-//   return u ? `${u.firstNames} ${u.lastNames} — DNI: ${u.dni}` : null;
-// }
+  onEditSubmit() {
+    const dev = this.selectedDevice();
+    if (!dev?.id || this.editForm.invalid) return;
+    const { device, typeDevice, active, suspend } = this.editForm.value;
+    this.devicesService.update({
+      id: dev.id,
+      device:     device    ?? dev.device,
+      typeDevice: typeDevice ?? dev.typeDevice,
+      active:     active    ?? dev.active,
+      suspend:    suspend   ?? dev.suspend,
+    }).subscribe({
+      next: () => {
+        this.showToast('Dispositivo actualizado', true);
+        this.fillListDevices();
+        this.closeModal('edit_device');
+      },
+      error: err => this.showToast(err?.error?.message ?? 'Error al editar', false),
+    });
+  }
 
-// isEpoch(iso: string | null | undefined | any): boolean {
-//   return !iso || iso.startsWith('1970-01-01');
-// }
+  // ── Revoke / Delete ───────────────────────────────────────────────────────
+  openRevoke(d: DeviceEntity) {
+    this.selectedDevice.set(d);
+    this.openModal('revoke_device');
+  }
 
+  doRevoke() {
+    const dev = this.selectedDevice();
+    if (!dev?.id) return;
+    this.devicesService.update({ id: dev.id, revoked: true, revokedAt: new Date() }).subscribe({
+      next: () => {
+        this.showToast('Dispositivo revocado', true);
+        this.fillListDevices();
+        this.closeModal('revoke_device');
+      },
+      error: err => this.showToast(err?.error?.message ?? 'Error al revocar', false),
+    });
+  }
+
+  openDelete(d: DeviceEntity) {
+    this.selectedDevice.set(d);
+    this.openModal('delete_device');
+  }
+
+  openView(d: DeviceEntity) {
+    this.selectedDevice.set(d);
+    this.openModal('view_device');
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
+  showToast(msg: string, ok: boolean) {
+    this.toast.set({ msg, ok });
+    setTimeout(() => this.toast.set(null), 4000);
+  }
+
+  openModal(id: string) {
+    (document.getElementById(id) as HTMLDialogElement | null)?.showModal();
+  }
+
+  closeModal(id: string) {
+    (document.getElementById(id) as HTMLDialogElement | null)?.close();
+  }
+
+  stateLabel(d: DeviceEntity): string {
+    if (d.revoked)  return 'Revocado';
+    if (d.suspend)  return 'Suspendido';
+    if (d.active)   return 'Activo';
+    return 'Inactivo';
+  }
+
+  stateClass(d: DeviceEntity): string {
+    if (d.revoked)  return 'badge-error';
+    if (d.suspend)  return 'badge-warning';
+    if (d.active)   return 'badge-success';
+    return 'badge-ghost';
+  }
 }

@@ -1,44 +1,51 @@
-<!-- ====== Planes: Gestión ====== -->
-
 <!-- Stats -->
 <section class="container mx-auto max-w-7xl px-2 md:px-4 mt-4">
-  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+
     <div class="stat bg-base-100/80 border rounded-xl shadow-sm">
       <div class="stat-figure text-primary">
-        <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-          stroke-width="2">
+        <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path d="M6 3h12v4H6zM6 9h12v12H6z" />
         </svg>
       </div>
       <div class="stat-title">Planes</div>
-      <div class="stat-value text-2xl">3</div>
-      <div class="stat-desc">desde modelo</div>
+      <div class="stat-value text-2xl">{{ totalPlans() }}</div>
+      <div class="stat-desc">registrados</div>
     </div>
 
     <div class="stat bg-base-100/80 border rounded-xl shadow-sm">
       <div class="stat-figure text-success">
-        <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-          stroke-width="2">
+        <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path d="M5 13l4 4L19 7" />
         </svg>
       </div>
       <div class="stat-title">Activos</div>
-      <div class="stat-value text-2xl">2</div>
-      <div class="stat-desc">en producción</div>
+      <div class="stat-value text-2xl">{{ activePlans() }}</div>
+      <div class="stat-desc">habilitados</div>
     </div>
 
     <div class="stat bg-base-100/80 border rounded-xl shadow-sm">
-      <div class="stat-figure text-warning">
-        <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-          stroke-width="2">
-          <circle cx="12" cy="12" r="10" />
-          <path d="M12 8v5M12 16h.01" />
+      <div class="stat-figure text-error">
+        <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10" /><path d="M12 8v5M12 16h.01" />
         </svg>
       </div>
       <div class="stat-title">Inactivos</div>
-      <div class="stat-value text-2xl">1</div>
+      <div class="stat-value text-2xl">{{ inactivePlans() }}</div>
       <div class="stat-desc">ocultos</div>
     </div>
+
+    <div class="stat bg-base-100/80 border rounded-xl shadow-sm">
+      <div class="stat-figure text-info">
+        <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/>
+        </svg>
+      </div>
+      <div class="stat-title">Visibles</div>
+      <div class="stat-value text-2xl">{{ visiblePlans() }}</div>
+      <div class="stat-desc">para clientes</div>
+    </div>
+
   </div>
 </section>
 
@@ -46,59 +53,54 @@
 <section class="container mx-auto max-w-7xl px-2 md:px-4 mt-4">
   <div class="bg-base-100 border rounded-xl p-3 md:p-4 shadow-sm">
     <div class="flex flex-wrap items-center gap-3">
-      <label class="input input-bordered flex items-center gap-2 w-full sm:w-[28rem]" aria-label="Buscar planes">
-        <svg class="h-5 w-5 opacity-70" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-          stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8" />
-          <path d="m21 21-4.3-4.3" />
+
+      <!-- Search -->
+      <label class="input input-bordered flex items-center gap-2 w-full sm:w-64" aria-label="Buscar planes">
+        <svg class="h-4 w-4 opacity-60" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
         </svg>
-        <input id="search-plans" type="text" placeholder="Buscar por nombre, ID o monto" />
+        <input type="text" class="grow text-sm" placeholder="Buscar por nombre…"
+               [value]="searchQuery()"
+               (input)="searchQuery.set($any($event.target).value)" />
+        @if (searchQuery()) {
+          <button class="btn btn-ghost btn-xs p-0 h-5 w-5 min-h-0" (click)="searchQuery.set('')">✕</button>
+        }
       </label>
 
-      <div class="dropdown">
-        <button tabindex="0" class="btn btn-sm md:btn-md">Estado</button>
-        <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-56 z-[60]">
-          <li><a>Todos</a></li>
-          <li><a>Activos</a></li>
-          <li><a>Inactivos</a></li>
-        </ul>
-      </div>
+      <!-- Service filter -->
+      <select class="select select-bordered select-sm"
+              [value]="filterService()"
+              (change)="filterService.set($any($event.target).value)">
+        <option value="">Todos los servicios</option>
+        @for (s of ListServices(); track s.id) {
+          <option [value]="s.id">{{ localeService.displayI18n(s.sortName_i18n, s.sortName) }}</option>
+        }
+      </select>
 
-      <div class="dropdown">
-        <button tabindex="0" class="btn btn-ghost btn-sm md:btn-md">Orden</button>
-        <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-48 z-[60]">
-          <li><a>Recientes</a></li>
-          <li><a>Antiguos</a></li>
-          <li><a>Monto ↑</a></li>
-          <li><a>Monto ↓</a></li>
-        </ul>
-      </div>
+      <!-- Active filter -->
+      <select class="select select-bordered select-sm"
+              [value]="filterActive()"
+              (change)="filterActive.set($any($event.target).value)">
+        <option value="">Todos</option>
+        <option value="active">Activos</option>
+        <option value="inactive">Inactivos</option>
+      </select>
 
-      <div class="ml-auto flex items-center gap-2">
-        <div class="tooltip" data-tip="Seleccionar todo">
-          <input type="checkbox" class="checkbox checkbox-sm" aria-label="Seleccionar todo" />
+      <span class="text-xs text-base-content/50">
+        {{ filteredPlans().length }} / {{ totalPlans() }}
+      </span>
+
+      @if (canCreate()) {
+        <div class="ml-auto">
+          <button class="btn btn-primary btn-sm md:btn-md" type="button"
+            onclick="document.getElementById('add_plan')?.showModal()">
+            <svg class="h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            Nuevo plan
+          </button>
         </div>
-
-        <div class="dropdown dropdown-end">
-          <button tabindex="0" class="btn btn-ghost btn-sm md:btn-md">Acciones</button>
-          <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-64 z-[60]">
-            <li><a>Activar</a></li>
-            <li><a>Desactivar</a></li>
-            <li><a>Exportar CSV</a></li>
-            <li><a class="text-error">Eliminar</a></li>
-          </ul>
-        </div>
-
-        <!-- Botón Agregar plan -->
-        <button class="btn btn-primary btn-sm md:btn-md" type="button"
-          onclick="document.getElementById('add_plan')?.showModal()">
-          <svg class="h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-            stroke="currentColor" stroke-width="2">
-            <path d="M12 5v14M5 12h14" />
-          </svg>
-          Agregar plan
-        </button>
-      </div>
+      }
     </div>
   </div>
 </section>
@@ -109,604 +111,677 @@
     <table class="table table-sm w-full">
       <thead>
         <tr>
-          <th class="w-8"><input type="checkbox" class="checkbox checkbox-xs" aria-label="Seleccionar todas" /></th>
           <th>Plan</th>
-          <!-- <th class="hidden xl:table-cell">Descripción (HTML)</th> -->
-          <th>Monto</th>
-          <th>Límite</th>
+          <th>Servicio</th>
+          <th>Precio</th>
+          <th class="hidden md:table-cell">Período</th>
+          <th class="hidden md:table-cell">Dispositivos</th>
           <th>Estado</th>
-          <th class="hidden 2xl:table-cell">Creado</th>
-          <th class="hidden 2xl:table-cell">Actualizado</th>
-          <th class="text-right w-48">Acciones</th>
+          <th class="hidden xl:table-cell">Creado</th>
+          <th class="text-right w-36">Acciones</th>
         </tr>
       </thead>
       <tbody>
-        @for (p of ListPlans(); track p.id) {
-        <tr class="hover">
-          <!-- checkbox fila -->
-          <td>
-            <input type="checkbox" class="checkbox checkbox-xs" [attr.aria-label]="'Seleccionar plan ' " />
-          </td>
-
-          <!-- name + id -->
-          <td>
-            <div class="flex items-center gap-3">
-              <div class="avatar placeholder">
-                <div class="bg-primary/10 text-primary w-10 h-10 rounded-xl flex items-center justify-center">
-                  {{ (p.title_name).slice(0,2).toUpperCase() || 'P' }}
-                </div>
-              </div>
-              <div>
-                <div class="font-medium leading-tight">
-                   {{ (p.title_name).toUpperCase() }} - {{ p.description }}
-                </div>
-                <div class="text-[11px] opacity-70 break-all">
-                  ID: {{ p.id || '—' }}
-                </div>
-              </div>
-            </div>
-          </td>
-
-          <!-- html (string guardado) -->
-          <!-- <td class="hidden xl:table-cell">
-            <div class="text-[11px] opacity-80 max-h-10 overflow-hidden">
-              {{ p.html || '—' }}
-            </div>
-          </td> -->
-
-          <!-- amount -->
-          <td>
-            <div class="tabular-nums font-medium">
-              {{p.currencySymbol}} {{ p.price }} / {{p.kind}}
-              <!-- si prefieres formateo: {{ p.amount | number:'1.2-2' }} -->
-            </div>
-          </td>
-
-          <!-- limitDevices -->
-          <td>
-            <div class="tabular-nums">
-              {{ p.limitDevices }}
-            </div>
-          </td>
-
-          <!-- active -->
-          <td>
-            @if (p.active) {
-            <span class="badge badge-success">Activo</span>
-            } @else {
-            <span class="badge badge-ghost">Inactivo</span>
-            }
-          </td>
-
-          <!-- createdAt / updatedAt -->
-          <td class="hidden 2xl:table-cell">
-            {{ p.createdAt | date:'dd MMM yyyy · HH:mm' }}
-          </td>
-          <td class="hidden 2xl:table-cell">
-            {{ p.updatedAt | date:'dd MMM yyyy · HH:mm' }}
-          </td>
-
-          <!-- Acciones -->
-          <td class="text-right">
-            <div class="flex items-center justify-end gap-1.5">
-              <div class="dropdown dropdown-end">
-                <button class="btn btn-ghost btn-xs">Gestionar</button>
-                <ul class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-44 z-[60]">
-                  <li><a onclick="document.getElementById('view_plan')?.showModal()">Ver</a></li>
-                  <li><a onclick="document.getElementById('edit_plan')?.showModal()">Editar</a></li>
-                  <li><a>Activar/Desactivar</a></li>
-                </ul>
-              </div>
-              <button class="btn btn-ghost btn-xs text-error" type="button"
-                onclick="document.getElementById('delete_plan')?.showModal()">
-                <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                  stroke="currentColor" stroke-width="2">
-                  <path d="M3 6h18" />
-                  <path d="M8 6v14a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V6" />
-                  <path d="M10 11v6M14 11v6" />
-                  <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
-                </svg>
-              </button>
-            </div>
-          </td>
-        </tr>
-        } @empty {
-        <tr>
-          <td colspan="9" class="text-center py-10 text-sm opacity-70">
-            No hay planes.
-          </td>
-        </tr>
+        @if (filteredPlans().length === 0) {
+          <tr><td colspan="8" class="text-center py-12 opacity-50">
+            {{ ListPlans().length === 0 ? 'No hay planes. Crea el primero.' : 'Sin resultados para la búsqueda.' }}
+          </td></tr>
         }
-
-        <!-- /Fila ejemplo -->
+        @for (p of filteredPlans(); track p.id) {
+          <tr class="hover">
+            <td>
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0">
+                  {{ planDisplayName(p).slice(0, 2).toUpperCase() || 'P' }}
+                </div>
+                <div>
+                  <div class="font-medium leading-tight">{{ planDisplayName(p) }}</div>
+                  <div class="text-[11px] opacity-60">ID: {{ p.id }}</div>
+                </div>
+              </div>
+            </td>
+            <td class="text-sm">
+              <div>{{ localeService.displayI18n(p.service?.sortName_i18n, p.service?.sortName ?? '') || p.service?.id || '—' }}</div>
+              <div class="text-[11px] opacity-60">{{ p.country?.countryName || '—' }}</div>
+            </td>
+            <td class="tabular-nums font-medium">
+              {{ p.currencySymbol }}{{ p.price }}
+            </td>
+            <td class="hidden md:table-cell">
+              <span class="badge badge-ghost badge-sm">{{ p.kind }}</span>
+            </td>
+            <td class="hidden md:table-cell tabular-nums">{{ p.limitDevices }}</td>
+            <td>
+              <div class="flex flex-col gap-1">
+                @if (p.active) {
+                  <span class="badge badge-success badge-sm">Activo</span>
+                } @else {
+                  <span class="badge badge-ghost badge-sm">Inactivo</span>
+                }
+                @if (p.visible) {
+                  <span class="badge badge-info badge-sm">Visible</span>
+                }
+                @if (p.main) {
+                  <span class="badge badge-warning badge-sm">Principal</span>
+                }
+              </div>
+            </td>
+            <td class="hidden xl:table-cell text-xs opacity-60">
+              {{ p.createdAt | date:'dd MMM yyyy' }}
+            </td>
+            <td class="text-right">
+              <div class="flex items-center justify-end gap-1">
+                <button class="btn btn-ghost btn-xs" type="button" (click)="openViewModal(p)" title="Ver">
+                  <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </button>
+                @if (canUpdate()) {
+                  <button class="btn btn-ghost btn-xs" type="button" (click)="openEditModal(p)" title="Editar">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
+                    </svg>
+                  </button>
+                }
+                @if (canDelete()) {
+                  <button class="btn btn-ghost btn-xs text-error" type="button" (click)="openDeleteModal(p)" title="Eliminar">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path d="M3 6h18"/><path d="M8 6v14a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V6"/>
+                      <path d="M10 11v6M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
+                    </svg>
+                  </button>
+                }
+              </div>
+            </td>
+          </tr>
+        }
       </tbody>
     </table>
   </div>
-
-  <!-- Paginación -->
-  <div class="mt-3 flex items-center justify-between">
-    <p class="text-sm opacity-70">Mostrando 1–1 de 1</p>
-    <nav class="join">
-      <button class="btn btn-xs join-item" disabled>«</button>
-      <button class="btn btn-xs join-item btn-active" aria-current="page">1</button>
-      <button class="btn btn-xs join-item" disabled>»</button>
-    </nav>
-  </div>
+  <div class="mt-2 text-xs opacity-50 pl-1">{{ totalPlans() }} plan(es) registrado(s)</div>
 </section>
 
-<!-- ====== MODALES ====== -->
 
-<!-- Ver plan -->
+<!-- ====== MODAL: Ver plan ====== -->
 <dialog id="view_plan" class="modal">
-  <div class="modal-box w-11/12 max-w-4xl">
-    <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
-        aria-label="Cerrar">✕</button></form>
-    <h3 class="text-lg font-bold">Detalle del plan</h3>
-
-    <div class="grid gap-4 md:grid-cols-3 mt-3">
-      <div class="md:col-span-2 card border bg-base-200/60">
-        <div class="card-body p-4">
-          <h4 class="card-title text-sm">Información</h4>
-          <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-            <span class="opacity-70">ID:</span><span>pl-0001</span>
-            <span class="opacity-70">Nombre:</span><span>Básico</span>
-            <span class="opacity-70">Activo:</span><span>Sí</span>
-            <span class="opacity-70">Monto:</span><span>USD 9.99</span>
-            <span class="opacity-70">Límite de dispositivos:</span><span>2</span>
-            <span class="opacity-70">Creado:</span><span>10 Ago 2025 · 12:00</span>
-            <span class="opacity-70">Actualizado:</span><span>10 Ago 2025 · 12:00</span>
-          </div>
-
-          <div class="mt-3">
-            <h5 class="text-sm font-semibold">HTML (vista previa)</h5>
-            <div class="rounded-lg border bg-base-100 p-3 text-sm overflow-auto">
-              &lt;p&gt;Hasta 2 dispositivos&lt;/p&gt;
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card border bg-base-200/60">
-        <div class="card-body p-4">
-          <h4 class="card-title text-sm">Estado</h4>
-          <div class="flex flex-wrap gap-2">
-            <span class="badge badge-success">Activo</span>
-            <span class="badge badge-ghost">Plan de entrada</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="modal-action">
-      <button class="btn" type="button" onclick="document.getElementById('edit_plan')?.showModal()">Editar</button>
-      <button class="btn btn-error btn-outline" type="button"
-        onclick="document.getElementById('delete_plan')?.showModal()">Eliminar</button>
-    </div>
-  </div>
-  <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
-</dialog>
-
-<!-- Agregar plan -->
-<dialog id="add_plan" class="modal">
-  <div class="modal-box max-w-3xl">
-    <!-- Cerrar -->
+  <div class="modal-box w-11/12 max-w-2xl">
     <form method="dialog">
       <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button>
     </form>
+    <h3 class="text-lg font-bold mb-4">Detalle del plan</h3>
 
-    <!-- Encabezado -->
-    <h3 class="text-lg font-bold">Nuevo plan</h3>
-    <p class="text-sm opacity-70 mb-3">Registra un plan con su precio, límite y contenido HTML.</p>
+    @if (viewItem(); as p) {
+      <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+        <span class="opacity-60">ID:</span>
+        <span class="font-mono text-xs break-all">{{ p.id }}</span>
 
-    <!-- Formulario reactivo -->
-    <form class="grid gap-3 md:grid-cols-2" [formGroup]="planForm" (ngSubmit)="onSubmit()" novalidate autocomplete="on">
+        <span class="opacity-60">Nombre:</span>
+        <span class="font-medium">{{ planDisplayName(p) }}</span>
 
-      <!-- title_prefix -->
-      <div class="w-full md:col-span-2">
-        <label for="title_prefix" class="block text-sm font-medium text-gray-700 mb-1">
-          Prefix del plan
-        </label>
-        <div
-          class="flex items-center border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-blue-500">
-          <!-- ícono etiqueta/nombre -->
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" viewBox="0 0 24 24"
-            fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h10v10H7z" />
-            <path stroke-linecap="round" stroke-linejoin="round" d="M3 12h3" />
-          </svg>
+        <span class="opacity-60">Precio:</span>
+        <span class="font-semibold">{{ p.currencySymbol }}{{ p.price }} / {{ p.kind }}</span>
 
-          <input type="text" id="title_prefix" placeholder="Nombre del plan"
-            class="w-full outline-none text-gray-700 placeholder-gray-400" formControlName="title_prefix" required
-            minlength="2" aria-label="Prefix del Plan" />
-        </div>
+        <span class="opacity-60">Servicio:</span>
+        <span>{{ localeService.displayI18n(p.service?.sortName_i18n, p.service?.sortName ?? '') || '—' }}</span>
 
-        @if (planForm.get('title_prefix')?.touched && planForm.get('title_prefix')?.invalid) {
-        <p class="text-red-500 text-sm mt-1 md:col-span-2">
-          @if (planForm.get('title_prefix')?.errors?.['required']) { Ingrese el prefix del plan. }
-          @if (planForm.get('title_prefix')?.errors?.['minlength']) { Debe tener al menos 2 caracteres. }
-        </p>
-        }
-      </div>
+        <span class="opacity-60">País:</span>
+        <span>{{ p.country?.countryName || '—' }}</span>
 
-      <!-- title_name -->
-      <div class="w-full md:col-span-2">
-        <label for="title_name" class="block text-sm font-medium text-gray-700 mb-1">
-          Prefix del plan
-        </label>
-        <div
-          class="flex items-center border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-blue-500">
-          <!-- ícono etiqueta/nombre -->
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" viewBox="0 0 24 24"
-            fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h10v10H7z" />
-            <path stroke-linecap="round" stroke-linejoin="round" d="M3 12h3" />
-          </svg>
+        <span class="opacity-60">Dispositivos:</span>
+        <span>{{ p.limitDevices }}</span>
 
-          <input type="text" id="title_name" placeholder="Nombre del plan"
-            class="w-full outline-none text-gray-700 placeholder-gray-400" formControlName="title_name" required
-            minlength="2" aria-label="Nombre del Plan" />
-        </div>
-
-        @if (planForm.get('title_name')?.touched && planForm.get('title_name')?.invalid) {
-        <p class="text-red-500 text-sm mt-1 md:col-span-2">
-          @if (planForm.get('title_name')?.errors?.['required']) { Ingrese el nombre del plan. }
-          @if (planForm.get('title_name')?.errors?.['minlength']) { Debe tener al menos 2 caracteres. }
-        </p>
-        }
-      </div>
-
-      <!-- title_suffix -->
-      <div class="w-full md:col-span-2">
-        <label for="title_suffix" class="block text-sm font-medium text-gray-700 mb-1">
-          Suffix del plan
-        </label>
-        <div
-          class="flex items-center border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-blue-500">
-          <!-- ícono etiqueta/nombre -->
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" viewBox="0 0 24 24"
-            fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h10v10H7z" />
-            <path stroke-linecap="round" stroke-linejoin="round" d="M3 12h3" />
-          </svg>
-
-          <input type="text" id="title_suffix" placeholder="Suffix del plan"
-            class="w-full outline-none text-gray-700 placeholder-gray-400" formControlName="title_suffix" required
-            minlength="2" aria-label="Suffix del Plan" />
-        </div>
-
-        @if (planForm.get('title_suffix')?.touched && planForm.get('title_suffix')?.invalid) {
-        <p class="text-red-500 text-sm mt-1 md:col-span-2">
-          @if (planForm.get('title_suffix')?.errors?.['required']) { Ingrese el suffix del plan. }
-          @if (planForm.get('title_suffix')?.errors?.['minlength']) { Debe tener al menos 2 caracteres. }
-        </p>
-        }
-      </div>
-
-      <!-- Price -->
-      <div class="w-full">
-        <label for="price" class="block text-sm font-medium text-gray-700 mb-1">
-          Monto
-        </label>
-        <div
-          class="flex items-center border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-blue-500">
-          <!-- ícono dólar -->
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" viewBox="0 0 24 24"
-            fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 1v22" />
-            <path stroke-linecap="round" stroke-linejoin="round" d="M17 5H9.5a3 3 0 000 6H14a3 3 0 010 6H6.5" />
-          </svg>
-
-          <input type="number" id="price" placeholder="Precio"
-            class="w-full outline-none text-gray-700 placeholder-gray-400" formControlName="price" required step="0.01"
-            min="0" inputmode="decimal" aria-label="Precio" />
-        </div>
-
-        @if (planForm.get('price')?.touched && planForm.get('price')?.invalid) {
-        <p class="text-red-500 text-sm mt-1">
-          @if (planForm.get('price')?.errors?.['required']) { Ingrese el precio. }
-          @if (planForm.get('price')?.errors?.['min']) { El monto debe ser 0 o mayor. }
-        </p>
-        }
-      </div>
-
-      <!-- Description -->
-      <div class="w-full md:col-span-2">
-        <label for="description" class="block text-sm font-medium text-gray-700 mb-1">
-          Descripción del plan
-        </label>
-        <div
-          class="flex items-center border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-blue-500">
-          <!-- ícono etiqueta/nombre -->
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" viewBox="0 0 24 24"
-            fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h10v10H7z" />
-            <path stroke-linecap="round" stroke-linejoin="round" d="M3 12h3" />
-          </svg>
-
-          <input type="text" id="description" placeholder="Descripción del plan"
-            class="w-full outline-none text-gray-700 placeholder-gray-400" formControlName="description" required
-            minlength="2" aria-label="Descripción del Plan" />
-        </div>
-
-        @if (planForm.get('description')?.touched && planForm.get('description')?.invalid) {
-        <p class="text-red-500 text-sm mt-1 md:col-span-2">
-          @if (planForm.get('description')?.errors?.['required']) { Ingrese el descripción del plan. }
-          @if (planForm.get('description')?.errors?.['minlength']) { Debe tener al menos 2 caracteres. }
-        </p>
-        }
-      </div>
-
-      <!-- button_name -->
-      <div class="w-full md:col-span-2">
-        <label for="button_name" class="block text-sm font-medium text-gray-700 mb-1">
-          Nombre del boton del plan
-        </label>
-        <div
-          class="flex items-center border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-blue-500">
-          <!-- ícono etiqueta/nombre -->
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" viewBox="0 0 24 24"
-            fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h10v10H7z" />
-            <path stroke-linecap="round" stroke-linejoin="round" d="M3 12h3" />
-          </svg>
-
-          <input type="text" id="button_name" placeholder="Nombre del boton del plan"
-            class="w-full outline-none text-gray-700 placeholder-gray-400" formControlName="button_name" required
-            minlength="2" aria-label="Nombre del boton del Plan" />
-        </div>
-
-        @if (planForm.get('button_name')?.touched && planForm.get('button_name')?.invalid) {
-        <p class="text-red-500 text-sm mt-1 md:col-span-2">
-          @if (planForm.get('button_name')?.errors?.['required']) { Ingrese el nombre del boton del plan. }
-          @if (planForm.get('button_name')?.errors?.['minlength']) { Debe tener al menos 2 caracteres. }
-        </p>
-        }
-      </div>
-
-      <!-- kind -->
-      <div class="w-full">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Tiempo de Pago</label>
-        <div class="flex items-center border border-gray-300 rounded-lg px-3 py-2
-             focus-within:ring-2 focus-within:ring-blue-500 bg-white">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" fill="none"
-            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="2" y1="12" x2="22" y2="12"></line>
-            <path d="M12 2a15 15 0 0 1 4 10 15 15 0 0 1-4 10 15 15 0 0 1-4-10 15 15 0 0 1 4-10z"></path>
-          </svg>
-          <select formControlName="kind" required class="w-full outline-none text-gray-700 bg-transparent">
-            <option value="" disabled selected hidden>Selecciona la Moneda</option>
-            <option value="hora">hora</option>
-            <option value="dia">dia</option>
-            <option value="semana">semana</option>
-            <option value="quinsena">quinsena</option>
-            <option value="mes">mes</option>
-            <option value="trimestre">trimestre</option>
-            <option value="semestre">semestre</option>
-            <option value="anual">anual</option>
-            <!-- @for (item of this.ListCountries(); track item.countryName; let idx = $index) {
-          <option [value]="item.countryName">{{item.countryName}} - {{ item.currencyName }} - {{ item.currencySymbol }}</option>
-        } -->
-          </select>
-        </div>
-        @if (planForm.get('kind')?.touched && planForm.get('kind')?.invalid) {
-        <p class="text-red-500 text-sm mt-1">Seleccione el tiempo de pago.</p>
-        }
-      </div>
-
-        <!-- País -->
-    <div class="w-full md:col-span-2">
-      <label for="country" class="block text-sm font-medium text-gray-700 mb-1">
-        País
-      </label>
-      <div class="flex items-center border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-blue-500">
-        <!-- Ícono: globo -->
-        <svg xmlns="http://www.w3.org/2000/svg"
-             class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0"
-             fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10"></circle>
-          <line x1="2" y1="12" x2="22" y2="12"></line>
-          <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"></path>
-        </svg>
-        <select id="country" formControlName="country"
-                class="w-full outline-none text-gray-700 placeholder-gray-400"
-                required>
-          <option value="" disabled selected hidden>Selecciona el país</option>
-          @for (item of this.ListCountries(); track item.countryName; let idx = $index) {
-            <option [value]="item.id">{{ item.countryName }}</option>
-          }
-        </select>
-      </div>
-      @if (planForm.get('country')?.touched && planForm.get('country')?.invalid) {
-        <p class="text-red-500 text-sm mt-1">Seleccione un país válido.</p>
-      }
-    </div>
-
-      <!-- Service -->
-      <div class="w-full">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Servicio</label>
-        <div class="flex items-center border border-gray-300 rounded-lg px-3 py-2
-             focus-within:ring-2 focus-within:ring-blue-500 bg-white">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" fill="none"
-            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="2" y1="12" x2="22" y2="12"></line>
-            <path d="M12 2a15 15 0 0 1 4 10 15 15 0 0 1-4 10 15 15 0 0 1-4-10 15 15 0 0 1 4-10z"></path>
-          </svg>
-          <select formControlName="service" required class="w-full outline-none text-gray-700 bg-transparent">
-            <option value="" disabled selected hidden>Selecciona la Moneda</option>
-            @for (item of this.ListServices(); track item.id; let idx = $index) {
-            <option [value]="item.id">{{item.longName}} - {{ item.sortName }} | {{item.country.countryName}}</option>
+        @if (p.vpnMode) {
+          <span class="opacity-60">Modo VPN:</span>
+          <span>
+            @if (p.vpnMode === 'by_device') { Por dispositivo }
+            @else if (p.vpnMode === 'by_data') {
+              Por datos
+              @if (p.dataLimitGB) { · {{ p.dataLimitGB }} GB / {{ p.dataLimitPeriod }} }
             }
-          </select>
-        </div>
-        @if (planForm.get('service')?.touched && planForm.get('service')?.invalid) {
-        <p class="text-red-500 text-sm mt-1">Seleccione el servicio.</p>
+          </span>
         }
-      </div>
 
-      <!-- Límite de dispositivos -->
-      <div class="w-full">
-        <label for="limitDevices" class="block text-sm font-medium text-gray-700 mb-1">
-          Límite de dispositivos
-        </label>
-        <div
-          class="flex items-center border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-blue-500">
-          <!-- ícono dispositivos -->
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" viewBox="0 0 24 24"
-            fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-            <rect x="3" y="4" width="7" height="6" rx="1"></rect>
-            <rect x="14" y="4" width="7" height="6" rx="1"></rect>
-            <path d="M7 20h10" stroke-linecap="round" stroke-linejoin="round"></path>
-          </svg>
-
-          <input type="number" id="limitDevices" placeholder="Límite de dispositivos"
-            class="w-full outline-none text-gray-700 placeholder-gray-400" formControlName="limitDevices" required
-            step="1" min="0" inputmode="numeric" aria-label="Límite de dispositivos" />
-        </div>
-
-        @if (planForm.get('limitDevices')?.touched && planForm.get('limitDevices')?.invalid) {
-        <p class="text-red-500 text-sm mt-1">
-          @if (planForm.get('limitDevices')?.errors?.['required']) { Ingrese el límite de dispositivos. }
-          @if (planForm.get('limitDevices')?.errors?.['min']) { El límite debe ser 0 o mayor. }
-          @if (planForm.get('limitDevices')?.errors?.['pattern']) { Debe ser un número entero. }
-        </p>
+        @if (p.userNameService) {
+          <span class="opacity-60">Usuario servicio:</span>
+          <span class="font-mono text-xs">{{ p.userNameService }}</span>
         }
+        @if (p.codeService) {
+          <span class="opacity-60">Código acceso:</span>
+          <span class="font-mono text-xs">{{ p.codeService }}</span>
+        }
+
+        <span class="opacity-60">Estado:</span>
+        <span>
+          @if (p.active) { <span class="badge badge-success badge-sm">Activo</span> }
+          @else { <span class="badge badge-ghost badge-sm">Inactivo</span> }
+          @if (p.visible) { <span class="badge badge-info badge-sm ml-1">Visible</span> }
+        </span>
+
+        @if (p.description || p.description_i18n) {
+          <span class="opacity-60">Descripción:</span>
+          <span>{{ localeService.displayI18n(p.description_i18n, p.description) }}</span>
+        }
+
+        @if (p.features && p.features.length > 0) {
+          <span class="opacity-60 self-start">Características:</span>
+          <ul class="list-disc ml-4 space-y-0.5">
+            @for (f of (p.features_i18n?.[localeService.currentLanguageCode()] || p.features || []); track $index) {
+              <li>{{ f }}</li>
+            }
+          </ul>
+        }
+
+        <span class="opacity-60">Creado:</span>
+        <span>{{ p.createdAt | date:'dd MMM yyyy · HH:mm' }}</span>
       </div>
 
-      <!-- Global -->
-      <div class="w-full md:col-span-2">
-        <label for="limitDevices" class="block text-sm font-medium text-gray-700 mb-1">
-          Es Plan Global:
-        </label>
-        <label class="label cursor-pointer justify-start gap-3">
-          <input type="checkbox" class="toggle" formControlName="global" aria-label="Activo" />
-          <span class="text-gray-700">Activo</span>
-        </label>
-      </div>
-
-      <!-- Main -->
-      <div class="w-full md:col-span-2">
-        <label for="main" class="block text-sm font-medium text-gray-700 mb-1">
-          Es Plan Global:
-        </label>
-        <label class="label cursor-pointer justify-start gap-3">
-          <input type="checkbox" class="toggle" formControlName="main" aria-label="Main" />
-          <span class="text-gray-700">Activo</span>
-        </label>
-      </div>
-
-      <!-- Activo -->
-      <div class="w-full md:col-span-2">
-        <label for="active" class="block text-sm font-medium text-gray-700 mb-1">
-          Estado:
-        </label>
-        <label class="label cursor-pointer justify-start gap-3">
-          <input type="checkbox" class="toggle" formControlName="active" aria-label="Activo" />
-          <span class="text-gray-700">Activo</span>
-        </label>
-      </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      <!-- Acciones -->
-      <div class="modal-action md:col-span-2">
-        <button class="btn btn-ghost" type="button" (click)="onCancel()">Cancelar</button>
-        <button class="btn btn-primary" type="submit" [disabled]="planForm.invalid">Crear</button>
-      </div>
-    </form>
-
-  </div>
-
-  <form method="dialog" class="modal-backdrop">
-    <button aria-label="Cerrar">close</button>
-  </form>
-</dialog>
-
-
-<!-- Editar plan -->
-<dialog id="edit_plan" class="modal">
-  <div class="modal-box max-w-3xl">
-    <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
-        aria-label="Cerrar">✕</button></form>
-    <h3 class="text-lg font-bold">Editar plan</h3>
-
-    <div class="grid gap-3 md:grid-cols-2 mt-2">
-      <label class="input input-bordered w-full md:col-span-2"><input type="text" value="pl-0001" class="w-full"
-          disabled /></label>
-
-      <label class="input input-bordered w-full md:col-span-2"><input type="text" value="Básico"
-          class="w-full" /></label>
-
-      <label class="input input-bordered w-full">
-        <input type="number" step="0.01" min="0" value="9.99" class="w-full" />
-      </label>
-
-      <label class="input input-bordered w-full">
-        <input type="number" step="1" min="0" value="2" class="w-full" />
-      </label>
-
-      <label class="label cursor-pointer justify-start gap-3 md:col-span-2">
-        <input type="checkbox" class="toggle" checked aria-label="Activo" />
-        <span>Activo</span>
-      </label>
-
-      <label class="textarea textarea-bordered w-full md:col-span-2">
-        <textarea class="w-full" rows="5">&lt;p&gt;Hasta 2 dispositivos&lt;/p&gt;</textarea>
-      </label>
-
-      <div class="grid grid-cols-2 gap-2 md:col-span-2">
-        <label class="input input-bordered w-full">
-          <input type="text" value="10 Ago 2025 · 12:00" class="w-full" disabled />
-        </label>
-        <label class="input input-bordered w-full">
-          <input type="text" value="10 Ago 2025 · 12:00" class="w-full" disabled />
-        </label>
-      </div>
-    </div>
+      <!-- i18n overview -->
+      @if (activeLangs().length > 1) {
+        <div class="mt-4 border-t pt-3">
+          <p class="text-xs font-semibold opacity-60 mb-2">Contenido por idioma</p>
+          <div class="flex flex-wrap gap-2">
+            @for (lang of activeLangs(); track lang.code) {
+              <div class="badge badge-outline badge-sm gap-1">
+                <span class="font-bold">{{ lang.code }}</span>
+                {{ (p.title_name_i18n ?? {})[lang.code] || p.title_name || '—' }}
+              </div>
+            }
+          </div>
+        </div>
+      }
+    }
 
     <div class="modal-action">
-      <button class="btn btn-ghost" type="button">Cancelar</button>
-      <button class="btn btn-primary" type="button">Guardar</button>
+      <button class="btn btn-sm" type="button" (click)="openEditModal(viewItem()!)">Editar</button>
     </div>
   </div>
   <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
 </dialog>
 
-<!-- Eliminar plan -->
-<dialog id="delete_plan" class="modal">
-  <div class="modal-box">
-    <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button></form>
-    <h3 class="text-lg font-bold text-error">Eliminar plan</h3>
-    <p class="py-2">Esta acción es permanente. ¿Deseas continuar?</p>
-    <div class="modal-action">
-      <button class="btn" type="button">Cancelar</button>
-      <button class="btn btn-error" type="button">Eliminar</button>
-    </div>
+
+<!-- ====== MODAL: Agregar plan ====== -->
+<dialog id="add_plan" class="modal">
+  <div class="modal-box max-w-2xl">
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button>
+    </form>
+    <h3 class="text-lg font-bold">Nuevo plan</h3>
+    <p class="text-sm opacity-70 mb-4">Define el precio, período y restricciones del plan.</p>
+
+    <form class="grid gap-3 md:grid-cols-2" [formGroup]="planForm" (ngSubmit)="onSubmit()" novalidate>
+
+      <!-- ── Prefijo (i18n) ── -->
+      <div class="form-control md:col-span-2">
+        <label class="label py-0"><span class="label-text text-xs">Prefijo del título</span></label>
+        @for (lang of activeLangs(); track lang.code) {
+          <div class="flex items-center gap-2 mb-1">
+            <span class="badge badge-ghost badge-sm w-8 text-center shrink-0">{{ lang.code }}</span>
+            <input class="input input-bordered input-sm w-full"
+                   [value]="i18nAdd()['title_prefix']?.[lang.code] ?? ''"
+                   (input)="setI18nAdd('title_prefix', lang.code, $any($event.target).value)"
+                   placeholder="Plan" />
+          </div>
+        }
+      </div>
+
+      <!-- ── Nombre (i18n) * ── -->
+      <div class="form-control md:col-span-2">
+        <label class="label py-0">
+          <span class="label-text text-xs font-semibold">Nombre del plan *</span>
+          @if (!addTitleValid()) {
+            <span class="label-text-alt text-error text-xs">Requerido en al menos un idioma</span>
+          }
+        </label>
+        @for (lang of activeLangs(); track lang.code) {
+          <div class="flex items-center gap-2 mb-1">
+            <span class="badge badge-ghost badge-sm w-8 text-center shrink-0">{{ lang.code }}</span>
+            <input class="input input-bordered input-sm w-full"
+                   [class.input-error]="!addTitleValid()"
+                   [value]="i18nAdd()['title_name']?.[lang.code] ?? ''"
+                   (input)="setI18nAdd('title_name', lang.code, $any($event.target).value)"
+                   [placeholder]="lang.code === 'en' ? 'Basic' : lang.code === 'ru' ? 'Базовый' : 'Básico'" />
+          </div>
+        }
+      </div>
+
+      <!-- ── Sufijo (i18n) ── -->
+      <div class="form-control md:col-span-2">
+        <label class="label py-0"><span class="label-text text-xs">Sufijo del título</span></label>
+        @for (lang of activeLangs(); track lang.code) {
+          <div class="flex items-center gap-2 mb-1">
+            <span class="badge badge-ghost badge-sm w-8 text-center shrink-0">{{ lang.code }}</span>
+            <input class="input input-bordered input-sm w-full"
+                   [value]="i18nAdd()['title_suffix']?.[lang.code] ?? ''"
+                   (input)="setI18nAdd('title_suffix', lang.code, $any($event.target).value)"
+                   placeholder="Pro" />
+          </div>
+        }
+      </div>
+
+      <!-- ── Botón (i18n) * ── -->
+      <div class="form-control md:col-span-2">
+        <label class="label py-0"><span class="label-text text-xs font-semibold">Texto del botón</span></label>
+        @for (lang of activeLangs(); track lang.code) {
+          <div class="flex items-center gap-2 mb-1">
+            <span class="badge badge-ghost badge-sm w-8 text-center shrink-0">{{ lang.code }}</span>
+            <input class="input input-bordered input-sm w-full"
+                   [value]="i18nAdd()['button_name']?.[lang.code] ?? ''"
+                   (input)="setI18nAdd('button_name', lang.code, $any($event.target).value)"
+                   [placeholder]="lang.code === 'en' ? 'Subscribe' : lang.code === 'ru' ? 'Подписаться' : 'Contratar'" />
+          </div>
+        }
+      </div>
+
+      <!-- Precio * -->
+      <div class="form-control">
+        <label class="label py-0"><span class="label-text text-xs">Precio *</span></label>
+        <input class="input input-bordered w-full" type="number" step="0.01" min="0"
+               [class.input-error]="planForm.get('price')?.invalid && planForm.get('price')?.touched"
+               formControlName="price" placeholder="9.99" />
+      </div>
+
+      <!-- Período * -->
+      <div class="form-control">
+        <label class="label py-0"><span class="label-text text-xs">Período de pago *</span></label>
+        <select class="select select-bordered w-full" formControlName="kind">
+          @for (k of KIND_OPTIONS; track k.value) {
+            <option [value]="k.value">{{ k.label }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Servicio * -->
+      <div class="form-control md:col-span-2">
+        <label class="label py-0"><span class="label-text text-xs">Servicio *</span></label>
+        <select class="select select-bordered w-full"
+                [class.select-error]="planForm.get('service')?.invalid && planForm.get('service')?.touched"
+                formControlName="service">
+          <option value="" disabled>— Seleccionar servicio —</option>
+          @for (s of ListServices(); track s.id) {
+            <option [value]="s.id">{{ localeService.displayI18n(s.longName_i18n, s.longName) }} · {{ s.country?.countryName }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- País * -->
+      <div class="form-control md:col-span-2">
+        <label class="label py-0"><span class="label-text text-xs">País *</span></label>
+        <select class="select select-bordered w-full"
+                [class.select-error]="planForm.get('country')?.invalid && planForm.get('country')?.touched"
+                formControlName="country">
+          <option value="" disabled>— Seleccionar país —</option>
+          @for (c of ListCountries(); track c.id) {
+            <option [value]="c.id">{{ c.countryName }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Límite dispositivos * -->
+      <div class="form-control">
+        <label class="label py-0"><span class="label-text text-xs">Límite de dispositivos *</span></label>
+        <input class="input input-bordered w-full" type="number" min="1"
+               formControlName="limitDevices" />
+      </div>
+
+      <!-- ── VPN Mode ── -->
+      @if (isVpnAdd()) {
+        <div class="form-control md:col-span-2">
+          <label class="label py-0"><span class="label-text text-xs font-semibold">Modo VPN</span></label>
+          <div class="flex gap-3">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="radio" class="radio radio-primary radio-sm" formControlName="vpnMode" value="by_device" />
+              <span class="text-sm">Por dispositivo <span class="opacity-50">(1 credencial = 1 dispositivo)</span></span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="radio" class="radio radio-secondary radio-sm" formControlName="vpnMode" value="by_data" />
+              <span class="text-sm">Por datos <span class="opacity-50">(1 credencial = múltiples dispositivos, límite GB)</span></span>
+            </label>
+          </div>
+        </div>
+
+        @if (vpnModeAdd() === 'by_data') {
+          <div class="form-control">
+            <label class="label py-0"><span class="label-text text-xs">Límite de datos (GB)</span></label>
+            <input class="input input-bordered w-full" type="number" min="0" step="0.5"
+                   formControlName="dataLimitGB" placeholder="0 = ilimitado" />
+          </div>
+          <div class="form-control">
+            <label class="label py-0"><span class="label-text text-xs">Período de reset de datos</span></label>
+            <select class="select select-bordered w-full" formControlName="dataLimitPeriod">
+              @for (p of VPN_PERIOD_OPTIONS; track p.value) {
+                <option [value]="p.value">{{ p.label }}</option>
+              }
+            </select>
+          </div>
+        }
+      }
+
+      <!-- ── Credenciales del servicio ── -->
+      <div class="divider md:col-span-2 my-1 text-xs opacity-50">Credenciales de acceso al servicio (opcional)</div>
+      <div class="form-control">
+        <label class="label py-0"><span class="label-text text-xs">Usuario del servicio</span></label>
+        <input class="input input-bordered w-full" formControlName="userNameService" placeholder="usuario@servicio.com" />
+      </div>
+      <div class="form-control">
+        <label class="label py-0"><span class="label-text text-xs">Contraseña del servicio</span></label>
+        <input class="input input-bordered w-full" type="password" formControlName="passwordService" placeholder="••••••••" autocomplete="new-password" />
+      </div>
+      <div class="form-control md:col-span-2">
+        <label class="label py-0"><span class="label-text text-xs">Código de acceso</span></label>
+        <input class="input input-bordered w-full" formControlName="codeService" placeholder="Código, PIN o token (opcional)" />
+      </div>
+
+      <!-- ── Descripción (i18n) * ── -->
+      <div class="form-control md:col-span-2">
+        <label class="label py-0"><span class="label-text text-xs font-semibold">Descripción</span></label>
+        @for (lang of activeLangs(); track lang.code) {
+          <div class="flex items-start gap-2 mb-1">
+            <span class="badge badge-ghost badge-sm w-8 text-center shrink-0 mt-2">{{ lang.code }}</span>
+            <textarea class="textarea textarea-bordered w-full" rows="2"
+                      [value]="i18nAdd()['description']?.[lang.code] ?? ''"
+                      (input)="setI18nAdd('description', lang.code, $any($event.target).value)"
+                      placeholder="Descripción breve del plan"></textarea>
+          </div>
+        }
+      </div>
+
+      <!-- ── Características / Features (i18n) ── -->
+      <div class="form-control md:col-span-2">
+        <label class="label py-0">
+          <span class="label-text text-xs font-semibold">Características</span>
+          <span class="label-text-alt opacity-50">separadas por coma</span>
+        </label>
+        @for (lang of activeLangs(); track lang.code) {
+          <div class="flex items-start gap-2 mb-1">
+            <span class="badge badge-ghost badge-sm w-8 text-center shrink-0 mt-2">{{ lang.code }}</span>
+            <textarea class="textarea textarea-bordered w-full" rows="2"
+                      [value]="i18nAdd()['features']?.[lang.code] ?? ''"
+                      (input)="setI18nAdd('features', lang.code, $any($event.target).value)"
+                      [placeholder]="lang.code === 'en' ? 'Access to all servers, No speed limit' : 'Acceso a todos los servidores, Sin límite de velocidad'"></textarea>
+          </div>
+        }
+      </div>
+
+      <!-- Toggles -->
+      <label class="label cursor-pointer justify-start gap-3">
+        <input type="checkbox" class="toggle toggle-success toggle-sm" formControlName="active" />
+        <span class="label-text">Activo</span>
+      </label>
+      <label class="label cursor-pointer justify-start gap-3">
+        <input type="checkbox" class="toggle toggle-primary toggle-sm" formControlName="visible" />
+        <span class="label-text">Visible para clientes</span>
+      </label>
+      <label class="label cursor-pointer justify-start gap-3">
+        <input type="checkbox" class="toggle toggle-secondary toggle-sm" formControlName="global" />
+        <span class="label-text">Global</span>
+      </label>
+      <label class="label cursor-pointer justify-start gap-3">
+        <input type="checkbox" class="toggle toggle-accent toggle-sm" formControlName="main" />
+        <span class="label-text">Plan principal</span>
+      </label>
+
+      @if (hasError()) {
+        <div class="alert alert-error md:col-span-2 py-2 text-sm">{{ hasError() }}</div>
+      }
+
+      <div class="modal-action md:col-span-2">
+        <form method="dialog"><button class="btn" type="submit">Cancelar</button></form>
+        <button class="btn btn-primary" type="submit" [disabled]="planForm.invalid || !addTitleValid()">Crear plan</button>
+      </div>
+    </form>
   </div>
-  <form method="dialog" class="modal-backdrop"><button>close</button></form>
+  <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
 </dialog>
 
-<!-- Atajo: Ctrl/Cmd + K enfoca búsqueda -->
-<script>
-  document.addEventListener('keydown', (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
-      const input = document.getElementById('search-plans');
-      if (input) { e.preventDefault(); input.focus(); }
-    }
-  });
-</script>
+
+<!-- ====== MODAL: Editar plan ====== -->
+<dialog id="edit_plan" class="modal">
+  <div class="modal-box max-w-2xl">
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button>
+    </form>
+    <h3 class="text-lg font-bold">Editar plan</h3>
+
+    <form class="grid gap-3 md:grid-cols-2 mt-4" [formGroup]="editForm" (ngSubmit)="onEditSubmit()" novalidate>
+
+      <!-- ── Prefijo (i18n) ── -->
+      <div class="form-control md:col-span-2">
+        <label class="label py-0"><span class="label-text text-xs">Prefijo del título</span></label>
+        @for (lang of activeLangs(); track lang.code) {
+          <div class="flex items-center gap-2 mb-1">
+            <span class="badge badge-ghost badge-sm w-8 text-center shrink-0">{{ lang.code }}</span>
+            <input class="input input-bordered input-sm w-full"
+                   [value]="i18nEdit()['title_prefix']?.[lang.code] ?? ''"
+                   (input)="setI18nEdit('title_prefix', lang.code, $any($event.target).value)"
+                   placeholder="Plan" />
+          </div>
+        }
+      </div>
+
+      <!-- ── Nombre (i18n) * ── -->
+      <div class="form-control md:col-span-2">
+        <label class="label py-0">
+          <span class="label-text text-xs font-semibold">Nombre del plan *</span>
+          @if (!editTitleValid()) {
+            <span class="label-text-alt text-error text-xs">Requerido en al menos un idioma</span>
+          }
+        </label>
+        @for (lang of activeLangs(); track lang.code) {
+          <div class="flex items-center gap-2 mb-1">
+            <span class="badge badge-ghost badge-sm w-8 text-center shrink-0">{{ lang.code }}</span>
+            <input class="input input-bordered input-sm w-full"
+                   [class.input-error]="!editTitleValid()"
+                   [value]="i18nEdit()['title_name']?.[lang.code] ?? ''"
+                   (input)="setI18nEdit('title_name', lang.code, $any($event.target).value)"
+                   [placeholder]="lang.code === 'en' ? 'Basic' : lang.code === 'ru' ? 'Базовый' : 'Básico'" />
+          </div>
+        }
+      </div>
+
+      <!-- ── Sufijo (i18n) ── -->
+      <div class="form-control md:col-span-2">
+        <label class="label py-0"><span class="label-text text-xs">Sufijo del título</span></label>
+        @for (lang of activeLangs(); track lang.code) {
+          <div class="flex items-center gap-2 mb-1">
+            <span class="badge badge-ghost badge-sm w-8 text-center shrink-0">{{ lang.code }}</span>
+            <input class="input input-bordered input-sm w-full"
+                   [value]="i18nEdit()['title_suffix']?.[lang.code] ?? ''"
+                   (input)="setI18nEdit('title_suffix', lang.code, $any($event.target).value)"
+                   placeholder="Pro" />
+          </div>
+        }
+      </div>
+
+      <!-- ── Botón (i18n) ── -->
+      <div class="form-control md:col-span-2">
+        <label class="label py-0"><span class="label-text text-xs font-semibold">Texto del botón</span></label>
+        @for (lang of activeLangs(); track lang.code) {
+          <div class="flex items-center gap-2 mb-1">
+            <span class="badge badge-ghost badge-sm w-8 text-center shrink-0">{{ lang.code }}</span>
+            <input class="input input-bordered input-sm w-full"
+                   [value]="i18nEdit()['button_name']?.[lang.code] ?? ''"
+                   (input)="setI18nEdit('button_name', lang.code, $any($event.target).value)"
+                   [placeholder]="lang.code === 'en' ? 'Subscribe' : lang.code === 'ru' ? 'Подписаться' : 'Contratar'" />
+          </div>
+        }
+      </div>
+
+      <!-- Precio * -->
+      <div class="form-control">
+        <label class="label py-0"><span class="label-text text-xs">Precio *</span></label>
+        <input class="input input-bordered w-full" type="number" step="0.01" min="0" formControlName="price" />
+      </div>
+
+      <!-- Período * -->
+      <div class="form-control">
+        <label class="label py-0"><span class="label-text text-xs">Período de pago *</span></label>
+        <select class="select select-bordered w-full" formControlName="kind">
+          @for (k of KIND_OPTIONS; track k.value) {
+            <option [value]="k.value">{{ k.label }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Servicio * -->
+      <div class="form-control md:col-span-2">
+        <label class="label py-0"><span class="label-text text-xs">Servicio *</span></label>
+        <select class="select select-bordered w-full" formControlName="service">
+          <option value="">— Seleccionar servicio —</option>
+          @for (s of ListServices(); track s.id) {
+            <option [value]="s.id">{{ localeService.displayI18n(s.longName_i18n, s.longName) }} · {{ s.country?.countryName }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- País * -->
+      <div class="form-control md:col-span-2">
+        <label class="label py-0"><span class="label-text text-xs">País *</span></label>
+        <select class="select select-bordered w-full" formControlName="country">
+          <option value="">— Seleccionar país —</option>
+          @for (c of ListCountries(); track c.id) {
+            <option [value]="c.id">{{ c.countryName }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Límite dispositivos * -->
+      <div class="form-control">
+        <label class="label py-0"><span class="label-text text-xs">Límite de dispositivos *</span></label>
+        <input class="input input-bordered w-full" type="number" min="1" formControlName="limitDevices" />
+      </div>
+
+      <!-- ── VPN Mode ── -->
+      @if (isVpnEdit()) {
+        <div class="form-control md:col-span-2">
+          <label class="label py-0"><span class="label-text text-xs font-semibold">Modo VPN</span></label>
+          <div class="flex gap-3">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="radio" class="radio radio-primary radio-sm" formControlName="vpnMode" value="by_device" />
+              <span class="text-sm">Por dispositivo <span class="opacity-50">(1 credencial = 1 dispositivo)</span></span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="radio" class="radio radio-secondary radio-sm" formControlName="vpnMode" value="by_data" />
+              <span class="text-sm">Por datos <span class="opacity-50">(1 credencial = múltiples dispositivos, límite GB)</span></span>
+            </label>
+          </div>
+        </div>
+
+        @if (vpnModeEdit() === 'by_data') {
+          <div class="form-control">
+            <label class="label py-0"><span class="label-text text-xs">Límite de datos (GB)</span></label>
+            <input class="input input-bordered w-full" type="number" min="0" step="0.5"
+                   formControlName="dataLimitGB" placeholder="0 = ilimitado" />
+          </div>
+          <div class="form-control">
+            <label class="label py-0"><span class="label-text text-xs">Período de reset de datos</span></label>
+            <select class="select select-bordered w-full" formControlName="dataLimitPeriod">
+              @for (p of VPN_PERIOD_OPTIONS; track p.value) {
+                <option [value]="p.value">{{ p.label }}</option>
+              }
+            </select>
+          </div>
+        }
+      }
+
+      <!-- ── Credenciales del servicio ── -->
+      <div class="divider md:col-span-2 my-1 text-xs opacity-50">Credenciales de acceso al servicio (opcional)</div>
+      <div class="form-control">
+        <label class="label py-0"><span class="label-text text-xs">Usuario del servicio</span></label>
+        <input class="input input-bordered w-full" formControlName="userNameService" placeholder="usuario@servicio.com" />
+      </div>
+      <div class="form-control">
+        <label class="label py-0"><span class="label-text text-xs">Contraseña del servicio</span></label>
+        <input class="input input-bordered w-full" type="password" formControlName="passwordService" placeholder="••••••••" autocomplete="new-password" />
+      </div>
+      <div class="form-control md:col-span-2">
+        <label class="label py-0"><span class="label-text text-xs">Código de acceso</span></label>
+        <input class="input input-bordered w-full" formControlName="codeService" placeholder="Código, PIN o token (opcional)" />
+      </div>
+
+      <!-- ── Descripción (i18n) ── -->
+      <div class="form-control md:col-span-2">
+        <label class="label py-0"><span class="label-text text-xs font-semibold">Descripción</span></label>
+        @for (lang of activeLangs(); track lang.code) {
+          <div class="flex items-start gap-2 mb-1">
+            <span class="badge badge-ghost badge-sm w-8 text-center shrink-0 mt-2">{{ lang.code }}</span>
+            <textarea class="textarea textarea-bordered w-full" rows="2"
+                      [value]="i18nEdit()['description']?.[lang.code] ?? ''"
+                      (input)="setI18nEdit('description', lang.code, $any($event.target).value)"></textarea>
+          </div>
+        }
+      </div>
+
+      <!-- ── Características (i18n) ── -->
+      <div class="form-control md:col-span-2">
+        <label class="label py-0">
+          <span class="label-text text-xs font-semibold">Características</span>
+          <span class="label-text-alt opacity-50">separadas por coma</span>
+        </label>
+        @for (lang of activeLangs(); track lang.code) {
+          <div class="flex items-start gap-2 mb-1">
+            <span class="badge badge-ghost badge-sm w-8 text-center shrink-0 mt-2">{{ lang.code }}</span>
+            <textarea class="textarea textarea-bordered w-full" rows="2"
+                      [value]="i18nEdit()['features']?.[lang.code] ?? ''"
+                      (input)="setI18nEdit('features', lang.code, $any($event.target).value)"></textarea>
+          </div>
+        }
+      </div>
+
+      <!-- Toggles -->
+      <label class="label cursor-pointer justify-start gap-3">
+        <input type="checkbox" class="toggle toggle-success toggle-sm" formControlName="active" />
+        <span class="label-text">Activo</span>
+      </label>
+      <label class="label cursor-pointer justify-start gap-3">
+        <input type="checkbox" class="toggle toggle-primary toggle-sm" formControlName="visible" />
+        <span class="label-text">Visible para clientes</span>
+      </label>
+      <label class="label cursor-pointer justify-start gap-3">
+        <input type="checkbox" class="toggle toggle-secondary toggle-sm" formControlName="global" />
+        <span class="label-text">Global</span>
+      </label>
+      <label class="label cursor-pointer justify-start gap-3">
+        <input type="checkbox" class="toggle toggle-accent toggle-sm" formControlName="main" />
+        <span class="label-text">Plan principal</span>
+      </label>
+
+      @if (hasError()) {
+        <div class="alert alert-error md:col-span-2 py-2 text-sm">{{ hasError() }}</div>
+      }
+
+      <div class="modal-action md:col-span-2">
+        <button class="btn btn-ghost" type="button"
+          onclick="document.getElementById('edit_plan')?.close()">Cancelar</button>
+        <button class="btn btn-primary" type="submit" [disabled]="editForm.invalid || !editTitleValid() || saving()">
+          @if (saving()) { <span class="loading loading-spinner loading-sm"></span> }
+          Guardar cambios
+        </button>
+      </div>
+    </form>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
+</dialog>
+
+
+<!-- ====== MODAL: Eliminar plan ====== -->
+<dialog id="delete_plan" class="modal">
+  <div class="modal-box">
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button>
+    </form>
+    <h3 class="text-lg font-bold text-error">Eliminar plan</h3>
+    <p class="py-2 text-sm">
+      ¿Deseas eliminar <strong>{{ editItem() ? planDisplayName(editItem()!) : '' }}</strong>? Esta acción es permanente.
+    </p>
+    <div class="modal-action">
+      <button class="btn btn-ghost btn-sm" type="button"
+              onclick="document.getElementById('delete_plan')?.close()">Cancelar</button>
+      <button class="btn btn-error btn-sm" type="button"
+              (click)="confirmDelete()" [disabled]="deleting()">
+        @if (deleting()) { <span class="loading loading-spinner loading-xs"></span> }
+        Eliminar definitivamente
+      </button>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
+</dialog>

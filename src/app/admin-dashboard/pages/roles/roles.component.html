@@ -1,0 +1,353 @@
+<section class="mt-4 space-y-5">
+
+  <!-- ── Toast ────────────────────────────────────────────────────────────── -->
+  @if (toast()) {
+    <div class="toast toast-top toast-end z-[200]">
+      <div [class]="toast()!.ok ? 'alert alert-success' : 'alert alert-error'">
+        <span>{{ toast()!.msg }}</span>
+      </div>
+    </div>
+  }
+
+  <!-- ── Header ───────────────────────────────────────────────────────────── -->
+  <div class="flex flex-wrap items-center justify-between gap-3 rounded-2xl border bg-base-100 p-5 shadow-sm">
+    <div>
+      <h1 class="text-2xl font-extrabold tracking-tight">Roles y Permisos</h1>
+      <p class="mt-1 text-sm text-base-content/60">
+        Define roles y controla qué acciones (ver, crear, editar, eliminar) puede ejecutar cada uno en cada sección.
+      </p>
+    </div>
+    <div class="flex items-center gap-2">
+      <button class="btn btn-outline btn-sm gap-1.5" type="button"
+              (click)="syncRoutes()" [disabled]="syncing()"
+              title="Agrega al mapa de permisos de cada rol las rutas que aún no tenga registradas (con todos los permisos en false). Las rutas ya configuradas no se modifican.">
+        @if (syncing()) {
+          <span class="loading loading-spinner loading-xs"></span>
+        } @else {
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+        }
+        Sincronizar rutas
+      </button>
+      <button class="btn btn-primary gap-2" (click)="openCreate()">
+        <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+        </svg>
+        Nuevo rol
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Loading ──────────────────────────────────────────────────────────── -->
+  @if (loading()) {
+    <div class="rounded-2xl border bg-base-100 p-12 text-center shadow-sm">
+      <span class="loading loading-spinner loading-lg text-primary"></span>
+      <p class="mt-3 text-sm text-base-content/50">Cargando roles…</p>
+    </div>
+  } @else {
+
+  <!-- ── Roles cards ──────────────────────────────────────────────────────── -->
+  <div class="space-y-3">
+    @for (role of roles(); track role.id) {
+
+      <!-- Card header -->
+      <div class="card bg-base-100 border border-base-200 shadow-sm overflow-hidden">
+        <div class="flex flex-wrap items-center gap-3 px-5 py-4">
+
+          <!-- Badge + name -->
+          <span [class]="badgeClass(role.color) + ' shrink-0'">{{ role.label }}</span>
+          <code class="text-xs bg-base-200 px-2 py-0.5 rounded text-base-content/70">{{ role.name }}</code>
+          @if (role.isSystem) {
+            <span class="badge badge-neutral badge-xs">sistema</span>
+          }
+
+          <!-- Description -->
+          <span class="text-sm text-base-content/60 flex-1 min-w-0 truncate hidden sm:block">
+            {{ role.description || '—' }}
+          </span>
+
+          <!-- Stats chips -->
+          <div class="flex items-center gap-2 text-xs text-base-content/50 shrink-0">
+            <span class="badge badge-ghost gap-1">
+              <svg class="h-3 w-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+              </svg>
+              {{ visibleCount(role) }} rutas
+            </span>
+            <span class="badge badge-ghost gap-1">
+              <svg class="h-3 w-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              {{ actionCount(role) }} permisos
+            </span>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex items-center gap-1 shrink-0">
+            <button class="btn btn-ghost btn-sm gap-1" (click)="toggleExpand(role.id)" title="Ver permisos">
+              <svg class="h-4 w-4 transition-transform duration-200"
+                [class.rotate-180]="expandedRoleId() === role.id"
+                fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+              </svg>
+              Permisos
+            </button>
+            <button class="btn btn-ghost btn-sm" (click)="openEdit(role)" title="Editar">
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+              </svg>
+            </button>
+            @if (!role.isSystem) {
+              <button class="btn btn-ghost btn-sm text-error" (click)="confirmDelete(role)" title="Eliminar">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- ── Expandable permissions matrix ────────────────────────────── -->
+        @if (expandedRoleId() === role.id) {
+          <div class="border-t border-base-200 overflow-x-auto">
+            <table class="table table-xs w-full">
+              <thead>
+                <tr class="bg-base-200/60 text-xs uppercase text-base-content/50">
+                  <th class="w-44 min-w-[11rem]">Sección</th>
+                  @for (action of allActions; track action) {
+                    <th class="text-center w-20">{{ actionLabels[action] }}</th>
+                  }
+                </tr>
+              </thead>
+              <tbody>
+                @for (grp of routeGroups(); track grp.group) {
+                  <!-- Group label row -->
+                  <tr class="bg-base-200/30">
+                    <td colspan="5" class="py-1 px-3 text-[10px] font-semibold uppercase tracking-widest text-base-content/40">
+                      {{ grp.group }}
+                    </td>
+                  </tr>
+                  @for (route of grp.routes; track route.key) {
+                    <tr class="hover">
+                      <td class="pl-5 text-sm font-medium">{{ route.label }}</td>
+                      @for (action of allActions; track action) {
+                        <td class="text-center">
+                          @if (isActionEnabled(route.key, action)) {
+                            @if (role.routePermissions[route.key]?.[action]) {
+                              <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-success/15 text-success">
+                                <svg class="h-3 w-3" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                                </svg>
+                              </span>
+                            } @else {
+                              <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-base-300/50 text-base-content/20">
+                                <svg class="h-3 w-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                              </span>
+                            }
+                          } @else {
+                            <span class="text-base-content/15 text-xs">—</span>
+                          }
+                        </td>
+                      }
+                    </tr>
+                  }
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+
+    } @empty {
+      <div class="card bg-base-100 border border-base-200 p-12 text-center text-base-content/40 shadow-sm">
+        No hay roles registrados.
+      </div>
+    }
+  </div>
+
+  } <!-- end @if loading -->
+
+  <!-- ═══════════════════════════════════════════════════════ MODAL CREATE / EDIT -->
+  @if (showModal()) {
+    <div class="modal modal-open">
+      <div class="modal-box w-11/12 max-w-4xl max-h-[90vh] overflow-hidden flex flex-col p-0">
+
+        <!-- Modal header -->
+        <div class="flex items-center justify-between px-6 py-4 border-b border-base-200 shrink-0">
+          <h3 class="font-bold text-lg">
+            {{ modalMode() === 'create' ? 'Nuevo rol' : 'Editar rol: ' + editingRole()?.label }}
+          </h3>
+          <button class="btn btn-sm btn-circle btn-ghost" (click)="closeModal()">✕</button>
+        </div>
+
+        <!-- Modal body — scrollable -->
+        <div class="flex-1 overflow-y-auto px-6 py-5">
+          <form [formGroup]="form" (ngSubmit)="save()" id="roleForm" class="space-y-5">
+
+            <!-- Row: name + label -->
+            <div class="grid gap-4 sm:grid-cols-2">
+              <div class="form-control">
+                <label class="label"><span class="label-text text-xs">Nombre interno <span class="text-error">*</span></span></label>
+                <input class="input input-bordered input-sm font-mono" formControlName="name"
+                  placeholder="soporte_nivel2"
+                  [class.input-disabled]="modalMode() === 'edit'" />
+                @if (form.get('name')?.touched && form.get('name')?.invalid) {
+                  <label class="label"><span class="label-text-alt text-error">Solo minúsculas, números y guion bajo.</span></label>
+                }
+                @if (modalMode() === 'edit') {
+                  <label class="label"><span class="label-text-alt text-base-content/40">El nombre es inmutable.</span></label>
+                }
+              </div>
+              <div class="form-control">
+                <label class="label"><span class="label-text text-xs">Etiqueta visible <span class="text-error">*</span></span></label>
+                <input class="input input-bordered input-sm" formControlName="label" placeholder="Soporte Nivel 2" />
+              </div>
+            </div>
+
+            <!-- Description -->
+            <div class="form-control">
+              <label class="label"><span class="label-text text-xs">Descripción</span></label>
+              <input class="input input-bordered input-sm" formControlName="description"
+                placeholder="Breve descripción del rol…" />
+            </div>
+
+            <!-- Color picker -->
+            <div class="form-control">
+              <label class="label"><span class="label-text text-xs">Color de badge</span></label>
+              <div class="flex flex-wrap gap-2">
+                @for (c of badgeColors; track c) {
+                  <label class="cursor-pointer">
+                    <input type="radio" class="sr-only" formControlName="color" [value]="c" />
+                    <span [class]="'badge badge-' + c + (form.value.color === c ? ' ring-2 ring-offset-1 ring-base-content' : '')">
+                      {{ c }}
+                    </span>
+                  </label>
+                }
+              </div>
+            </div>
+
+            <!-- ── Permissions matrix ─────────────────────────────────────── -->
+            <div class="form-control">
+              <div class="flex items-center justify-between mb-3">
+                <span class="label-text font-semibold">Matriz de permisos</span>
+                <div class="flex gap-2">
+                  <button type="button" class="btn btn-xs btn-ghost" (click)="grantAll()">Otorgar todo</button>
+                  <button type="button" class="btn btn-xs btn-ghost text-error" (click)="revokeAll()">Revocar todo</button>
+                </div>
+              </div>
+
+              <div class="rounded-xl border border-base-300 overflow-hidden">
+                <table class="table table-xs w-full">
+                  <thead>
+                    <tr class="bg-base-200 text-xs uppercase text-base-content/50">
+                      <th class="w-44 min-w-[11rem]">Sección</th>
+                      @for (action of allActions; track action) {
+                        <th class="text-center w-20">{{ actionLabels[action] }}</th>
+                      }
+                      <th class="text-center w-16">Todos</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (grp of routeGroups(); track grp.group) {
+
+                      <!-- Group header row -->
+                      <tr class="bg-base-200/40">
+                        <td class="py-1.5 pl-3 text-[10px] font-semibold uppercase tracking-widest text-base-content/50">
+                          {{ grp.group }}
+                        </td>
+                        @for (action of allActions; track action) {
+                          <td></td>
+                        }
+                        <td class="text-center py-1.5">
+                          <!-- Group toggle -->
+                          <input type="checkbox" class="checkbox checkbox-xs checkbox-primary"
+                            [checked]="isGroupFullyGranted(grp.routes)"
+                            [indeterminate]="isGroupPartial(grp.routes)"
+                            (change)="isGroupFullyGranted(grp.routes) ? revokeGroup(grp.routes) : grantGroup(grp.routes)" />
+                        </td>
+                      </tr>
+
+                      @for (route of grp.routes; track route.key) {
+                        <tr class="hover">
+                          <td class="pl-6 text-sm">{{ route.label }}</td>
+                          @for (action of allActions; track action) {
+                            <td class="text-center">
+                              @if (isActionEnabled(route.key, action)) {
+                                <input type="checkbox" class="checkbox checkbox-xs"
+                                  [class]="action === 'delete' ? 'checkbox-error' : action === 'view' ? 'checkbox-primary' : 'checkbox-success'"
+                                  [checked]="perm(route.key)[action]"
+                                  (change)="toggleAction(route.key, action)" />
+                              } @else {
+                                <span class="text-base-content/20 text-sm">—</span>
+                              }
+                            </td>
+                          }
+                          <!-- Row toggle all -->
+                          <td class="text-center">
+                            <input type="checkbox" class="checkbox checkbox-xs checkbox-primary"
+                              [checked]="isRouteGranted(route.key)"
+                              [indeterminate]="isRoutePartial(route.key)"
+                              (change)="isRouteGranted(route.key) ? revokeRoute(route.key) : grantRoute(route.key)" />
+                          </td>
+                        </tr>
+                      }
+                    }
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Legend -->
+              <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-xs text-base-content/50">
+                <span class="flex items-center gap-1">
+                  <span class="inline-block w-3 h-3 rounded-sm border-2 border-primary"></span>Ver — acceso a la sección
+                </span>
+                <span class="flex items-center gap-1">
+                  <span class="inline-block w-3 h-3 rounded-sm border-2 border-success"></span>Crear / Editar — operaciones de escritura
+                </span>
+                <span class="flex items-center gap-1">
+                  <span class="inline-block w-3 h-3 rounded-sm border-2 border-error"></span>Eliminar — operación destructiva
+                </span>
+                <span class="flex items-center gap-1">— no aplica para esta sección</span>
+              </div>
+            </div>
+
+          </form>
+        </div>
+
+        <!-- Modal footer -->
+        <div class="flex items-center justify-end gap-2 px-6 py-4 border-t border-base-200 shrink-0 bg-base-100">
+          <button type="button" class="btn btn-ghost" (click)="closeModal()">Cancelar</button>
+          <button type="submit" form="roleForm" class="btn btn-primary"
+            [disabled]="form.invalid || saving()">
+            @if (saving()) { <span class="loading loading-spinner loading-sm"></span> }
+            {{ modalMode() === 'create' ? 'Crear rol' : 'Guardar cambios' }}
+          </button>
+        </div>
+
+      </div>
+      <div class="modal-backdrop bg-black/40" (click)="closeModal()"></div>
+    </div>
+  }
+
+  <!-- ═══════════════════════════════════════════════════════ DELETE CONFIRM -->
+  @if (deleteTarget()) {
+    <div class="modal modal-open">
+      <div class="modal-box max-w-sm">
+        <h3 class="font-bold text-lg">Eliminar rol</h3>
+        <p class="py-4 text-sm text-base-content/70">
+          ¿Eliminar el rol <strong>{{ deleteTarget()!.label }}</strong>?
+          Los usuarios con este rol perderán acceso al panel hasta que se les asigne otro.
+        </p>
+        <div class="modal-action">
+          <button class="btn btn-ghost" (click)="cancelDelete()">Cancelar</button>
+          <button class="btn btn-error" (click)="doDelete()">Eliminar</button>
+        </div>
+      </div>
+      <div class="modal-backdrop bg-black/40" (click)="cancelDelete()"></div>
+    </div>
+  }
+
+</section>

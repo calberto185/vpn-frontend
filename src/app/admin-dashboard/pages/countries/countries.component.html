@@ -1,34 +1,49 @@
-<!-- ====== Países: Gestión ====== -->
+<!-- Toast -->
+@if (toast()) {
+  <div class="toast toast-top toast-end z-50">
+    <div class="alert" [class.alert-success]="toast()!.ok" [class.alert-error]="!toast()!.ok">
+      <span>{{ toast()!.msg }}</span>
+    </div>
+  </div>
+}
 
 <!-- Stats -->
 <section class="container mx-auto max-w-7xl px-2 md:px-4 mt-4">
   <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+
     <div class="stat bg-base-100/80 border rounded-xl shadow-sm">
       <div class="stat-figure text-primary">
-        <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path d="M3 6h18M3 12h18M3 18h18"/>
+        </svg>
       </div>
       <div class="stat-title">Países</div>
-      <div class="stat-value text-2xl">{{this.ListCountries().length}}</div>
-      <div class="stat-desc">desde modelo</div>
+      <div class="stat-value text-2xl">{{ totalCountries() }}</div>
+      <div class="stat-desc">registrados</div>
     </div>
 
     <div class="stat bg-base-100/80 border rounded-xl shadow-sm">
       <div class="stat-figure text-success">
-        <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>
+        <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path d="M5 13l4 4L19 7"/>
+        </svg>
       </div>
       <div class="stat-title">Activos</div>
-      <div class="stat-value text-2xl">0</div>
+      <div class="stat-value text-2xl">{{ activeCountries() }}</div>
       <div class="stat-desc">en producción</div>
     </div>
 
     <div class="stat bg-base-100/80 border rounded-xl shadow-sm">
       <div class="stat-figure text-warning">
-        <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v5M12 16h.01"/></svg>
+        <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><path d="M12 8v5M12 16h.01"/>
+        </svg>
       </div>
       <div class="stat-title">Inactivos</div>
-      <div class="stat-value text-2xl">1</div>
-      <div class="stat-desc">ocultos</div>
+      <div class="stat-value text-2xl">{{ inactiveCountries() }}</div>
+      <div class="stat-desc">deshabilitados</div>
     </div>
+
   </div>
 </section>
 
@@ -36,53 +51,44 @@
 <section class="container mx-auto max-w-7xl px-2 md:px-4 mt-4">
   <div class="bg-base-100 border rounded-xl p-3 md:p-4 shadow-sm">
     <div class="flex flex-wrap items-center gap-3">
-      <label class="input input-bordered flex items-center gap-2 w-full sm:w-[28rem]" aria-label="Buscar países">
-        <svg class="h-5 w-5 opacity-70" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-        <input id="search-countries" type="text" placeholder="Buscar por país, códigos, moneda o prefijo telefónico" />
+
+      <!-- Search -->
+      <label class="input input-bordered flex items-center gap-2 w-full sm:w-72" aria-label="Buscar países">
+        <svg class="h-4 w-4 opacity-60" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+        </svg>
+        <input type="text" class="grow text-sm" placeholder="Buscar por nombre, código, idioma…"
+               [value]="searchQuery()"
+               (input)="searchQuery.set($any($event.target).value)" />
+        @if (searchQuery()) {
+          <button class="btn btn-ghost btn-xs p-0 h-5 w-5 min-h-0" (click)="searchQuery.set('')">✕</button>
+        }
       </label>
 
-      <div class="dropdown">
-        <button tabindex="0" class="btn btn-sm md:btn-md">Estado</button>
-        <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-56 z-[60]">
-          <li><a>Todos</a></li>
-          <li><a>Activos</a></li>
-          <li><a>Inactivos</a></li>
-        </ul>
-      </div>
+      <!-- Active filter -->
+      <select class="select select-bordered select-sm"
+              [value]="filterActive()"
+              (change)="filterActive.set($any($event.target).value)">
+        <option value="">Todos</option>
+        <option value="active">Activos</option>
+        <option value="inactive">Inactivos</option>
+      </select>
 
-      <div class="dropdown">
-        <button tabindex="0" class="btn btn-ghost btn-sm md:btn-md">Orden</button>
-        <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-48 z-[60]">
-          <li><a>Recientes</a></li>
-          <li><a>Alfabético</a></li>
-          <li><a>Código país</a></li>
-          <li><a>Moneda</a></li>
-        </ul>
-      </div>
+      <span class="text-xs text-base-content/50">
+        {{ filteredCountries().length }} / {{ totalCountries() }}
+      </span>
 
-      <div class="ml-auto flex items-center gap-2">
-        <div class="tooltip" data-tip="Seleccionar todo">
-          <input type="checkbox" class="checkbox checkbox-sm" aria-label="Seleccionar todo" />
+      @if (canCreate()) {
+        <div class="ml-auto">
+          <button class="btn btn-primary btn-sm md:btn-md" type="button"
+                  onclick="document.getElementById('add_country')?.showModal()">
+            <svg class="h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path d="M12 5v14M5 12h14"/>
+            </svg>
+            Agregar país
+          </button>
         </div>
-
-        <div class="dropdown dropdown-end">
-          <button tabindex="0" class="btn btn-ghost btn-sm md:btn-md">Acciones</button>
-          <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-64 z-[60]">
-            <li><a>Activar</a></li>
-            <li><a>Desactivar</a></li>
-            <li><a>Exportar CSV</a></li>
-            <li><a class="text-error">Eliminar</a></li>
-          </ul>
-        </div>
-
-        <!-- Botón Agregar país -->
-        <button class="btn btn-primary btn-sm md:btn-md" type="button"
-                onclick="document.getElementById('add_country')?.showModal()">
-          <svg class="h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-               stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-          Agregar país
-        </button>
-      </div>
+      }
     </div>
   </div>
 </section>
@@ -93,98 +99,80 @@
     <table class="table table-sm w-full">
       <thead>
         <tr>
-          <th class="w-8">
-            <input type="checkbox" class="checkbox checkbox-xs" aria-label="Seleccionar todas" />
-          </th>
           <th>País</th>
           <th class="hidden xl:table-cell">Códigos</th>
           <th class="hidden xl:table-cell">Moneda</th>
           <th>Teléfono</th>
           <th>Estado</th>
-          <th class="hidden 2xl:table-cell">Formato</th>
-          <th class="text-right w-48">Acciones</th>
+          <th class="hidden 2xl:table-cell">Creado</th>
+          <th class="text-right w-36">Acciones</th>
         </tr>
       </thead>
       <tbody>
-        @for (c of this.ListCountries(); track c.id) {
+        @if (filteredCountries().length === 0) {
+          <tr><td colspan="7" class="text-center py-12 opacity-50">
+            {{ ListCountries().length === 0 ? 'No hay países registrados.' : 'Sin resultados para la búsqueda.' }}
+          </td></tr>
+        }
+        @for (c of filteredCountries(); track c.id) {
           <tr class="hover">
-            <!-- Checkbox -->
-            <td>
-              <input type="checkbox" class="checkbox checkbox-xs" aria-label="Seleccionar " />
-            </td>
-
-            <!-- País -->
             <td>
               <div class="flex items-center gap-3">
-                <div class="avatar placeholder">
-                  <div class="bg-primary/10 text-primary w-10 h-10 rounded-xl flex items-center justify-center text-xl">
-                    {{ c.flag }}
-                  </div>
+                <div class="w-10 h-10 rounded-xl bg-primary/10 text-2xl flex items-center justify-center shrink-0">
+                  {{ c.flag }}
                 </div>
                 <div>
                   <div class="font-medium leading-tight">{{ c.countryName }}</div>
-                  <div class="text-[11px] opacity-70 break-all">
-                    UUID: {{ c.id }}
-                  </div>
+                  <div class="text-[11px] opacity-60">{{ c.id }}</div>
                 </div>
               </div>
             </td>
-
-            <!-- Códigos -->
-            <td class="hidden xl:table-cell">
-              <div class="leading-tight text-[12px]">
-                <div><span class="opacity-70">countryCode:</span> {{ c.countryCode }}</div>
-                <div><span class="opacity-70">language:</span> {{ c.languageName }} ({{ c.languageCode }})</div>
+            <td class="hidden xl:table-cell text-xs leading-tight">
+              <div><span class="opacity-60">País:</span> {{ c.countryCode }}</div>
+              <div><span class="opacity-60">Idioma:</span> {{ c.languageName }} ({{ c.languageCode }})</div>
+            </td>
+            <td class="hidden xl:table-cell text-sm">
+              <div>{{ c.currencyName }}</div>
+              <div class="text-[11px] opacity-60">{{ c.currencyCode }} · {{ c.currencySymbol }}</div>
+            </td>
+            <td class="tabular-nums font-medium text-sm">{{ c.phoneCode }}</td>
+            <td>
+              <div class="flex flex-col gap-1">
+                @if (c.isActive) {
+                  <span class="badge badge-success badge-sm">Activo</span>
+                } @else {
+                  <span class="badge badge-ghost badge-sm">Inactivo</span>
+                }
+                @if (c.visible) {
+                  <span class="badge badge-info badge-sm">Visible</span>
+                }
               </div>
             </td>
-
-            <!-- Moneda -->
-            <td class="hidden xl:table-cell">
-              <div class="leading-tight">
-                <div class="font-normal">{{ c.currencyName }}</div>
-                <div class="text-[11px] opacity-70">
-                  {{ c.currencyCode }} · símbolo: {{ c.currencySymbol }}
-                </div>
-              </div>
+            <td class="hidden 2xl:table-cell text-xs opacity-60">
+              {{ c.createdAt | date:'dd MMM yyyy' }}
             </td>
-
-            <!-- Teléfono -->
-            <td>
-              <div class="tabular-nums font-medium">{{ c.phoneCode }}</div>
-            </td>
-
-            <!-- Estado -->
-            <td>
-              @if (c.isActive) {
-                <span class="badge badge-success">Activo</span>
-              } @else {
-                <span class="badge badge-ghost">Inactivo</span>
-              }
-            </td>
-
-            <!-- Formato moneda -->
-            <td class="hidden 2xl:table-cell">
-              <div class="text-[11px] opacity-80 break-all">{{ c.currencyFormat }}</div>
-            </td>
-
-            <!-- Acciones -->
             <td class="text-right">
-              <div class="flex items-center justify-end gap-1.5">
-                <div class="dropdown dropdown-end">
-                  <button class="btn btn-ghost btn-xs">Gestionar</button>
-                  <ul class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-48 z-[60]">
-                    <!-- <li><a (click)="onView(c)">Ver</a></li>
-                    <li><a (click)="onEdit(c)">Editar</a></li>
-                    <li><a (click)="onToggleActive(c)">Activar/Desactivar</a></li> -->
-                  </ul>
-                </div>
-                <!-- <button class="btn btn-ghost btn-xs text-error" type="button" (click)="onDelete(c)">
-                  <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
-                       viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path d="M3 6h18"/><path d="M8 6v14a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V6"/>
-                    <path d="M10 11v6M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
+              <div class="flex items-center justify-end gap-1">
+                <button class="btn btn-ghost btn-xs" type="button" (click)="openViewModal(c)" title="Ver">
+                  <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/>
                   </svg>
-                </button> -->
+                </button>
+                @if (canUpdate()) {
+                  <button class="btn btn-ghost btn-xs" type="button" (click)="openEditModal(c)" title="Editar">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
+                    </svg>
+                  </button>
+                }
+                @if (canDelete()) {
+                  <button class="btn btn-ghost btn-xs text-error" type="button" (click)="openDeleteModal(c)" title="Eliminar">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path d="M3 6h18"/><path d="M8 6v14a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V6"/>
+                      <path d="M10 11v6M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
+                    </svg>
+                  </button>
+                }
               </div>
             </td>
           </tr>
@@ -192,501 +180,270 @@
       </tbody>
     </table>
   </div>
-
-  <!-- Paginación -->
-  <div class="mt-3 flex items-center justify-between">
-    <p class="text-sm opacity-70">
-      Mostrando 1–{{ ListCountries().length }} de {{ ListCountries().length }}
-    </p>
-    <nav class="join">
-      <button class="btn btn-xs join-item" disabled>«</button>
-      <button class="btn btn-xs join-item btn-active" aria-current="page">1</button>
-      <button class="btn btn-xs join-item" disabled>»</button>
-    </nav>
-  </div>
+  <div class="mt-2 text-xs opacity-50 pl-1">{{ totalCountries() }} país/es registrado(s)</div>
 </section>
 
 
-<!-- ====== MODALES ====== -->
-
-<!-- Ver país -->
+<!-- ====== MODAL: Ver país ====== -->
 <dialog id="view_country" class="modal">
-  <div class="modal-box w-11/12 max-w-4xl">
-    <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button></form>
-    <h3 class="text-lg font-bold">Detalle del país</h3>
-
-    <div class="grid gap-4 md:grid-cols-3 mt-3">
-      <div class="md:col-span-2 card border bg-base-200/60">
-        <div class="card-body p-4">
-          <h4 class="card-title text-sm">Información</h4>
-          <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-            <span class="opacity-70">OID:</span><span class="break-all">6898b65ec882eb1f46e43934</span>
-            <span class="opacity-70">País:</span><span>Argentina 🇦🇷</span>
-            <span class="opacity-70">countryCode:</span><span>ar</span>
-            <span class="opacity-70">Idioma:</span><span>Spanish (es)</span>
-            <span class="opacity-70">Moneda:</span><span>Argentine Peso (ARS)</span>
-            <span class="opacity-70">Símbolo:</span><span>$</span>
-            <span class="opacity-70">Formato:</span><span>###,###,###.##</span>
-            <span class="opacity-70">Teléfono:</span><span>+54</span>
-            <span class="opacity-70">Activo:</span><span>No</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="card border bg-base-200/60">
-        <div class="card-body p-4">
-          <h4 class="card-title text-sm">Estado</h4>
-          <div class="flex flex-wrap gap-2">
-            <span class="badge badge-ghost">Inactivo</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="modal-action">
-      <button class="btn" type="button" onclick="document.getElementById('edit_country')?.showModal()">Editar</button>
-      <button class="btn btn-error btn-outline" type="button" onclick="document.getElementById('delete_country')?.showModal()">Eliminar</button>
-    </div>
-  </div>
-  <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
-</dialog>
-
-
-
-
-
-<!-- Agregar país -->
-<dialog id="add_country" class="modal">
-  <div class="modal-box max-w-2xl">
-
-    <!-- Botón de cierre -->
+  <div class="modal-box w-11/12 max-w-2xl">
     <form method="dialog">
       <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button>
     </form>
+    <h3 class="text-lg font-bold mb-4">Detalle del país</h3>
 
-    <!-- Encabezado -->
-    <h3 class="text-lg font-bold">Nuevo Pais</h3>
-    <p class="text-sm opacity-70 mb-3">Registra un pais y asigna su estado inicial.</p>
-
-
-
-
-
-    <!-- Formulario reactivo -->
-<form
-  class="grid gap-3 md:grid-cols-2"
-  [formGroup]="userForm"
-  (ngSubmit)="onSubmit()"
-  novalidate
-  autocomplete="on"
->
-  <!-- countryName - Nombre de País -->
-  <div class="w-full md:col-span-1">
-    <label for="countryName" class="block text-sm font-medium text-gray-700 mb-1">
-      Nombre del País
-    </label>
-    <div
-      class="flex items-center border border-gray-300 rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-blue-500 bg-white"
-    >
-      <!-- 🌍 -->
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0"
-        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-        <path stroke-linecap="round" stroke-linejoin="round"
-          d="M12 21a9 9 0 100-18 9 9 0 000 18zm0 0a9 9 0 01-9-9h3a6 6 0 016-6V3a9 9 0 019 9h-3a6 6 0 01-6 6v3z" />
-      </svg>
-      <input
-        type="text"
-        placeholder="Nombre"
-        formControlName="countryName"
-        required
-        class="w-full outline-none text-gray-700 placeholder-gray-400"
-      />
-    </div>
-    @if (userForm.get('countryName')?.touched && userForm.get('countryName')?.invalid) {
-      <p class="text-red-500 text-sm mt-1">Ingrese el nombre del país.</p>
+    @if (viewItem(); as c) {
+      <div class="flex items-center gap-3 mb-4">
+        <span class="text-4xl">{{ c.flag }}</span>
+        <div>
+          <h4 class="text-xl font-bold">{{ c.countryName }}</h4>
+          <span class="text-xs font-mono opacity-60">{{ c.id }}</span>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+        <span class="opacity-60">Código país:</span><span>{{ c.countryCode }}</span>
+        <span class="opacity-60">Código teléfono:</span><span>{{ c.phoneCode }}</span>
+        <span class="opacity-60">Idioma:</span><span>{{ c.languageName }} ({{ c.languageCode }})</span>
+        <span class="opacity-60">Moneda:</span><span>{{ c.currencyName }} ({{ c.currencyCode }})</span>
+        <span class="opacity-60">Símbolo:</span><span>{{ c.currencySymbol }}</span>
+        <span class="opacity-60">Formato:</span><span class="font-mono text-xs">{{ c.currencyFormat }}</span>
+        <span class="opacity-60">Continente:</span><span>{{ c.continent.name || '—' }}</span>
+        <span class="opacity-60">Estado:</span>
+        <span>
+          @if (c.isActive) { <span class="badge badge-success badge-sm">Activo</span> }
+          @else { <span class="badge badge-ghost badge-sm">Inactivo</span> }
+          @if (c.visible) { <span class="badge badge-info badge-sm ml-1">Visible</span> }
+        </span>
+        <span class="opacity-60">Creado:</span><span>{{ c.createdAt | date:'dd MMM yyyy · HH:mm' }}</span>
+      </div>
     }
-  </div>
-
-  <!-- countryCode -->
-  <div class="w-full md:col-span-1">
-    <label for="countryCode" class="block text-sm font-medium text-gray-700 mb-1">
-      Código del País
-    </label>
-    <div
-      class="flex items-center border border-gray-300 rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-blue-500 bg-white"
-    >
-      <!-- 🔤 -->
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0"
-        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-        <path stroke-linecap="round" stroke-linejoin="round"
-          d="M2.25 6.75h19.5M2.25 12h19.5M2.25 17.25h19.5" />
-      </svg>
-      <input
-        type="text"
-        placeholder="Código de País"
-        formControlName="countryCode"
-        required
-        class="w-full outline-none text-gray-700 placeholder-gray-400"
-      />
-    </div>
-    @if (userForm.get('countryCode')?.touched && userForm.get('countryCode')?.invalid) {
-      <p class="text-red-500 text-sm mt-1">Ingrese el Código del país.</p>
-    }
-  </div>
-
-  <!-- languageName -->
-  <div class="w-full md:col-span-1">
-    <label for="languageName" class="block text-sm font-medium text-gray-700 mb-1">
-      Nombre del Idioma
-    </label>
-    <div
-      class="flex items-center border border-gray-300 rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-blue-500 bg-white"
-    >
-      <!-- 💬 -->
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0"
-        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-        <path stroke-linecap="round" stroke-linejoin="round"
-          d="M8.25 9.75h7.5m-7.5 3h4.5M2.25 12A9.75 9.75 0 0112 2.25a9.75 9.75 0 019.75 9.75 9.75 9.75 0 01-9.75 9.75A9.75 9.75 0 012.25 12z" />
-      </svg>
-      <input
-        type="text"
-        placeholder="Nombre del Idioma"
-        formControlName="languageName"
-        required
-        class="w-full outline-none text-gray-700 placeholder-gray-400"
-      />
-    </div>
-    @if (userForm.get('languageName')?.touched && userForm.get('languageName')?.invalid) {
-      <p class="text-red-500 text-sm mt-1">Ingrese el Nombre del Idioma.</p>
-    }
-  </div>
-
-  <!-- languageCode -->
-  <div class="w-full md:col-span-1">
-    <label for="languageCode" class="block text-sm font-medium text-gray-700 mb-1">
-      Código del Idioma
-    </label>
-    <div
-      class="flex items-center border border-gray-300 rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-blue-500 bg-white"
-    >
-      <!-- 🏷️ -->
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0"
-        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-        <path stroke-linecap="round" stroke-linejoin="round"
-          d="M7.5 2.25h9a2.25 2.25 0 012.25 2.25v15a2.25 2.25 0 01-2.25 2.25h-9A2.25 2.25 0 015.25 19.5V4.5A2.25 2.25 0 017.5 2.25z" />
-      </svg>
-      <input
-        type="text"
-        placeholder="Código del Idioma"
-        formControlName="languageCode"
-        required
-        class="w-full outline-none text-gray-700 placeholder-gray-400"
-      />
-    </div>
-    @if (userForm.get('languageCode')?.touched && userForm.get('languageCode')?.invalid) {
-      <p class="text-red-500 text-sm mt-1">Ingrese el Código del Idioma.</p>
-    }
-  </div>
-
-  <!-- currencyName -->
-  <div class="w-full md:col-span-1">
-    <label for="currencyName" class="block text-sm font-medium text-gray-700 mb-1">
-      Nombre de la Moneda
-    </label>
-    <div
-      class="flex items-center border border-gray-300 rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-blue-500 bg-white"
-    >
-      <!-- 💰 -->
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0"
-        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-        <path stroke-linecap="round" stroke-linejoin="round"
-          d="M12 8.25v7.5m0 0a3.75 3.75 0 100-7.5m0 7.5a3.75 3.75 0 100-7.5m0 0V3m0 18v-3.75" />
-      </svg>
-      <input
-        type="text"
-        placeholder="Nombre de la Moneda"
-        formControlName="currencyName"
-        required
-        class="w-full outline-none text-gray-700 placeholder-gray-400"
-      />
-    </div>
-    @if (userForm.get('currencyName')?.touched && userForm.get('currencyName')?.invalid) {
-      <p class="text-red-500 text-sm mt-1">Ingrese el Nombre de la Moneda.</p>
-    }
-  </div>
-
-  <!-- currencyCode -->
-  <div class="w-full md:col-span-1">
-    <label for="currencyCode" class="block text-sm font-medium text-gray-700 mb-1">
-      Código de la Moneda
-    </label>
-    <div
-      class="flex items-center border border-gray-300 rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-blue-500 bg-white"
-    >
-      <!-- 🪙 -->
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0"
-        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-        <circle cx="12" cy="12" r="9" />
-        <path stroke-linecap="round" stroke-linejoin="round" d="M9 9h6v6H9z" />
-      </svg>
-      <input
-        type="text"
-        placeholder="Código de la Moneda"
-        formControlName="currencyCode"
-        required
-        class="w-full outline-none text-gray-700 placeholder-gray-400"
-      />
-    </div>
-    @if (userForm.get('currencyCode')?.touched && userForm.get('currencyCode')?.invalid) {
-      <p class="text-red-500 text-sm mt-1">Ingrese el Código de la Moneda.</p>
-    }
-  </div>
-
-  <!-- currencySymbol -->
-  <div class="w-full md:col-span-1">
-    <label for="currencySymbol" class="block text-sm font-medium text-gray-700 mb-1">
-      Símbolo de la Moneda
-    </label>
-    <div
-      class="flex items-center border border-gray-300 rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-blue-500 bg-white"
-    >
-      <!-- ₿ -->
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0"
-        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-        <path stroke-linecap="round" stroke-linejoin="round"
-          d="M12 3v18m-3 0h6m-6-9h6m-6-6h6" />
-      </svg>
-      <input
-        type="text"
-        placeholder="Símbolo de la Moneda"
-        formControlName="currencySymbol"
-        required
-        class="w-full outline-none text-gray-700 placeholder-gray-400"
-      />
-    </div>
-    @if (userForm.get('currencySymbol')?.touched && userForm.get('currencySymbol')?.invalid) {
-      <p class="text-red-500 text-sm mt-1">Ingrese el Símbolo de la Moneda.</p>
-    }
-  </div>
-
-  <!-- currencyFormat -->
-  <div class="w-full md:col-span-1">
-    <label for="currencyFormat" class="block text-sm font-medium text-gray-700 mb-1">
-      Formato de la Moneda
-    </label>
-    <div
-      class="flex items-center border border-gray-300 rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-blue-500 bg-white"
-    >
-      <!-- #️⃣ -->
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0"
-        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-        <path stroke-linecap="round" stroke-linejoin="round"
-          d="M5 9h14m-14 6h14M9 3v18m6-18v18" />
-      </svg>
-      <input
-        type="text"
-        placeholder="Formato de la Moneda"
-        formControlName="currencyFormat"
-        required
-        class="w-full outline-none text-gray-700 placeholder-gray-400"
-      />
-    </div>
-    @if (userForm.get('currencyFormat')?.touched && userForm.get('currencyFormat')?.invalid) {
-      <p class="text-red-500 text-sm mt-1">Ingrese el Formato de la Moneda.</p>
-    }
-  </div>
-
-   <!-- flag -->
-  <div class="w-full md:col-span-1">
-    <label for="flag" class="block text-sm font-medium text-gray-700 mb-1">
-      Flag
-    </label>
-    <div
-      class="flex items-center border border-gray-300 rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-blue-500 bg-white"
-    >
-      <!-- #️⃣ -->
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0"
-        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-        <path stroke-linecap="round" stroke-linejoin="round"
-          d="M5 9h14m-14 6h14M9 3v18m6-18v18" />
-      </svg>
-      <input
-        type="text"
-        placeholder="Flag"
-        formControlName="flag"
-        required
-        class="w-full outline-none text-gray-700 placeholder-gray-400"
-      />
-    </div>
-    @if (userForm.get('flag')?.touched && userForm.get('flag')?.invalid) {
-      <p class="text-red-500 text-sm mt-1">Ingrese el Flag.</p>
-    }
-  </div>
-
-  <!-- phoneCode -->
-  <div class="w-full md:col-span-1">
-    <label for="phoneCode" class="block text-sm font-medium text-gray-700 mb-1">
-      Código de Teléfono
-    </label>
-    <div
-      class="flex items-center border border-gray-300 rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-blue-500 bg-white"
-    >
-      <!-- ☎️ -->
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0"
-        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-        <path stroke-linecap="round" stroke-linejoin="round"
-          d="M2.25 4.5l2.25 2.25a2.25 2.25 0 013.182 0l1.5 1.5a2.25 2.25 0 010 3.182l-1.5 1.5a2.25 2.25 0 000 3.182l2.25 2.25a2.25 2.25 0 003.182 0l1.5-1.5a2.25 2.25 0 013.182 0l2.25 2.25" />
-      </svg>
-      <input
-        type="text"
-        placeholder="Código de Teléfono"
-        formControlName="phoneCode"
-        required
-        class="w-full outline-none text-gray-700 placeholder-gray-400"
-      />
-    </div>
-    @if (userForm.get('phoneCode')?.touched && userForm.get('phoneCode')?.invalid) {
-      <p class="text-red-500 text-sm mt-1">Ingrese el Código de Teléfono.</p>
-    }
-  </div>
-
-  <!-- Continente -->
-  <div class="w-full md:col-span-2">
-    <label for="continent" class="block text-sm font-medium text-gray-700 mb-1">
-      Continente
-    </label>
-    <div
-      class="flex items-center border border-gray-300 rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-blue-500 bg-white"
-    >
-      <!-- 🧭 -->
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0"
-        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-        <path stroke-linecap="round" stroke-linejoin="round"
-          d="M12 2.25a9.75 9.75 0 109.75 9.75A9.75 9.75 0 0012 2.25zm0 0l-3 6 6 3-3 6" />
-      </svg>
-      <select
-        class="w-full outline-none text-gray-700 placeholder-gray-400 bg-transparent"
-        formControlName="continent"
-        aria-label="Continente"
-        required
-      >
-        <option value="" disabled>Selecciona un continente…</option>
-        @for (item of this.ListContinents(); track item.id) {
-          <option [value]="item.id">
-            {{ item.name }} — {{ item.descripcion }}
-          </option>
-        }
-      </select>
-    </div>
-    @if (userForm.get('continent')?.touched && userForm.get('continent')?.invalid) {
-      <p class="text-red-500 text-sm mt-1">Seleccione un Continente.</p>
-    }
-  </div>
-
-  <!-- Activo -->
-  <label class="label cursor-pointer justify-start gap-3 md:col-span-2">
-    <input
-      type="checkbox"
-      class="toggle"
-      formControlName="isActive"
-      aria-label="Activo"
-    />
-    <span class="text-gray-700">Activo</span>
-  </label>
-
-  <!-- Acciones -->
-  <div class="modal-action md:col-span-2">
-    <button class="btn btn-ghost" type="button" (click)="onCancel()">Cancelar</button>
-    <button class="btn btn-primary" type="submit" [disabled]="userForm.invalid">
-      Crear
-    </button>
-  </div>
-</form>
-
-
-
-
-
-
-
-
-
-
-
-  </div>
-
-  <form method="dialog" class="modal-backdrop">
-    <button aria-label="Cerrar">close</button>
-  </form>
-</dialog>
-
-
-
-
-
-
-
-
-
-
-<!-- Editar país -->
-<dialog id="edit_country" class="modal">
-  <div class="modal-box max-w-3xl">
-    <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button></form>
-    <h3 class="text-lg font-bold">Editar país</h3>
-
-    <div class="grid gap-3 md:grid-cols-2 mt-2">
-      <label class="input input-bordered w-full md:col-span-2"><input type="text" value="6898b65ec882eb1f46e43934" class="w-full" disabled /></label>
-
-      <label class="input input-bordered w-full md:col-span-2"><input type="text" value="Argentina" class="w-full" /></label>
-      <label class="input input-bordered w-full"><input type="text" value="ar" class="w-full" /></label>
-
-      <label class="input input-bordered w-full"><input type="text" value="Spanish" class="w-full" /></label>
-      <label class="input input-bordered w-full"><input type="text" value="es" class="w-full" /></label>
-
-      <label class="input input-bordered w-full"><input type="text" value="Argentine Peso" class="w-full" /></label>
-      <label class="input input-bordered w-full"><input type="text" value="ARS" class="w-full" /></label>
-
-      <label class="input input-bordered w-full"><input type="text" value="$" class="w-full" /></label>
-      <label class="input input-bordered w-full"><input type="text" value="###,###,###.##" class="w-full" /></label>
-
-      <label class="input input-bordered w-full"><input type="text" value="🇦🇷" class="w-full" /></label>
-      <label class="input input-bordered w-full"><input type="text" value="+54" class="w-full" /></label>
-
-      <label class="label cursor-pointer justify-start gap-3 md:col-span-2">
-        <input type="checkbox" class="toggle" aria-label="Activo" />
-        <span>Activo</span>
-      </label>
-    </div>
 
     <div class="modal-action">
-      <button class="btn btn-ghost" type="button">Cancelar</button>
-      <button class="btn btn-primary" type="button">Guardar</button>
+      <button class="btn btn-sm" type="button" (click)="openEditModal(viewItem()!)">Editar</button>
     </div>
   </div>
   <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
 </dialog>
 
-<!-- Eliminar país -->
+
+<!-- ====== MODAL: Agregar país ====== -->
+<dialog id="add_country" class="modal">
+  <div class="modal-box max-w-2xl">
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button>
+    </form>
+    <h3 class="text-lg font-bold">Nuevo país</h3>
+    <p class="text-sm opacity-70 mb-4">Registra un país con su moneda, idioma y código telefónico.</p>
+
+    <form class="grid gap-3 md:grid-cols-2" [formGroup]="createForm" (ngSubmit)="onSubmit()" novalidate>
+
+      <div class="form-control md:col-span-2">
+        <label class="label py-0"><span class="label-text text-xs">Nombre del país *</span></label>
+        <input class="input input-bordered w-full"
+               [class.input-error]="createForm.get('countryName')?.invalid && createForm.get('countryName')?.touched"
+               formControlName="countryName" placeholder="Argentina" />
+      </div>
+
+      <div class="form-control">
+        <label class="label py-0"><span class="label-text text-xs">Código país * <span class="opacity-50">(ej. ar)</span></span></label>
+        <input class="input input-bordered w-full" formControlName="countryCode" placeholder="ar" />
+      </div>
+
+      <div class="form-control">
+        <label class="label py-0"><span class="label-text text-xs">Código teléfono * <span class="opacity-50">(ej. +54)</span></span></label>
+        <input class="input input-bordered w-full" formControlName="phoneCode" placeholder="+54" />
+      </div>
+
+      <div class="form-control">
+        <label class="label py-0"><span class="label-text text-xs">Nombre idioma *</span></label>
+        <input class="input input-bordered w-full" formControlName="languageName" placeholder="Spanish" />
+      </div>
+
+      <div class="form-control">
+        <label class="label py-0"><span class="label-text text-xs">Código idioma * <span class="opacity-50">(ej. es)</span></span></label>
+        <input class="input input-bordered w-full" formControlName="languageCode" placeholder="es" />
+      </div>
+
+      <div class="form-control">
+        <label class="label py-0"><span class="label-text text-xs">Nombre moneda *</span></label>
+        <input class="input input-bordered w-full" formControlName="currencyName" placeholder="Argentine Peso" />
+      </div>
+
+      <div class="form-control">
+        <label class="label py-0"><span class="label-text text-xs">Código moneda * <span class="opacity-50">(ej. ARS)</span></span></label>
+        <input class="input input-bordered w-full" formControlName="currencyCode" placeholder="ARS" />
+      </div>
+
+      <div class="form-control">
+        <label class="label py-0"><span class="label-text text-xs">Símbolo moneda *</span></label>
+        <input class="input input-bordered w-full" formControlName="currencySymbol" placeholder="$" />
+      </div>
+
+      <div class="form-control">
+        <label class="label py-0"><span class="label-text text-xs">Formato moneda * <span class="opacity-50">(ej. ###,###.##)</span></span></label>
+        <input class="input input-bordered w-full" formControlName="currencyFormat" placeholder="###,###.##" />
+      </div>
+
+      <div class="form-control">
+        <label class="label py-0"><span class="label-text text-xs">Bandera (emoji) *</span></label>
+        <input class="input input-bordered w-full" formControlName="flag" placeholder="🇦🇷" />
+      </div>
+
+      <div class="form-control md:col-span-2">
+        <label class="label py-0"><span class="label-text text-xs">Continente *</span></label>
+        <select class="select select-bordered w-full"
+                [class.select-error]="createForm.get('continent')?.invalid && createForm.get('continent')?.touched"
+                formControlName="continent">
+          <option value="" disabled>— Seleccionar continente —</option>
+          @for (cont of ListContinents(); track cont.id) {
+            <option [value]="cont.id">{{ cont.name }}</option>
+          }
+        </select>
+      </div>
+
+      <label class="label cursor-pointer justify-start gap-3">
+        <input type="checkbox" class="toggle toggle-success toggle-sm" formControlName="isActive" />
+        <span class="label-text">Activo</span>
+      </label>
+      <label class="label cursor-pointer justify-start gap-3">
+        <input type="checkbox" class="toggle toggle-primary toggle-sm" formControlName="visible" />
+        <span class="label-text">Visible</span>
+      </label>
+
+      @if (hasError()) {
+        <div class="alert alert-error md:col-span-2 py-2 text-sm">{{ hasError() }}</div>
+      }
+
+      <div class="modal-action md:col-span-2">
+        <button class="btn btn-ghost btn-sm" type="button"
+                onclick="document.getElementById('add_country')?.close()">Cancelar</button>
+        <button class="btn btn-primary btn-sm" type="submit" [disabled]="createForm.invalid || saving()">
+          @if (saving()) { <span class="loading loading-spinner loading-xs"></span> }
+          Crear país
+        </button>
+      </div>
+    </form>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
+</dialog>
+
+
+<!-- ====== MODAL: Editar país ====== -->
+<dialog id="edit_country" class="modal">
+  <div class="modal-box max-w-2xl">
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button>
+    </form>
+    <h3 class="text-lg font-bold">Editar país</h3>
+
+    <form class="grid gap-3 md:grid-cols-2 mt-4" [formGroup]="editForm" (ngSubmit)="onEditSubmit()" novalidate>
+
+      <div class="form-control md:col-span-2">
+        <label class="label py-0"><span class="label-text text-xs">Nombre del país *</span></label>
+        <input class="input input-bordered w-full" formControlName="countryName" placeholder="Argentina" />
+      </div>
+
+      <div class="form-control">
+        <label class="label py-0"><span class="label-text text-xs">Código país *</span></label>
+        <input class="input input-bordered w-full" formControlName="countryCode" placeholder="ar" />
+      </div>
+
+      <div class="form-control">
+        <label class="label py-0"><span class="label-text text-xs">Código teléfono *</span></label>
+        <input class="input input-bordered w-full" formControlName="phoneCode" placeholder="+54" />
+      </div>
+
+      <div class="form-control">
+        <label class="label py-0"><span class="label-text text-xs">Nombre idioma *</span></label>
+        <input class="input input-bordered w-full" formControlName="languageName" placeholder="Spanish" />
+      </div>
+
+      <div class="form-control">
+        <label class="label py-0"><span class="label-text text-xs">Código idioma *</span></label>
+        <input class="input input-bordered w-full" formControlName="languageCode" placeholder="es" />
+      </div>
+
+      <div class="form-control">
+        <label class="label py-0"><span class="label-text text-xs">Nombre moneda *</span></label>
+        <input class="input input-bordered w-full" formControlName="currencyName" placeholder="Argentine Peso" />
+      </div>
+
+      <div class="form-control">
+        <label class="label py-0"><span class="label-text text-xs">Código moneda *</span></label>
+        <input class="input input-bordered w-full" formControlName="currencyCode" placeholder="ARS" />
+      </div>
+
+      <div class="form-control">
+        <label class="label py-0"><span class="label-text text-xs">Símbolo moneda *</span></label>
+        <input class="input input-bordered w-full" formControlName="currencySymbol" placeholder="$" />
+      </div>
+
+      <div class="form-control">
+        <label class="label py-0"><span class="label-text text-xs">Formato moneda *</span></label>
+        <input class="input input-bordered w-full" formControlName="currencyFormat" placeholder="###,###.##" />
+      </div>
+
+      <div class="form-control">
+        <label class="label py-0"><span class="label-text text-xs">Bandera (emoji) *</span></label>
+        <input class="input input-bordered w-full" formControlName="flag" placeholder="🇦🇷" />
+      </div>
+
+      <div class="form-control md:col-span-2">
+        <label class="label py-0"><span class="label-text text-xs">Continente *</span></label>
+        <select class="select select-bordered w-full" formControlName="continent">
+          <option value="">— Seleccionar continente —</option>
+          @for (cont of ListContinents(); track cont.id) {
+            <option [value]="cont.id">{{ cont.name }}</option>
+          }
+        </select>
+      </div>
+
+      <label class="label cursor-pointer justify-start gap-3">
+        <input type="checkbox" class="toggle toggle-success toggle-sm" formControlName="isActive" />
+        <span class="label-text">Activo</span>
+      </label>
+      <label class="label cursor-pointer justify-start gap-3">
+        <input type="checkbox" class="toggle toggle-primary toggle-sm" formControlName="visible" />
+        <span class="label-text">Visible</span>
+      </label>
+
+      @if (hasError()) {
+        <div class="alert alert-error md:col-span-2 py-2 text-sm">{{ hasError() }}</div>
+      }
+
+      <div class="modal-action md:col-span-2">
+        <button class="btn btn-ghost btn-sm" type="button"
+                onclick="document.getElementById('edit_country')?.close()">Cancelar</button>
+        <button class="btn btn-primary btn-sm" type="submit" [disabled]="editForm.invalid || saving()">
+          @if (saving()) { <span class="loading loading-spinner loading-sm"></span> }
+          Guardar cambios
+        </button>
+      </div>
+    </form>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
+</dialog>
+
+
+<!-- ====== MODAL: Eliminar país ====== -->
 <dialog id="delete_country" class="modal">
-  <div class="modal-box">
-    <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button></form>
+  <div class="modal-box max-w-sm">
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button>
+    </form>
     <h3 class="text-lg font-bold text-error">Eliminar país</h3>
-    <p class="py-2">Esta acción es permanente. ¿Deseas continuar?</p>
+    <p class="py-2 text-sm">
+      ¿Deseas eliminar <strong>{{ editItem()?.flag }} {{ editItem()?.countryName }}</strong>? Esta acción es permanente.
+    </p>
     <div class="modal-action">
-      <button class="btn" type="button">Cancelar</button>
-      <button class="btn btn-error" type="button">Eliminar</button>
+      <button class="btn btn-ghost btn-sm" type="button"
+              onclick="document.getElementById('delete_country')?.close()">Cancelar</button>
+      <button class="btn btn-error btn-sm" type="button"
+              (click)="confirmDelete()" [disabled]="deleting()">
+        @if (deleting()) { <span class="loading loading-spinner loading-xs"></span> }
+        Eliminar definitivamente
+      </button>
     </div>
   </div>
   <form method="dialog" class="modal-backdrop"><button>close</button></form>
 </dialog>
-
-<!-- Atajo: Ctrl/Cmd + K enfoca búsqueda -->
-<script>
-  document.addEventListener('keydown', (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
-      const input = document.getElementById('search-countries');
-      if (input) { e.preventDefault(); input.focus(); }
-    }
-  });
-</script>

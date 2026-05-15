@@ -1,0 +1,16 @@
+@keyframes float1 {
+  0%, 100% { transform: translateY(0) translateX(0); }
+  33%       { transform: translateY(-18px) translateX(10px); }
+  66%       { transform: translateY(10px) translateX(-8px); }
+}
+
+@keyframes float2 {
+  0%, 100% { transform: translateY(0) translateX(0); }
+  50%       { transform: translateY(-22px) translateX(-14px); }
+}
+
+@keyframes float3 {
+  0%, 100% { transform: translateY(0) translateX(0); }
+  40%       { transform: translateY(14px) translateX(12px); }
+  80%       { transform: translateY(-10px) translateX(-6px); }
+}

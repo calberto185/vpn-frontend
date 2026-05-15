@@ -3,23 +3,28 @@ import { CanMatchFn, Route, Router, UrlSegment } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../auth/services/auth.service';
 
-export const AuthorizatedGuard: CanMatchFn = async  (
+/**
+ * AuthorizatedGuard — protege la ruta /panel
+ * Solo acceden usuarios con rol asignado por el admin (cualquier rol ≠ 'client').
+ * Usuarios con rol 'client' (o sin rol) son redirigidos al módulo cliente.
+ */
+export const AuthorizatedGuard: CanMatchFn = async (
   route: Route,
   segments: UrlSegment[]
 ) => {
   const authService = inject(AuthService);
-  const router = inject(Router);
+  const router      = inject(Router);
 
-  // const isAuthorizated = authService.isAdmin();
-    // Permitir solo a rol "standard"
-  await firstValueFrom(authService.checkStatus());
-  const isAdmin = authService.role()?.toLowerCase().includes("admin") ? true : false;
-  console.log("Client AuthorizatedGuard authService.role(): ", authService.role())
-  console.log("Client AuthorizatedGuard isAdmin: ", isAdmin)
+  await firstValueFrom(authService.ensureAuthChecked());
 
-  if(isAdmin !== true) {
-    router.navigateByUrl("/client/dashboard");
+  const role = authService.role()?.toLowerCase() ?? null;
+
+  // Un rol de panel es cualquier rol que no sea 'client' y no sea null/vacío
+  const isPanelUser = role !== null && role !== '' && role !== 'client';
+
+  if (!isPanelUser) {
+    router.navigateByUrl('/client/dashboard');
     return false;
   }
   return true;
-}
+};

@@ -1,0 +1,89 @@
+<div class="mx-auto max-w-xl space-y-6 p-4 md:p-6">
+
+  <!-- Toast -->
+  @if (toast(); as t) {
+    <div class="toast toast-top toast-end z-50">
+      <div [class]="t.ok ? 'alert alert-success' : 'alert alert-error'">
+        <span>{{ t.msg }}</span>
+      </div>
+    </div>
+  }
+
+  <!-- Header -->
+  <div class="rounded-xl border bg-base-100 p-5 shadow-sm">
+    <h1 class="text-2xl font-extrabold tracking-tight">Preferencias</h1>
+    <p class="mt-1 text-sm text-base-content/60">
+      Ajustes del panel guardados en este navegador.
+    </p>
+  </div>
+
+  <!-- Preferences form -->
+  <div class="card bg-base-100 shadow border border-base-200">
+    <div class="card-body gap-5">
+      <h2 class="card-title text-base">Apariencia</h2>
+
+      <form class="space-y-5" [formGroup]="form">
+
+        <!-- Theme -->
+        <div class="form-control">
+          <label class="label pb-1"><span class="label-text font-medium">Tema</span></label>
+          <div class="flex gap-3">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="radio" class="radio radio-primary" formControlName="theme" value="light" />
+              <span class="text-sm">Claro</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="radio" class="radio radio-primary" formControlName="theme" value="dark" />
+              <span class="text-sm">Oscuro</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Language -->
+        <div class="form-control">
+          <label class="label pb-1"><span class="label-text font-medium">Idioma</span></label>
+          <select class="select select-bordered select-sm w-full max-w-xs" formControlName="language">
+            <option value="es">Español</option>
+            <option value="en">English</option>
+          </select>
+        </div>
+
+        <!-- Timezone -->
+        <div class="form-control">
+          <label class="label pb-1"><span class="label-text font-medium">Zona horaria</span></label>
+          <input class="input input-bordered input-sm w-full max-w-xs" formControlName="timezone" placeholder="America/Lima" />
+        </div>
+
+        <div class="divider my-1"></div>
+
+        <!-- Toggles -->
+        <div class="space-y-3">
+          <h3 class="text-sm font-semibold text-base-content/70 uppercase tracking-wide">General</h3>
+
+          <label class="label cursor-pointer justify-start gap-3 py-1">
+            <input type="checkbox" class="toggle toggle-primary toggle-sm" formControlName="notifications" />
+            <div>
+              <span class="label-text font-medium">Notificaciones</span>
+              <p class="text-xs text-base-content/50">Recibe avisos sobre tu cuenta y servicios.</p>
+            </div>
+          </label>
+
+          <label class="label cursor-pointer justify-start gap-3 py-1">
+            <input type="checkbox" class="toggle toggle-primary toggle-sm" formControlName="compactView" />
+            <div>
+              <span class="label-text font-medium">Vista compacta</span>
+              <p class="text-xs text-base-content/50">Reduce el espaciado en tablas y listas.</p>
+            </div>
+          </label>
+        </div>
+
+      </form>
+
+      <div class="flex gap-2 pt-2">
+        <button class="btn btn-primary btn-sm" type="button" (click)="save()">Guardar</button>
+        <button class="btn btn-ghost btn-sm" type="button" (click)="reset()">Restaurar valores</button>
+      </div>
+    </div>
+  </div>
+
+</div>

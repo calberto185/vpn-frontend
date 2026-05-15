@@ -23,6 +23,10 @@ export class BankAccountService {
     return this.http.post<ResponseEntity<BankAccountEntity>>(baseUrl+'/system/bankaccount/create', data);
   }
 
+  update(data: BankAccountEntity): Observable<ResponseEntity<BankAccountEntity>> {
+    return this.http.post<ResponseEntity<BankAccountEntity>>(baseUrl+'/system/bankaccount/update', data);
+  }
+
   private handlerSuccess(resp: any) {
     return resp;
   }

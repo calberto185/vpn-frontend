@@ -1,40 +1,71 @@
 import { HttpClient } from '@angular/common/http';
-import { computed, inject, Injectable, signal } from '@angular/core';
-import { catchError, map, Observable, of, tap } from 'rxjs';
-import { rxResource } from '@angular/core/rxjs-interop';
+import { inject, Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
 import UserEntity from '../../interfaces/user.interface';
 import { ResponseEntity } from '../../../shared/interfaces/reponse.interface';
-type AuthStatus = 'checking' | 'authenticated' | 'not-authenticated';
-import { environment } from '../../../../environments/environment'
+import { environment } from '../../../../environments/environment';
 import PlanClientDto from '../../interfaces/planClient.interface';
-const baseUrl = environment.apiUrl
 
-@Injectable({providedIn: 'root'})
+const baseUrl = environment.apiUrl;
+
+@Injectable({ providedIn: 'root' })
 export class UsersService {
-  private _user = signal<UserEntity|null>(null);
-
   private http = inject(HttpClient);
 
-  user = computed(() => this._user())
+  // ── List / Read ───────────────────────────────────────────────────────────
 
-  getUsers(): Observable<any> {
-    return this.http.post<ResponseEntity<UserEntity>>(baseUrl+'/admin/consulta', {});
+  getUsers(aggregate?: any[]): Observable<ResponseEntity<UserEntity[]>> {
+    return this.http.post<ResponseEntity<UserEntity[]>>(baseUrl + '/admin/clients', { aggregate });
   }
 
-  register(data: UserEntity): Observable<any> {
-    return this.http.post<ResponseEntity<UserEntity>>(baseUrl+'/admin/registrar', data);
+  getUser(id: string): Observable<ResponseEntity<UserEntity>> {
+    return this.http.get<ResponseEntity<UserEntity>>(baseUrl + `/admin/clients/${id}`);
   }
 
-  updateServices(data: {user_id: string, services: Array<PlanClientDto>}): Observable<any> {
-    return this.http.post<ResponseEntity<UserEntity>>(baseUrl+'/admin/clients/update_services', data);
+  // ── Create ────────────────────────────────────────────────────────────────
+
+  register(data: UserEntity): Observable<ResponseEntity<any>> {
+    return this.http.post<ResponseEntity<any>>(baseUrl + '/admin/clients/register', data);
   }
 
-  private handlerSuccess(resp: any) {
-    return resp;
+  // ── Edit ──────────────────────────────────────────────────────────────────
+
+  edit(id: string, data: Partial<UserEntity>): Observable<ResponseEntity<any>> {
+    return this.http.put<ResponseEntity<any>>(baseUrl + `/admin/clients/${id}`, data);
   }
 
-  private handlerError(error: any) {
-    return error;
+  // ── State actions ─────────────────────────────────────────────────────────
+
+  verify(id: string): Observable<ResponseEntity<any>> {
+    return this.http.post<ResponseEntity<any>>(baseUrl + `/admin/clients/${id}/verify`, {});
   }
 
+  suspend(id: string, reason?: string): Observable<ResponseEntity<any>> {
+    return this.http.post<ResponseEntity<any>>(baseUrl + `/admin/clients/${id}/suspend`, { reason });
+  }
+
+  reactivate(id: string): Observable<ResponseEntity<any>> {
+    return this.http.post<ResponseEntity<any>>(baseUrl + `/admin/clients/${id}/reactivate`, {});
+  }
+
+  delete(id: string): Observable<ResponseEntity<any>> {
+    return this.http.delete<ResponseEntity<any>>(baseUrl + `/admin/clients/${id}`);
+  }
+
+  // ── Services assignment ───────────────────────────────────────────────────
+
+  updateServices(data: { user_id: string; services: PlanClientDto[] }): Observable<ResponseEntity<any>> {
+    return this.http.post<ResponseEntity<any>>(baseUrl + `/admin/clients/${data.user_id}/services`, { services: data.services });
+  }
+
+  kickSession(id: string): Observable<ResponseEntity<any>> {
+    return this.http.post<ResponseEntity<any>>(baseUrl + `/admin/clients/${id}/kick-session`, {});
+  }
+
+  /** Consumo de tráfico S-UI por usuario: Record<userId, { gb_usado, gb_total }> */
+  getVpnUsage(): Observable<ResponseEntity<Record<string, { gb_usado: number; gb_total: number }>>> {
+    return this.http.get<ResponseEntity<Record<string, { gb_usado: number; gb_total: number }>>>(
+      baseUrl + '/admin/clients/vpn-usage'
+    );
+  }
 }

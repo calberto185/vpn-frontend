@@ -1,1 +1,306 @@
-<p>terms works!</p>
+<!-- BREADCRUMB -->
+<div class="breadcrumbs text-sm pt-2 px-2">
+  <ul><li><a>Panel</a></li><li><a>Configuración</a></li><li aria-current="page">Términos</li></ul>
+</div>
+
+<!-- Toast -->
+@if (toast()) {
+  <div class="toast toast-top toast-end z-50">
+    <div class="alert" [class.alert-success]="toast()!.ok" [class.alert-error]="!toast()!.ok">
+      <span>{{ toast()!.msg }}</span>
+    </div>
+  </div>
+}
+
+<!-- Action bar -->
+<section class="container mx-auto max-w-5xl px-2 md:px-4 mt-4">
+  <div class="flex flex-wrap items-center justify-between gap-3 bg-base-100 border rounded-xl p-3 shadow-sm">
+    <div>
+      <h1 class="text-xl font-extrabold">Términos y Condiciones</h1>
+      <p class="text-sm opacity-60">Gestiona los documentos de términos por país.</p>
+    </div>
+    @if (canCreate()) {
+      <button class="btn btn-sm btn-primary" (click)="openModal('add_term')">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
+        Nuevo término
+      </button>
+    }
+  </div>
+</section>
+
+<!-- Table -->
+<section class="container mx-auto max-w-5xl px-2 md:px-4 mt-4">
+  <div class="bg-base-100 border rounded-xl shadow-sm overflow-x-auto">
+    <table class="table table-sm w-full">
+      <thead>
+        <tr>
+          <th>Título</th>
+          <th class="hidden md:table-cell">País</th>
+          <th class="hidden lg:table-cell">Descripción</th>
+          <th>Estado</th>
+          <th class="hidden xl:table-cell">Vigente desde</th>
+          <th class="hidden xl:table-cell">Creado</th>
+          <th class="text-right">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (term of terms(); track term.id) {
+          <tr class="hover" [class.opacity-50]="!term.active">
+            <td class="font-medium">{{ termDisplayTitle(term) }}</td>
+            <td class="hidden md:table-cell text-sm opacity-70">
+              {{ term.country?.countryName || '—' }}
+            </td>
+            <td class="hidden lg:table-cell text-xs opacity-60 max-w-xs truncate">
+              {{ localeService.displayI18n(term.description_i18n, term.description) }}
+            </td>
+            <td>
+              @if (term.active) {
+                <span class="badge badge-success badge-sm">Activo</span>
+              } @else {
+                <span class="badge badge-ghost badge-sm">Inactivo</span>
+              }
+            </td>
+            <td class="hidden xl:table-cell text-xs">
+              @if (term.effectiveDate) {
+                <span class="badge badge-outline badge-sm">{{ term.effectiveDate | date:'dd/MM/yyyy' }}</span>
+              } @else {
+                <span class="opacity-40">—</span>
+              }
+            </td>
+            <td class="hidden xl:table-cell text-xs opacity-60">
+              {{ term.createdAt | date:'dd/MM/yyyy' }}
+            </td>
+            <td class="text-right">
+              <div class="flex items-center justify-end gap-1">
+                @if (canUpdate()) {
+                  <div class="tooltip" [attr.data-tip]="term.active ? 'Desactivar' : 'Activar'">
+                    <button class="btn btn-ghost btn-xs" (click)="toggleActive(term)">
+                      @if (term.active) {
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path d="M18.364 18.364A9 9 0 0 0 5.636 5.636m12.728 12.728A9 9 0 0 1 5.636 5.636m12.728 12.728L5.636 5.636"/>
+                        </svg>
+                      } @else {
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path d="M5 13l4 4L19 7"/>
+                        </svg>
+                      }
+                    </button>
+                  </div>
+                  <div class="tooltip" data-tip="Editar">
+                    <button class="btn btn-ghost btn-xs" (click)="openEdit(term)">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
+                      </svg>
+                    </button>
+                  </div>
+                }
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="7" class="text-center py-12 opacity-40">No hay términos registrados.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>
+
+
+<!-- ═══ MODAL — Nuevo término ═══ -->
+<dialog id="add_term" class="modal">
+  <div class="modal-box max-w-lg">
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+    </form>
+    <h3 class="text-lg font-bold mb-4">Nuevo término</h3>
+
+    <form [formGroup]="termForm" (ngSubmit)="onSubmit()" class="space-y-3">
+
+      <!-- ── Título (i18n) * ── -->
+      <div class="form-control">
+        <label class="label py-0">
+          <span class="label-text font-semibold">Título *</span>
+          @if (!addTitleValid()) {
+            <span class="label-text-alt text-error text-xs">Requerido en al menos un idioma</span>
+          }
+        </label>
+        @for (lang of activeLangs(); track lang.code) {
+          <div class="flex items-center gap-2 mb-1">
+            <span class="badge badge-ghost badge-sm w-8 text-center shrink-0">{{ lang.code }}</span>
+            <input class="input input-bordered input-sm w-full"
+                   [class.input-error]="!addTitleValid()"
+                   [value]="i18nAdd()['title']?.[lang.code] ?? ''"
+                   (input)="setI18nAdd('title', lang.code, $any($event.target).value)"
+                   [placeholder]="lang.code === 'en' ? 'Terms and Conditions v1.0' : 'Términos y Condiciones v1.0'" />
+          </div>
+        }
+      </div>
+
+      <!-- ── Descripción (i18n) ── -->
+      <div class="form-control">
+        <label class="label py-0"><span class="label-text font-semibold">Descripción / Contenido</span></label>
+        @for (lang of activeLangs(); track lang.code) {
+          <div class="flex items-start gap-2 mb-1">
+            <span class="badge badge-ghost badge-sm w-8 text-center shrink-0 mt-8">{{ lang.code }}</span>
+            <div class="flex flex-col w-full">
+              <!-- Markdown toolbar -->
+              <div class="flex gap-0.5 border border-base-300 border-b-0 bg-base-200 rounded-t px-1 py-0.5">
+                <button type="button" class="btn btn-ghost btn-xs font-bold px-1.5 min-w-0" title="Negrita (**texto**)"
+                        (mousedown)="$event.preventDefault()"
+                        (click)="insertMd(addDesc, '**', '**', 'description', lang.code, true)">B</button>
+                <button type="button" class="btn btn-ghost btn-xs italic px-1.5 min-w-0" title="Cursiva (*texto*)"
+                        (mousedown)="$event.preventDefault()"
+                        (click)="insertMd(addDesc, '*', '*', 'description', lang.code, true)">I</button>
+                <button type="button" class="btn btn-ghost btn-xs px-1.5 min-w-0 font-semibold text-xs" title="Encabezado (## Título)"
+                        (mousedown)="$event.preventDefault()"
+                        (click)="insertMd(addDesc, '## ', '', 'description', lang.code, true)">H2</button>
+                <button type="button" class="btn btn-ghost btn-xs px-1.5 min-w-0" title="Elemento de lista (- item)"
+                        (mousedown)="$event.preventDefault()"
+                        (click)="insertMd(addDesc, '- ', '', 'description', lang.code, true)">UL</button>
+                <button type="button" class="btn btn-ghost btn-xs px-1.5 min-w-0 text-xs" title="Enlace [texto](url)"
+                        (mousedown)="$event.preventDefault()"
+                        (click)="insertMd(addDesc, '[', '](url)', 'description', lang.code, true)">🔗</button>
+              </div>
+              <textarea #addDesc class="textarea textarea-bordered textarea-sm w-full rounded-t-none" rows="5"
+                        [value]="i18nAdd()['description']?.[lang.code] ?? ''"
+                        (input)="setI18nAdd('description', lang.code, $any($event.target).value)"
+                        placeholder="Contenido del documento..."></textarea>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div class="form-control">
+          <label class="label"><span class="label-text">País *</span></label>
+          <select formControlName="country" class="select select-bordered select-sm">
+            <option value="">— Seleccionar —</option>
+            @for (c of countries(); track c.id) {
+              <option [value]="c.id">{{ c.countryName }}</option>
+            }
+          </select>
+        </div>
+        <div class="form-control">
+          <label class="label"><span class="label-text">Vigente desde</span></label>
+          <input type="date" formControlName="effectiveDate" class="input input-bordered input-sm" />
+          <label class="label py-0"><span class="label-text-alt text-xs opacity-50">Opcional</span></label>
+        </div>
+      </div>
+
+      <label class="label cursor-pointer gap-2 justify-start">
+        <input formControlName="active" type="checkbox" class="toggle toggle-success toggle-sm" />
+        <span class="label-text">Activo</span>
+      </label>
+
+      <div class="modal-action pt-2">
+        <button type="button" class="btn btn-ghost btn-sm" (click)="closeModal('add_term')">Cancelar</button>
+        <button type="submit" class="btn btn-primary btn-sm" [disabled]="termForm.invalid || !addTitleValid() || saving()">
+          @if (saving()) { <span class="loading loading-spinner loading-xs"></span> }
+          Guardar
+        </button>
+      </div>
+    </form>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button>close</button></form>
+</dialog>
+
+
+<!-- ═══ MODAL — Editar término ═══ -->
+<dialog id="edit_term" class="modal">
+  <div class="modal-box max-w-lg">
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+    </form>
+    <h3 class="text-lg font-bold mb-4">Editar término</h3>
+
+    <form [formGroup]="editForm" (ngSubmit)="onEditSubmit()" class="space-y-3">
+
+      <!-- ── Título (i18n) * ── -->
+      <div class="form-control">
+        <label class="label py-0">
+          <span class="label-text font-semibold">Título *</span>
+          @if (!editTitleValid()) {
+            <span class="label-text-alt text-error text-xs">Requerido en al menos un idioma</span>
+          }
+        </label>
+        @for (lang of activeLangs(); track lang.code) {
+          <div class="flex items-center gap-2 mb-1">
+            <span class="badge badge-ghost badge-sm w-8 text-center shrink-0">{{ lang.code }}</span>
+            <input class="input input-bordered input-sm w-full"
+                   [class.input-error]="!editTitleValid()"
+                   [value]="i18nEdit()['title']?.[lang.code] ?? ''"
+                   (input)="setI18nEdit('title', lang.code, $any($event.target).value)" />
+          </div>
+        }
+      </div>
+
+      <!-- ── Descripción (i18n) ── -->
+      <div class="form-control">
+        <label class="label py-0"><span class="label-text font-semibold">Descripción / Contenido</span></label>
+        @for (lang of activeLangs(); track lang.code) {
+          <div class="flex items-start gap-2 mb-1">
+            <span class="badge badge-ghost badge-sm w-8 text-center shrink-0 mt-8">{{ lang.code }}</span>
+            <div class="flex flex-col w-full">
+              <!-- Markdown toolbar -->
+              <div class="flex gap-0.5 border border-base-300 border-b-0 bg-base-200 rounded-t px-1 py-0.5">
+                <button type="button" class="btn btn-ghost btn-xs font-bold px-1.5 min-w-0" title="Negrita (**texto**)"
+                        (mousedown)="$event.preventDefault()"
+                        (click)="insertMd(editDesc, '**', '**', 'description', lang.code, false)">B</button>
+                <button type="button" class="btn btn-ghost btn-xs italic px-1.5 min-w-0" title="Cursiva (*texto*)"
+                        (mousedown)="$event.preventDefault()"
+                        (click)="insertMd(editDesc, '*', '*', 'description', lang.code, false)">I</button>
+                <button type="button" class="btn btn-ghost btn-xs px-1.5 min-w-0 font-semibold text-xs" title="Encabezado (## Título)"
+                        (mousedown)="$event.preventDefault()"
+                        (click)="insertMd(editDesc, '## ', '', 'description', lang.code, false)">H2</button>
+                <button type="button" class="btn btn-ghost btn-xs px-1.5 min-w-0" title="Elemento de lista (- item)"
+                        (mousedown)="$event.preventDefault()"
+                        (click)="insertMd(editDesc, '- ', '', 'description', lang.code, false)">UL</button>
+                <button type="button" class="btn btn-ghost btn-xs px-1.5 min-w-0 text-xs" title="Enlace [texto](url)"
+                        (mousedown)="$event.preventDefault()"
+                        (click)="insertMd(editDesc, '[', '](url)', 'description', lang.code, false)">🔗</button>
+              </div>
+              <textarea #editDesc class="textarea textarea-bordered textarea-sm w-full rounded-t-none" rows="5"
+                        [value]="i18nEdit()['description']?.[lang.code] ?? ''"
+                        (input)="setI18nEdit('description', lang.code, $any($event.target).value)"></textarea>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div class="form-control">
+          <label class="label"><span class="label-text">País *</span></label>
+          <select formControlName="country" class="select select-bordered select-sm">
+            <option value="">— Seleccionar —</option>
+            @for (c of countries(); track c.id) {
+              <option [value]="c.id">{{ c.countryName }}</option>
+            }
+          </select>
+        </div>
+        <div class="form-control">
+          <label class="label"><span class="label-text">Vigente desde</span></label>
+          <input type="date" formControlName="effectiveDate" class="input input-bordered input-sm" />
+          <label class="label py-0"><span class="label-text-alt text-xs opacity-50">Opcional</span></label>
+        </div>
+      </div>
+
+      <label class="label cursor-pointer gap-2 justify-start">
+        <input formControlName="active" type="checkbox" class="toggle toggle-success toggle-sm" />
+        <span class="label-text">Activo</span>
+      </label>
+
+      <div class="modal-action pt-2">
+        <button type="button" class="btn btn-ghost btn-sm" (click)="closeModal('edit_term')">Cancelar</button>
+        <button type="submit" class="btn btn-primary btn-sm" [disabled]="editForm.invalid || !editTitleValid() || saving()">
+          @if (saving()) { <span class="loading loading-spinner loading-xs"></span> }
+          Actualizar
+        </button>
+      </div>
+    </form>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button>close</button></form>
+</dialog>

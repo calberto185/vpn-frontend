@@ -1,8 +1,19 @@
-<!-- <div class="flex items-center justify-center min-h-screen">
-  <div class="w-full max-w-xs bg-slate-100 shadow-2xl rounded-lg p-4">
-
-    <router-outlet/>
+<div class="relative min-h-screen">
+  <!-- Language selector — top-right corner -->
+  <div class="absolute top-3 right-4 z-50 flex items-center gap-1">
+    <app-language-coin />
   </div>
-</div> -->
 
-    <router-outlet/>
+  <!-- Brand mark — top-left corner -->
+  <div class="absolute top-3 left-4 z-50">
+    <a class="flex items-center gap-2 font-extrabold tracking-tight select-none">
+      @if (brandingState.logoUrl()) {
+        <img [src]="brandingState.logoUrl()!" [alt]="brandingState.name()" class="h-8 w-auto object-contain" />
+      } @else {
+        <span class="text-lg text-primary">{{ brandingState.name() }}</span>
+      }
+    </a>
+  </div>
+
+  <router-outlet />
+</div>

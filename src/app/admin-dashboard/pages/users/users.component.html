@@ -1,943 +1,1599 @@
+<!-- Toast global -->
+@if (toast()) {
+  <div role="alert" class="alert fixed bottom-5 right-5 w-80 z-[200] shadow-lg"
+       [class.alert-success]="toast()!.ok" [class.alert-error]="!toast()!.ok">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none"
+         viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      @if (toast()!.ok) {
+        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+      } @else {
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+      }
+    </svg>
+    <span>{{ toast()!.msg }}</span>
+  </div>
+}
+
 <!-- Stats -->
 <section class="container mx-auto max-w-7xl px-2 md:px-4 mt-4">
-  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
     <div class="stat bg-base-100/80 border rounded-xl shadow-sm">
       <div class="stat-figure text-primary">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-          stroke-width="2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2">
           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
           <circle cx="12" cy="7" r="4" />
         </svg>
       </div>
-      <div class="stat-title">Usuarios</div>
-      <div class="stat-value text-2xl">{{this.ListUsers().length}}</div>
-      <div class="stat-desc">cargado desde modelo</div>
+      <div class="stat-title">Total</div>
+      <div class="stat-value text-2xl">{{ totalUsers() }}</div>
+      <div class="stat-desc">{{ usersPanel() }} panel · {{ usersClientes() }} clientes</div>
     </div>
 
     <div class="stat bg-base-100/80 border rounded-xl shadow-sm">
       <div class="stat-figure text-success">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-          stroke-width="2">
-          <path d="M2 20h.01M7 20h.01M12 20h.01M17 20h.01M22 20h.01" />
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+          <path d="M22 4L12 14.01l-3-3" />
         </svg>
       </div>
       <div class="stat-title">Activos</div>
-      <div class="stat-value text-2xl">0</div>
-      <div class="stat-desc">pendientes de verificación</div>
+      <div class="stat-value text-2xl">{{ usersActivos() }}</div>
+      <div class="stat-desc">{{ usersPendientes() }} pendientes</div>
     </div>
 
     <div class="stat bg-base-100/80 border rounded-xl shadow-sm">
       <div class="stat-figure text-warning">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-          stroke-width="2">
-          <path d="M3 3h18v18H3z" />
-          <path d="M9 9h6v6H9z" />
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="8" x2="12" y2="12" />
+          <line x1="12" y1="16" x2="12.01" y2="16" />
         </svg>
       </div>
-      <div class="stat-title">Sesiones</div>
-      <div class="stat-value text-2xl">0</div>
-      <div class="stat-desc">últimas 24h</div>
+      <div class="stat-title">Suspendidos</div>
+      <div class="stat-value text-2xl">{{ usersSuspendidos() }}</div>
+      <div class="stat-desc">suspendidos / bloqueados</div>
+    </div>
+
+    <div class="stat bg-base-100/80 border rounded-xl shadow-sm">
+      <div class="stat-figure text-info">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10" />
+          <path d="M8.56 2.75c4.37 6.03 6.02 9.42 8.03 17.72m2.54-15.38c-3.72 4.35-8.94 5.66-16.88 5.85m19.5 1.9c-3.5-.93-6.63-.82-8.94 0-2.58.92-5.01 2.86-7.44 6.32" />
+        </svg>
+      </div>
+      <div class="stat-title">En línea</div>
+      <div class="stat-value text-2xl">{{ onlineUserIds().size }}</div>
+      <div class="stat-desc">conectados ahora</div>
     </div>
   </div>
 </section>
 
-<!-- Action bar -->
-<section class="container mx-auto max-w-7xl px-2 md:px-4 mt-4">
-  <div class="bg-base-100 border rounded-xl p-3 md:p-4 shadow-sm">
-    <div class="flex flex-wrap items-center gap-3">
-      <label class="input input-bordered flex items-center gap-2 w-full sm:w-80" aria-label="Buscar">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-70" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8" />
-          <path d="m21 21-4.3-4.3" />
+<!-- Tabla + controles unificados -->
+<section class="container mx-auto max-w-7xl px-2 md:px-4 mt-4 pb-6">
+  <div class="bg-base-100 border rounded-xl shadow-sm overflow-hidden">
+
+    <!-- ── Fila 1: búsqueda · filtros · acciones ── -->
+    <div class="flex flex-wrap items-center gap-2 px-3 py-2.5 border-b border-base-200">
+
+      <!-- Búsqueda -->
+      <label class="input input-sm input-bordered flex items-center gap-2 w-full sm:w-72" aria-label="Buscar">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 opacity-50" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
         </svg>
-        <input id="search-users" type="text" placeholder="Buscar por nombre, email o DNI" />
+        <input type="text" class="grow" placeholder="Nombre, email, DNI…"
+               (input)="searchQuery.set($any($event.target).value); resetPage()" />
       </label>
 
+      <!-- Filtro Estado -->
       <div class="dropdown">
-        <button tabindex="0" class="btn btn-sm md:btn-md">Estado</button>
-        <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-56 z-[60]">
-          <li><a>Todos</a></li>
-          <li><a>Pendiente</a></li>
-          <li><a>Activo</a></li>
-          <li><a>Bloqueado</a></li>
-          <li><a>Suspendido</a></li>
-          <li><a>En servicio</a></li>
-        </ul>
-      </div>
-      <div class="dropdown">
-        <button tabindex="0" class="btn btn-sm md:btn-md">Rol</button>
-        <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-48 z-[60]">
-          <li><a>standar</a></li>
-          <li><a>soporte</a></li>
-          <li><a>admin</a></li>
-        </ul>
-      </div>
-      <div class="dropdown">
-        <button tabindex="0" class="btn btn-ghost btn-sm md:btn-md">Verificación</button>
-        <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-48 z-[60]">
-          <li><a>Todos</a></li>
-          <li><a>Verificados</a></li>
-          <li><a>No verificados</a></li>
-        </ul>
-      </div>
-
-      <div class="ml-auto flex items-center gap-2">
-        <div class="tooltip" data-tip="Seleccionar todo">
-          <input type="checkbox" class="checkbox checkbox-sm" aria-label="Seleccionar todo" />
-        </div>
-
-        <div class="dropdown dropdown-end">
-          <button tabindex="0" class="btn btn-ghost btn-sm md:btn-md">Acciones</button>
-          <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-64 z-[60]">
-            <li><a>Marcar verificado</a></li>
-            <li><a>Quitar verificación</a></li>
-            <li><a>Bloquear</a></li>
-            <li><a>Desbloquear</a></li>
-            <li><a>Suspender</a></li>
-            <li><a>Reactivar</a></li>
-            <li><a>Asignar plan…</a></li>
-            <li><a class="text-error">Eliminar</a></li>
-          </ul>
-        </div>
-
-        <!-- Botón para agregar usuario (abre el único modal add_user) -->
-        <button class="btn btn-primary btn-sm md:btn-md" type="button"
-          onclick="document.getElementById('add_user')?.showModal()">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2">
-            <path d="M12 5v14M5 12h14" />
-          </svg>
-          Agregar usuario
+        <button tabindex="0" class="btn btn-sm" [class.btn-primary]="filterState()" [class.btn-ghost]="!filterState()">
+          {{ filterState() || 'Estado' }}
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 ml-0.5" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
         </button>
+        <ul tabindex="0" class="dropdown-content menu menu-sm p-1.5 shadow bg-base-100 border rounded-box w-44 z-[60]">
+          <li><a (click)="filterState.set(''); resetPage()">Todos</a></li>
+          <li><a (click)="filterState.set('Pendiente'); resetPage()">Pendiente</a></li>
+          <li><a (click)="filterState.set('Activo'); resetPage()">Activo</a></li>
+          <li><a (click)="filterState.set('Bloqueado'); resetPage()">Bloqueado</a></li>
+          <li><a (click)="filterState.set('Suspendido'); resetPage()">Suspendido</a></li>
+        </ul>
+      </div>
+
+      <!-- Filtro Rol -->
+      <div class="dropdown">
+        <button tabindex="0" class="btn btn-sm" [class.btn-primary]="filterRole()" [class.btn-ghost]="!filterRole()">
+          {{ filterRoleLabel() }}
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 ml-0.5" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <ul tabindex="0" class="dropdown-content menu menu-sm p-1.5 shadow bg-base-100 border rounded-box w-44 z-[60]">
+          <li><a (click)="filterRole.set(''); resetPage()">Todos</a></li>
+          <li><a (click)="filterRole.set('__norole__'); resetPage()">Sin rol (Cliente)</a></li>
+          <li class="menu-title text-[10px] opacity-40 pt-1">Panel</li>
+          @for (r of ListRoles(); track r.id) {
+            <li><a (click)="filterRole.set(r.name); resetPage()">{{ r.label }}</a></li>
+          }
+        </ul>
+      </div>
+
+      <!-- Filtro Verificación -->
+      <div class="dropdown">
+        <button tabindex="0" class="btn btn-sm" [class.btn-primary]="filterVerified()" [class.btn-ghost]="!filterVerified()">
+          {{ filterVerified() === 'true' ? 'Verificados' : filterVerified() === 'false' ? 'No verif.' : 'Verificación' }}
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 ml-0.5" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <ul tabindex="0" class="dropdown-content menu menu-sm p-1.5 shadow bg-base-100 border rounded-box w-40 z-[60]">
+          <li><a (click)="filterVerified.set(''); resetPage()">Todos</a></li>
+          <li><a (click)="filterVerified.set('true'); resetPage()">Verificados</a></li>
+          <li><a (click)="filterVerified.set('false'); resetPage()">No verificados</a></li>
+        </ul>
+      </div>
+
+      <!-- Limpiar filtros activos -->
+      @if (searchQuery() || filterState() || filterRole() || filterVerified()) {
+        <button class="btn btn-ghost btn-sm text-error" type="button"
+                (click)="searchQuery.set(''); filterState.set(''); filterRole.set(''); filterVerified.set(''); resetPage()">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.5">
+            <path d="M18 6L6 18M6 6l12 12"/>
+          </svg>
+          Limpiar
+        </button>
+      }
+
+      <!-- Acciones (derecha) -->
+      <div class="ml-auto flex items-center gap-2 flex-shrink-0">
+        @if (canExport()) {
+          <button class="btn btn-ghost btn-sm" type="button" (click)="downloadReport()" title="Exportar Excel">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            <span class="hidden sm:inline">Excel</span>
+          </button>
+        }
+        @if (canCreate()) {
+          <button class="btn btn-primary btn-sm" type="button"
+                  onclick="document.getElementById('add_user')?.showModal()">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            <span class="hidden sm:inline">Agregar usuario</span>
+          </button>
+        }
       </div>
     </div>
-  </div>
-</section>
 
-<!-- Table -->
-<section class="container mx-auto max-w-7xl px-2 md:px-4 mt-4">
-  <div class="bg-base-100 border rounded-xl shadow-sm overflow-x-auto">
+    <!-- ── Cabecera de tabla: total · info de página ── -->
+    <div class="flex items-center justify-between px-4 py-3 border-b bg-base-200/40">
+      <span class="font-semibold text-sm">
+        {{ filteredUsers().length }} usuario{{ filteredUsers().length !== 1 ? 's' : '' }}
+      </span>
+      <span class="text-xs text-base-content/50">
+        Página {{ currentPage() }} de {{ totalPages() }} · {{ pageSize() }} por página
+      </span>
+    </div>
+
+    <!-- ── Tabla sin scroll propio ── -->
+    <div class="overflow-x-auto">
     <table class="table table-sm w-full">
-      <thead>
+      <thead class="text-xs uppercase tracking-wide bg-base-200/50">
         <tr>
           <th class="w-8">
-            <input type="checkbox" class="checkbox checkbox-xs" aria-label="Seleccionar todas" />
+            <input type="checkbox" class="checkbox checkbox-xs" />
           </th>
           <th>Usuario</th>
-          <th class="hidden lg:table-cell">País</th>
-          <th>Estado</th>
-          <th class="hidden md:table-cell">Verificado</th>
-          <th class="hidden lg:table-cell">Plan</th>
-          <!-- <th class="hidden xl:table-cell">Dispositivos</th> -->
-          <th class="hidden 2xl:table-cell">Creado</th>
+          <th class="hidden lg:table-cell">Servicios / Plan</th>
+          <th class="hidden xl:table-cell">Consumo GB</th>
+          <th class="hidden xl:table-cell">Pago</th>
+          <th class="hidden 2xl:table-cell">Vigencia</th>
           <th class="text-right w-36">Acciones</th>
         </tr>
       </thead>
       <tbody>
-
-
-        @for (u of this.ListUsers(); track u.id) {
-        <tr class="hover">
-          <td>
-            <input type="checkbox" class="checkbox checkbox-xs"
-              [attr.aria-label]="'Seleccionar ' + (u.firstNames || '') + ' ' + (u.lastNames || '')" />
-          </td>
-          <td>
-            <div class="flex items-center gap-3">
-              <div class="avatar">
-                <div class="w-10 h-10 rounded-xl">
-                  <img [src]="u.picture && u.picture.trim() ? u.picture : ('https://i.pravatar.cc/100?u=' + u.id)"
-                    [alt]="(u.firstNames || '') + ' ' + (u.lastNames || '')" />
+        @for (u of paginatedUsers(); track u.id) {
+          <tr class="hover">
+            <td>
+              <input type="checkbox" class="checkbox checkbox-xs"
+                     [attr.aria-label]="'Seleccionar ' + (u.firstNames || '') + ' ' + (u.lastNames || '')" />
+            </td>
+            <td>
+              <div class="flex items-center gap-3">
+                <!-- Avatar con punto online -->
+                <div class="avatar indicator">
+                  @if (isOnline(u.id)) {
+                    <span class="indicator-item badge badge-success badge-xs rounded-full"></span>
+                  }
+                  <div class="w-10 h-10 rounded-xl">
+                    <img [src]="u.picture && u.picture.trim() ? u.picture : ('https://i.pravatar.cc/100?u=' + u.id)"
+                         [alt]="(u.firstNames || '') + ' ' + (u.lastNames || '')" />
+                  </div>
+                </div>
+                <div>
+                  <div class="font-medium leading-tight capitalize">
+                    {{ u.firstNames }} {{ u.lastNames }}
+                    @if (isOnline(u.id)) {
+                      <span class="text-success text-[10px] ml-1">● en línea</span>
+                    }
+                  </div>
+                  <div class="text-[11px] opacity-60">{{ u.email }}</div>
+                  <div class="flex items-center gap-1 mt-0.5">
+                    <span class="badge badge-xs" [ngClass]="roleBadgeClass(u.role)">
+                      {{ roleLabelFor(u.role) }}
+                    </span>
+                    @if (isClientUser(u)) {
+                      <span class="text-[10px] opacity-40">→ módulo cliente</span>
+                    }
+                  </div>
+                  <span class="badge badge-sm"
+                        [class.badge-warning]="(u.state || '').toLowerCase().includes('pend')"
+                        [class.badge-success]="(u.state || '').toLowerCase().includes('act')"
+                        [class.badge-error]="(u.state || '').toLowerCase().includes('bloq') || (u.state || '').toLowerCase().includes('susp')"
+                        [class.badge-ghost]="!u.state || u.state === '-'">
+                    {{ u.state }}
+                  </span>
                 </div>
               </div>
-              <div>
-                <div class="font-medium leading-tight capitalize">{{ u.firstNames }} {{ u.lastNames }}</div>
-                <div class="text-[11px] opacity-70">ID:{{ u.id }}</div>
-                <div class="text-[11px] opacity-70">{{ u.email }}</div>
-                <!-- <div class="text-[11px] opacity-70 hidden md:block"> On: {{ u.onService }}</div> -->
-              </div>
-            </div>
-          </td>
-          <td class="hidden lg:table-cell">{{ u.country.countryName }}</td>
-          <td>
-            <span class="badge" [class.badge-warning]="(u.state || '').toLowerCase().includes('pend')"
-              [class.badge-success]="(u.state || '').toLowerCase().includes('act')"
-              [class.badge-error]="(u.state || '').toLowerCase().includes('susp')"
-              [class.badge-ghost]="!u.state || u.state === '-'">
-              {{ u.state }}
-            </span>
-          </td>
-          <td class="hidden md:table-cell">
-            <span class="badge" [ngClass]="u.verified ? 'badge-success' : 'badge-ghost'">
-              {{ u.verified ? 'Sí' : 'No' }}
-            </span>
-          </td>
-
-          <td class="hidden lg:table-cell">
-                <div class="flex items-center gap-2">
-                  <span class="badge">{{ u.services | printservicesclient }}</span>
-                  <!-- <span class="badge badge-ghost">{{ u.plan.devicesLimit }}</span> -->
+            </td>
+            <td class="hidden lg:table-cell">
+              @if (u.services && u.services.length) {
+                <div class="flex flex-col gap-0.5">
+                  @for (svc of u.services; track svc.plan_id) {
+                    <div class="flex items-center gap-1 flex-wrap">
+                      @if (svc.service_sortName) {
+                        <span class="badge badge-ghost badge-xs">{{ svc.service_sortName }}</span>
+                      }
+                      <span class="text-[11px] opacity-80">{{ svc.plan_title_name }}</span>
+                      @if (svc.limitDevices) {
+                        <span class="text-[10px] opacity-50">· {{ svc.limitDevices }} disp.</span>
+                      }
+                      @if (svc.price) {
+                        <span class="text-[10px] opacity-50">· {{ svc.currencySymbol }}{{ svc.price }}/{{ svc.kind }}</span>
+                      }
+                    </div>
+                  }
                 </div>
-              </td>
-
-              <!-- <td class="hidden xl:table-cell">
-                <span class="tabular-nums">{{ u.plans }}</span>/<span class="tabular-nums">{{ u.plan.devicesLimit }}</span>
-              </td> -->
-
-          <td class="hidden 2xl:table-cell">
-            {{ u.createdAt | date:'dd LLL yyyy · HH:mm' }}
-          </td>
-
-          <td class="text-right w-36">
-            <div class="flex items-center justify-end gap-1.5">
-              <div class="tooltip" data-tip="Ver">
-                <button class="btn btn-ghost btn-xs" type="button" onclick="user_drawer.showModal()">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2">
-                    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" />
-                    <circle cx="12" cy="12" r="3" />
+              } @else {
+                <span class="opacity-30 text-xs">Sin plan</span>
+              }
+            </td>
+            <td class="hidden xl:table-cell">
+              @if (vpnUsageLoading()) {
+                <span class="loading loading-dots loading-xs opacity-40"></span>
+              } @else {
+                <span class="text-xs font-mono" [ngClass]="gbClass(u.id)">{{ gbText(u.id) }}</span>
+              }
+            </td>
+            <td class="hidden xl:table-cell">
+              @if (hasPendingPayment(u.id)) {
+                <span class="badge badge-warning badge-sm gap-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 24 24" fill="none"
+                       stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                  </svg>
+                  Pendiente
+                </span>
+              } @else {
+                <span class="badge badge-success badge-sm gap-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 24 24" fill="none"
+                       stroke="currentColor" stroke-width="2">
+                    <path d="M20 6L9 17l-5-5"/>
+                  </svg>
+                  Al día
+                </span>
+              }
+            </td>
+            <td class="hidden 2xl:table-cell">
+              @if (u.services && u.services.length) {
+                <div class="flex flex-col gap-1">
+                  @for (svc of u.services; track svc.plan_id) {
+                    <div class="text-xs leading-tight">
+                      @if (svc.service_sortName) {
+                        <span class="badge badge-ghost badge-xs mr-1">{{ svc.service_sortName }}</span>
+                      }
+                      <span class="opacity-70">{{ svc.startedAt | date:'dd/MM/yyyy' }}</span>
+                      <span class="opacity-40 mx-0.5">→</span>
+                      @if (svc.endedAt) {
+                        <span [class.text-error]="isExpiredOrSoon(svc.endedAt)">
+                          {{ svc.endedAt | date:'dd/MM/yyyy' }}
+                        </span>
+                      } @else {
+                        <span class="opacity-40">∞</span>
+                      }
+                    </div>
+                  }
+                </div>
+              } @else {
+                <span class="opacity-30 text-xs">Sin servicio</span>
+              }
+            </td>
+            <td class="text-right">
+              <div class="dropdown dropdown-end">
+                <button tabindex="0" type="button" class="btn btn-ghost btn-xs gap-1">
+                  Opciones
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 24 24" fill="none"
+                       stroke="currentColor" stroke-width="2">
+                    <path d="M6 9l6 6 6-6"/>
                   </svg>
                 </button>
+                <ul tabindex="0"
+                    class="dropdown-content menu menu-sm bg-base-100 border rounded-box shadow-lg z-[50] w-48 p-1">
+                  <!-- Ver detalle -->
+                  <li>
+                    <button type="button" class="flex items-center gap-2" (click)="openView(u)">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none"
+                           stroke="currentColor" stroke-width="2">
+                        <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                      </svg>
+                      Ver detalle
+                    </button>
+                  </li>
+                  <!-- Contactar (siempre visible) -->
+                  <li>
+                    <button type="button" class="flex items-center gap-2 text-primary" (click)="openContact(u)">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none"
+                           stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                      </svg>
+                      Contactar
+                    </button>
+                  </li>
+                  @if (canUpdate()) {
+                    <li class="menu-title text-[10px] opacity-40 px-2 pt-1">Gestión</li>
+                    <!-- Editar -->
+                    <li>
+                      <button type="button" class="flex items-center gap-2" (click)="openEdit(u)">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2">
+                          <path d="M12 20h9"/>
+                          <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
+                        </svg>
+                        Editar
+                      </button>
+                    </li>
+                  }
+                  @if (canCreate()) {
+                    <!-- Asignar servicio -->
+                    <li>
+                      <button type="button" class="flex items-center gap-2 text-info" (click)="showDialogAssign(u)">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2">
+                          <path d="M12 5v14M5 12h14"/>
+                        </svg>
+                        Asignar servicio
+                      </button>
+                    </li>
+                  }
+                  @if (canUpdate()) {
+                    <!-- Cerrar sesión -->
+                    <li>
+                      <button type="button" class="flex items-center gap-2 text-warning"
+                              (click)="kickSession(u)" [disabled]="kicking()">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2">
+                          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                          <polyline points="16 17 21 12 16 7"/>
+                          <line x1="21" y1="12" x2="9" y2="12"/>
+                        </svg>
+                        Cerrar sesión
+                      </button>
+                    </li>
+                  }
+                  @if (canDelete()) {
+                    <li class="menu-title text-[10px] opacity-40 px-2 pt-1">Peligroso</li>
+                    <!-- Eliminar -->
+                    <li>
+                      <button type="button" class="flex items-center gap-2 text-error" (click)="openDelete(u)">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2">
+                          <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                          <line x1="10" y1="11" x2="10" y2="17"/>
+                          <line x1="14" y1="11" x2="14" y2="17"/>
+                        </svg>
+                        Eliminar
+                      </button>
+                    </li>
+                  }
+                </ul>
               </div>
-              <div class="tooltip" data-tip="Editar">
-                <button class="btn btn-ghost btn-xs" type="button" onclick="edit_user.showModal()">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2">
-                    <path d="M12 20h9" />
-                    <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
-                  </svg>
-                </button>
-              </div>
-              <div class="tooltip" data-tip="Eliminar">
-                <button class="btn btn-ghost btn-xs text-error" type="button" onclick="delete_user.showModal()">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2">
-                    <path d="M3 6h18" />
-                    <path d="M8 6v14a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V6" />
-                    <path d="M10 11v6M14 11v6" />
-                    <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
-                  </svg>
-                </button>
-              </div>
-              <div class="tooltip" data-tip="Asignar Servicio">
-                <button class="btn btn-ghost btn-xs" type="button" (click)="this.showDialogAssign(u)">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2">
-                    <path d="M12 20h9" />
-                    <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-          </td>
-        </tr>
+            </td>
+          </tr>
         }
-
-        <!-- /fila ejemplo -->
+        @if (filteredUsers().length === 0) {
+          <tr>
+            <td colspan="7" class="text-center py-10 opacity-50">No se encontraron usuarios.</td>
+          </tr>
+        }
       </tbody>
     </table>
-  </div>
+    </div><!-- /overflow-x-auto -->
 
-  <!-- Pagination -->
-  <div class="mt-3 flex items-center justify-between">
-    <p class="text-sm opacity-70">Mostrando 1–1 de 1</p>
-    <nav class="join">
-      <button class="btn btn-xs join-item" disabled>«</button>
-      <button class="btn btn-xs join-item btn-active" aria-current="page">1</button>
-      <button class="btn btn-xs join-item" disabled>»</button>
-    </nav>
-  </div>
+    <!-- ── Paginación ── -->
+    @if (totalPages() > 1) {
+      <div class="flex justify-center items-center gap-1 py-3 border-t flex-wrap">
+        <button class="btn btn-xs btn-ghost" [disabled]="currentPage() <= 1"
+                (click)="goToPage(currentPage() - 1)">‹</button>
+        @for (p of pageNumbers(); track $index) {
+          @if (p === '...') {
+            <span class="btn btn-xs btn-disabled px-2">…</span>
+          } @else {
+            <button class="btn btn-xs"
+                    [class.btn-primary]="p === currentPage()"
+                    [class.btn-ghost]="p !== currentPage()"
+                    (click)="goToPage(+p)">{{ p }}</button>
+          }
+        }
+        <button class="btn btn-xs btn-ghost" [disabled]="currentPage() >= totalPages()"
+                (click)="goToPage(currentPage() + 1)">›</button>
+      </div>
+    }
+
+  </div><!-- /card -->
 </section>
 
-<!-- MODALS -->
+<!-- ─────────────────────── MODALES ─────────────────────── -->
+
+<!-- VER usuario -->
 <dialog id="user_drawer" class="modal">
-  <div class="modal-box w-11/12 max-w-3xl">
+  <div class="modal-box w-11/12 max-w-4xl max-h-[90vh] overflow-y-auto">
     <form method="dialog">
       <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button>
     </form>
 
-    <div class="mb-4 flex items-center gap-4">
-      <div class="avatar">
-        <div class="w-16 rounded-2xl">
-          <img src="https://i.pravatar.cc/160?u=3ec951c0-491f-4078-beff-4f658b8ea7a1" alt="Carlos Villar" />
+    <!-- Header -->
+    <div class="flex items-start gap-4 mb-5">
+      <div class="avatar indicator shrink-0">
+        @if (isOnline(selectedUser().id)) {
+          <span class="indicator-item badge badge-success badge-xs rounded-full"></span>
+        }
+        <div class="w-20 rounded-2xl">
+          <img [src]="selectedUser().picture && selectedUser().picture.trim()
+                        ? selectedUser().picture
+                        : ('https://i.pravatar.cc/160?u=' + selectedUser().id)"
+               [alt]="selectedUser().firstNames + ' ' + selectedUser().lastNames" />
         </div>
       </div>
-      <div>
-        <h2 class="text-xl font-bold capitalize leading-tight">carlos villar</h2>
-        <p class="text-sm opacity-70">calberto185____hotmail.com · Perú</p>
-        <p class="text-xs opacity-60">ID: 3ec951c0-491f-4078-beff-4f658b8ea7a1</p>
+      <div class="flex-1 min-w-0">
+        <div class="flex flex-wrap items-center gap-2">
+          <h2 class="text-xl font-bold capitalize leading-tight">
+            {{ selectedUser().firstNames }} {{ selectedUser().lastNames }}
+          </h2>
+          @if (isOnline(selectedUser().id)) {
+            <span class="badge badge-success badge-sm">● En línea</span>
+          } @else {
+            <span class="badge badge-ghost badge-sm">Desconectado</span>
+          }
+          <span class="badge badge-sm" [ngClass]="stateClass(selectedUser().state)">
+            {{ selectedUser().state }}
+          </span>
+          <span class="badge badge-sm" [ngClass]="roleBadgeClass(selectedUser().role)">
+            {{ roleLabelFor(selectedUser().role) }}
+          </span>
+        </div>
+        <p class="text-sm opacity-70 mt-0.5">{{ selectedUser().email }}</p>
+        <p class="text-xs opacity-40 mt-0.5 font-mono">ID: {{ selectedUser().id }}</p>
+        <!-- Pago -->
+        <div class="mt-1">
+          @if (hasPendingPayment(selectedUser().id)) {
+            <span class="badge badge-warning badge-sm gap-1">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              Pago pendiente
+            </span>
+          } @else {
+            <span class="badge badge-success badge-sm gap-1">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2">
+                <path d="M20 6L9 17l-5-5"/>
+              </svg>
+              Pago al día
+            </span>
+          }
+        </div>
       </div>
     </div>
 
-    <div class="grid gap-4 md:grid-cols-2">
-      <div class="card border bg-base-200/60">
-        <div class="card-body p-4">
-          <h3 class="card-title text-sm">Detalles</h3>
-          <ul class="space-y-1 text-sm">
-            <li><span class="opacity-70">Teléfono:</span> 79960329971</li>
-            <li><span class="opacity-70">DNI:</span> 987654321</li>
-            <li><span class="opacity-70">Plan:</span> simple <span class="badge badge-ghost ml-1">-</span></li>
-            <li><span class="opacity-70">Dispositivos:</span> 0 / 1</li>
-            <li><span class="opacity-70">Creado:</span> 08 Ago 2025 · 21:54</li>
-          </ul>
+    <!-- Grid de tarjetas -->
+    <div class="grid gap-3 sm:grid-cols-2">
+
+      <!-- Información personal -->
+      <div class="card border bg-base-200/50 rounded-xl">
+        <div class="card-body p-4 gap-2">
+          <h3 class="font-semibold text-sm flex items-center gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 opacity-60" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+            Información personal
+          </h3>
+          <dl class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
+            <dt class="opacity-60 whitespace-nowrap">País</dt>
+            <dd>{{ selectedUser().country.countryName || '—' }}</dd>
+
+            <dt class="opacity-60 whitespace-nowrap">DNI / Cédula</dt>
+            <dd>{{ selectedUser().dni || '—' }}</dd>
+
+            <dt class="opacity-60 whitespace-nowrap">Teléfono</dt>
+            <dd>
+              @if (selectedUser().telephone.length) {
+                {{ selectedUser().telephone[0].phoneCode }} {{ selectedUser().telephone[0].phone }}
+              } @else {
+                —
+              }
+            </dd>
+
+            <dt class="opacity-60 whitespace-nowrap">Registrado</dt>
+            <dd>{{ selectedUser().createdAt | date:'dd LLL yyyy · HH:mm' }}</dd>
+          </dl>
         </div>
       </div>
 
-      <div class="card border bg-base-200/60">
-        <div class="card-body p-4">
-          <h3 class="card-title text-sm">Estado & Seguridad</h3>
-          <ul class="space-y-1 text-sm">
-            <li><span class="opacity-70">Rol:</span> standar</li>
-            <li><span class="opacity-70">Admin:</span> false</li>
-            <li><span class="opacity-70">Estado:</span> Pendiente</li>
-            <li><span class="opacity-70">Verificado:</span> false</li>
-            <li><span class="opacity-70">Bloqueado:</span> false</li>
-            <li><span class="opacity-70">Suspendido:</span> false</li>
-            <li><span class="opacity-70">En servicio:</span> false</li>
-          </ul>
+      <!-- Cuenta & seguridad -->
+      <div class="card border bg-base-200/50 rounded-xl">
+        <div class="card-body p-4 gap-2">
+          <h3 class="font-semibold text-sm flex items-center gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 opacity-60" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            Cuenta & seguridad
+          </h3>
+          <dl class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
+            <dt class="opacity-60 whitespace-nowrap">Rol</dt>
+            <dd class="flex items-center gap-1 flex-wrap">
+              <span class="badge badge-xs" [ngClass]="roleBadgeClass(selectedUser().role)">
+                {{ roleLabelFor(selectedUser().role) }}
+              </span>
+              @if (isClientUser(selectedUser())) {
+                <span class="text-[10px] opacity-40">módulo cliente</span>
+              } @else {
+                <span class="text-[10px] opacity-40">panel admin</span>
+              }
+            </dd>
+
+            <dt class="opacity-60 whitespace-nowrap">Verificado</dt>
+            <dd>
+              <span class="badge badge-xs" [ngClass]="selectedUser().verified ? 'badge-success' : 'badge-ghost'">
+                {{ selectedUser().verified ? 'Sí' : 'No' }}
+              </span>
+              @if (selectedUser().verified && selectedUser().verifiedAt) {
+                <span class="text-[10px] opacity-40 ml-1">
+                  {{ selectedUser().verifiedAt | date:'dd LLL yyyy' }}
+                </span>
+              }
+            </dd>
+
+            <dt class="opacity-60 whitespace-nowrap">Suspendido</dt>
+            <dd>
+              <span class="badge badge-xs" [ngClass]="selectedUser().suspend ? 'badge-warning' : 'badge-ghost'">
+                {{ selectedUser().suspend ? 'Sí' : 'No' }}
+              </span>
+            </dd>
+
+            <dt class="opacity-60 whitespace-nowrap">Bloqueado</dt>
+            <dd>
+              <span class="badge badge-xs" [ngClass]="selectedUser().bloqued ? 'badge-error' : 'badge-ghost'">
+                {{ selectedUser().bloqued ? 'Sí' : 'No' }}
+              </span>
+            </dd>
+
+            <dt class="opacity-60 whitespace-nowrap">En servicio</dt>
+            <dd>
+              <span class="badge badge-xs" [ngClass]="selectedUser().onService ? 'badge-info' : 'badge-ghost'">
+                {{ selectedUser().onService ? 'Activo' : 'No' }}
+              </span>
+            </dd>
+          </dl>
         </div>
       </div>
+
+      <!-- Servicios / Planes -->
+      <div class="card border bg-base-200/50 rounded-xl sm:col-span-2">
+        <div class="card-body p-4 gap-2">
+          <h3 class="font-semibold text-sm flex items-center gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 opacity-60" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M8.56 2.75c4.37 6.03 6.02 9.42 8.03 17.72m2.54-15.38c-3.72 4.35-8.94 5.66-16.88 5.85m19.5 1.9c-3.5-.93-6.63-.82-8.94 0-2.58.92-5.01 2.86-7.44 6.32"/>
+            </svg>
+            Servicios y planes contratados
+          </h3>
+          @if (selectedUser().services.length) {
+            <div class="flex flex-col gap-2">
+              @for (svc of selectedUser().services; track svc.plan_id) {
+                <div class="flex flex-wrap items-start gap-x-4 gap-y-1 rounded-lg border bg-base-100 p-3 text-sm">
+                  <div class="flex items-center gap-2">
+                    @if (svc.service_sortName) {
+                      <span class="badge badge-ghost badge-sm">{{ svc.service_sortName }}</span>
+                    }
+                    <span class="font-medium">{{ svc.plan_title_name }}</span>
+                    <span class="badge badge-sm" [ngClass]="svc.active ? 'badge-success' : 'badge-error'">
+                      {{ svc.active ? 'Activo' : 'Inactivo' }}
+                    </span>
+                  </div>
+                  <div class="flex flex-wrap gap-x-4 gap-y-0.5 text-xs opacity-70 w-full mt-1">
+                    @if (svc.price) {
+                      <span>
+                        <span class="opacity-60">Precio:</span>
+                        {{ svc.currencySymbol }}{{ svc.price }}/{{ svc.kind }}
+                      </span>
+                    }
+                    @if (svc.limitDevices) {
+                      <span>
+                        <span class="opacity-60">Dispositivos:</span>
+                        {{ svc.limitDevices }}
+                      </span>
+                    }
+                    @if (svc.startedAt) {
+                      <span>
+                        <span class="opacity-60">Inicio:</span>
+                        {{ svc.startedAt | date:'dd LLL yyyy' }}
+                      </span>
+                    }
+                    @if (svc.endedAt) {
+                      <span [class.text-error]="isExpiredOrSoon(svc.endedAt)">
+                        <span class="opacity-60">Vence:</span>
+                        {{ svc.endedAt | date:'dd LLL yyyy' }}
+                      </span>
+                    } @else {
+                      <span class="opacity-50">Sin vencimiento</span>
+                    }
+                    @if (svc.servers.length) {
+                      <span>
+                        <span class="opacity-60">Servidor:</span>
+                        {{ svc.servers[0].server_name }} ({{ svc.servers[0].server_country }})
+                      </span>
+                    }
+                  </div>
+                  <!-- Acciones del servicio -->
+                  <div class="w-full mt-2 pt-2 border-t border-base-300/50 flex items-center justify-end gap-2 flex-wrap">
+                    <button type="button" class="btn btn-ghost btn-xs gap-1"
+                            (click)="openNotify(selectedUser(), svc)">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none"
+                           stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                      </svg>
+                      Notificar estado
+                    </button>
+                    <button type="button" class="btn btn-primary btn-xs gap-1"
+                            (click)="openSendConfig(selectedUser(), svc)">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none"
+                           stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                        <line x1="8" y1="21" x2="16" y2="21"/>
+                        <line x1="12" y1="17" x2="12" y2="21"/>
+                      </svg>
+                      Enviar configuración
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          } @else {
+            <p class="text-sm opacity-40">Sin servicios asignados.</p>
+          }
+        </div>
+      </div>
+
+      <!-- Observaciones -->
+      @if (selectedUser().observations) {
+        <div class="card border bg-base-200/50 rounded-xl sm:col-span-2">
+          <div class="card-body p-4 gap-1">
+            <h3 class="font-semibold text-sm flex items-center gap-1">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 opacity-60" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+              </svg>
+              Observaciones
+            </h3>
+            <p class="text-sm opacity-80 whitespace-pre-wrap">{{ selectedUser().observations }}</p>
+          </div>
+        </div>
+      }
     </div>
 
-    <div class="modal-action">
-      <button class="btn btn-ghost" type="button" onclick="edit_user.showModal()">Editar</button>
-      <button class="btn btn-error" type="button" onclick="delete_user.showModal()">Eliminar</button>
+    <!-- Acciones -->
+    <div class="modal-action flex-wrap gap-2 mt-4 border-t pt-4">
+      <button class="btn btn-primary btn-sm" type="button" (click)="openContact(selectedUser())">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+        Contactar
+      </button>
+      @if (canUpdate()) {
+        <button class="btn btn-ghost btn-sm" type="button" (click)="openEdit(selectedUser())">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <path d="M12 20h9M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
+          </svg>
+          Editar
+        </button>
+        <button class="btn btn-outline btn-success btn-sm" type="button"
+                (click)="verify(selectedUser())" [disabled]="selectedUser().verified">
+          Verificar
+        </button>
+        <button class="btn btn-outline btn-info btn-sm" type="button" (click)="reactivate(selectedUser())">
+          Reactivar
+        </button>
+        <button class="btn btn-outline btn-warning btn-sm" type="button" (click)="suspend(selectedUser())">
+          Suspender
+        </button>
+        <button class="btn btn-warning btn-sm" type="button"
+                (click)="kickSession(selectedUser())" [disabled]="kicking()">
+          @if (kicking()) {
+            <span class="loading loading-spinner loading-xs"></span>
+          } @else {
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+          }
+          Cerrar sesión
+        </button>
+      }
+      @if (canDelete()) {
+        <button class="btn btn-error btn-sm" type="button" (click)="openDelete(selectedUser())">
+          Eliminar
+        </button>
+      }
     </div>
   </div>
   <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
 </dialog>
 
+<!-- EDITAR usuario -->
 <dialog id="edit_user" class="modal">
   <div class="modal-box max-w-2xl">
-    <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
-        aria-label="Cerrar">✕</button></form>
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button>
+    </form>
     <h2 class="text-lg font-bold">Editar usuario</h2>
-    <div class="mt-2 grid gap-3 md:grid-cols-2">
-      <label class="input input-bordered w-full"><input type="text" value="carlos" class="w-full" /></label>
-      <label class="input input-bordered w-full"><input type="text" value="villar" class="w-full" /></label>
-      <label class="input input-bordered w-full md:col-span-2"><input type="email" value="calberto185____hotmail.com"
-          class="w-full" /></label>
-      <label class="input input-bordered w-full md:col-span-2"><input type="text" value="987654321"
-          class="w-full" /></label>
-      <label class="select select-bordered w-full md:col-span-2">
-        <select class="w-full" aria-label="Rol">
-          <option selected>standar</option>
-          <option>soporte</option>
-          <option>admin</option>
-        </select>
-      </label>
-      <div class="grid grid-cols-2 gap-3 md:col-span-2">
-        <label class="label cursor-pointer justify-start gap-3">
-          <input type="checkbox" class="toggle" aria-label="isAdmin" />
-          <span>Admin</span>
-        </label>
-        <label class="label cursor-pointer justify-start gap-3">
-          <input type="checkbox" class="toggle" aria-label="verified" />
-          <span>Verificado</span>
-        </label>
-        <label class="label cursor-pointer justify-start gap-3">
-          <input type="checkbox" class="toggle" aria-label="bloqued" />
-          <span>Bloqueado</span>
-        </label>
-        <label class="label cursor-pointer justify-start gap-3">
-          <input type="checkbox" class="toggle" aria-label="suspend" />
-          <span>Suspendido</span>
-        </label>
-        <label class="label cursor-pointer justify-start gap-3">
-          <input type="checkbox" class="toggle" aria-label="onService" />
-          <span>En servicio</span>
-        </label>
+    <form [formGroup]="editForm" (ngSubmit)="onEditSubmit()" class="mt-3 grid gap-3 md:grid-cols-2" novalidate>
+      <div class="form-control w-full">
+        <label class="label"><span class="label-text">Nombres *</span></label>
+        <input formControlName="firstNames" type="text" class="input input-bordered input-sm w-full"
+               placeholder="Nombres" />
       </div>
-    </div>
-    <div class="modal-action">
-      <button class="btn btn-ghost" type="button">Cancelar</button>
-      <button class="btn btn-primary" type="button">Guardar</button>
-    </div>
+      <div class="form-control w-full">
+        <label class="label"><span class="label-text">Apellidos *</span></label>
+        <input formControlName="lastNames" type="text" class="input input-bordered input-sm w-full"
+               placeholder="Apellidos" />
+      </div>
+      <div class="form-control w-full md:col-span-2">
+        <label class="label"><span class="label-text">Correo *</span></label>
+        <input formControlName="email" type="email" class="input input-bordered input-sm w-full"
+               placeholder="correo@ejemplo.com" />
+      </div>
+      <div class="form-control w-full md:col-span-2">
+        <label class="label">
+          <span class="label-text">Rol</span>
+          <span class="label-text-alt opacity-60">Sin rol → módulo cliente</span>
+        </label>
+        <select formControlName="role" class="select select-bordered select-sm w-full">
+          <option value="">Sin rol (Cliente)</option>
+          @for (r of ListRoles(); track r.id) {
+            <option [value]="r.name">{{ r.label }} — acceso panel admin</option>
+          }
+        </select>
+      </div>
+      <div class="form-control w-full md:col-span-2">
+        <label class="label"><span class="label-text">Observaciones</span></label>
+        <textarea formControlName="observations" class="textarea textarea-bordered textarea-sm w-full"
+                  rows="2" placeholder="Observaciones internas..."></textarea>
+      </div>
+      <div class="modal-action md:col-span-2 pt-2">
+        <button type="button" class="btn btn-ghost btn-sm" (click)="cerrarDialogoEditUser()">Cancelar</button>
+        <button type="submit" class="btn btn-primary btn-sm" [disabled]="editForm.invalid">Guardar</button>
+      </div>
+    </form>
   </div>
   <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
 </dialog>
 
+<!-- ELIMINAR usuario -->
 <dialog id="delete_user" class="modal">
   <div class="modal-box">
-    <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
-        aria-label="Cerrar">✕</button></form>
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button>
+    </form>
     <h2 class="text-lg font-bold text-error">Eliminar usuario</h2>
-    <p class="py-2">Esta acción es permanente. ¿Deseas continuar?</p>
+    <p class="py-3 text-sm">Esta acción es permanente (soft-delete). ¿Eliminar a
+      <strong>{{ selectedUser().firstNames }} {{ selectedUser().lastNames }}</strong>?
+    </p>
     <div class="modal-action">
-      <button class="btn" type="button">Cancelar</button>
-      <button class="btn btn-error" type="button">Eliminar</button>
+      <button class="btn btn-ghost btn-sm" type="button" (click)="cerrarDialogoDeleteUser()">Cancelar</button>
+      <button class="btn btn-error btn-sm" type="button" (click)="deleteUser(selectedUser())"
+              [disabled]="deleting()">
+        @if (deleting()) {
+          <span class="loading loading-spinner loading-xs"></span>
+        }
+        Eliminar
+      </button>
     </div>
   </div>
   <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
 </dialog>
 
-<!-- Atajo: Ctrl/Cmd + K enfoca búsqueda -->
-<script>
-  document.addEventListener('keydown', (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
-      const input = document.getElementById('search-users');
-      if (input) { e.preventDefault(); input.focus(); }
-    }
-  });
-</script>
-
-
-<!-- ÚNICO modal de Agregar Usuario -->
+<!-- CREAR usuario -->
 <dialog id="add_user" class="modal">
   <div class="modal-box max-w-2xl">
-
-    <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button></form>
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button>
+    </form>
     <h2 class="text-lg font-bold">Nuevo usuario</h2>
-    <p class="mb-4 text-sm opacity-70">Crea una cuenta y asigna un rol inicial.</p>
-    <form class="grid gap-3 md:grid-cols-2" [formGroup]="userForm" (ngSubmit)="onSubmit()" novalidate autocomplete="on">
-      <!-- Nombres -->
-      <div class="w-full md:col-span-2">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Nombres</label>
-        <div class="flex items-center border border-gray-300 rounded-lg px-3 py-2
-             focus-within:ring-2 focus-within:ring-blue-500 bg-white">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" viewBox="0 0 24 24"
-            fill="none" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-            <circle cx="12" cy="7" r="4" />
-          </svg>
-          <input type="text" formControlName="firstNames" placeholder="Escribe los nombres" required
-            autocomplete="given-name" class="w-full outline-none text-gray-700 placeholder-gray-400" />
-        </div>
+    <p class="text-sm opacity-70 mb-3">Crea una cuenta y asigna un rol inicial.</p>
+
+    <form class="grid gap-3 md:grid-cols-2" [formGroup]="userForm" (ngSubmit)="onSubmit()" novalidate>
+      <div class="form-control w-full md:col-span-2">
+        <label class="label"><span class="label-text">Nombres *</span></label>
+        <input type="text" formControlName="firstNames" class="input input-bordered input-sm w-full"
+               placeholder="Nombres" />
         @if (userForm.get('firstNames')?.touched && userForm.get('firstNames')?.invalid) {
-        <p class="text-red-500 text-sm mt-1">Ingrese los nombres.</p>
+          <label class="label"><span class="label-text-alt text-error">Campo requerido.</span></label>
         }
       </div>
 
-      <!-- Apellidos -->
-      <div class="w-full md:col-span-2">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Apellidos</label>
-        <div class="flex items-center border border-gray-300 rounded-lg px-3 py-2
-             focus-within:ring-2 focus-within:ring-blue-500 bg-white">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" viewBox="0 0 24 24"
-            fill="none" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-            <circle cx="12" cy="7" r="4" />
-          </svg>
-          <input type="text" formControlName="lastNames" placeholder="Escribe los apellidos" required
-            autocomplete="family-name" class="w-full outline-none text-gray-700 placeholder-gray-400" />
-        </div>
+      <div class="form-control w-full md:col-span-2">
+        <label class="label"><span class="label-text">Apellidos *</span></label>
+        <input type="text" formControlName="lastNames" class="input input-bordered input-sm w-full"
+               placeholder="Apellidos" />
         @if (userForm.get('lastNames')?.touched && userForm.get('lastNames')?.invalid) {
-        <p class="text-red-500 text-sm mt-1">Ingrese los apellidos.</p>
+          <label class="label"><span class="label-text-alt text-error">Campo requerido.</span></label>
         }
       </div>
 
-      <!-- DNI -->
-      <!-- <div class="w-full md:col-span-2">
-    <label class="block text-sm font-medium text-gray-700 mb-1">Pasaporte / DNI</label>
-    <div
-      class="flex items-center border border-gray-300 rounded-lg px-3 py-2
-             focus-within:ring-2 focus-within:ring-blue-500 bg-white"
-    >
-      <svg xmlns="http://www.w3.org/2000/svg"
-           class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0"
-           viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-        <path stroke-linecap="round" stroke-linejoin="round"
-              d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5
-                 A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25
-                 M8.25 15h7.5m-7.5 3H12m-1.5-15H5.625c-.621 0-1.125.504-1.125
-                 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0
-                 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
-      </svg>
-      <input
-        type="text"
-        formControlName="dni"
-        placeholder="Escribe tu identificación"
-        required
-        pattern="[A-Za-z0-9\-]{5,20}"
-        title="Entre 5 y 20 caracteres alfanuméricos (puede incluir guion)"
-        autocomplete="off"
-        class="w-full outline-none text-gray-700 placeholder-gray-400"
-      />
-    </div>
-    @if (userForm.get('dni')?.touched && userForm.get('dni')?.invalid) {
-      <p class="text-red-500 text-sm mt-1">Identificación inválida.</p>
-    }
-  </div> -->
-
-      <!-- Email -->
-      <div class="w-full">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Correo electrónico</label>
-        <div class="flex items-center border border-gray-300 rounded-lg px-3 py-2
-             focus-within:ring-2 focus-within:ring-blue-500 bg-white">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" viewBox="0 0 24 24"
-            fill="none" stroke="currentColor" stroke-width="2.5">
-            <rect width="20" height="16" x="2" y="4" rx="2"></rect>
-            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
-          </svg>
-          <input type="email" formControlName="email" placeholder="correo@ejemplo.com" required autocomplete="email"
-            class="w-full outline-none text-gray-700 placeholder-gray-400" />
-        </div>
+      <div class="form-control w-full">
+        <label class="label"><span class="label-text">Correo *</span></label>
+        <input type="email" formControlName="email" class="input input-bordered input-sm w-full"
+               placeholder="correo@ejemplo.com" autocomplete="email" />
         @if (userForm.get('email')?.touched && userForm.get('email')?.invalid) {
-        <p class="text-red-500 text-sm mt-1">Correo electrónico inválido.</p>
+          <label class="label"><span class="label-text-alt text-error">Correo inválido.</span></label>
         }
       </div>
 
-      <!-- Contraseña -->
-      <div class="w-full">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Contraseña temporal</label>
-        <div class="flex items-center border border-gray-300 rounded-lg px-3 py-2
-             focus-within:ring-2 focus-within:ring-blue-500 bg-white">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" viewBox="0 0 24 24"
-            fill="none" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round"
-              d="M5 11V7a7 7 0 0114 0v4m-7 7a2 2 0 100-4 2 2 0 000 4z" />
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-          </svg>
-          <input type="password" formControlName="password" placeholder="Contraseña temporal" required minlength="8"
-            autocomplete="new-password" class="w-full outline-none text-gray-700 placeholder-gray-400" />
-        </div>
+      <div class="form-control w-full">
+        <label class="label"><span class="label-text">Contraseña temporal *</span></label>
+        <input type="password" formControlName="password" class="input input-bordered input-sm w-full"
+               placeholder="Mínimo 8 caracteres" autocomplete="new-password" />
         @if (userForm.get('password')?.touched && userForm.get('password')?.invalid) {
-        <p class="text-red-500 text-sm mt-1">
-          Debe tener al menos 8 caracteres e incluir número, minúscula y mayúscula.
-        </p>
+          <label class="label"><span class="label-text-alt text-error">Mínimo 8 caracteres.</span></label>
         }
       </div>
 
-      <!-- País -->
-      <div class="w-full">
-        <label class="block text-sm font-medium text-gray-700 mb-1">País de Origen: </label>
-        <div class="flex items-center border border-gray-300 rounded-lg px-3 py-2
-             focus-within:ring-2 focus-within:ring-blue-500 bg-white">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" fill="none"
-            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="2" y1="12" x2="22" y2="12"></line>
-            <path d="M12 2a15 15 0 0 1 4 10 15 15 0 0 1-4 10 15 15 0 0 1-4-10 15 15 0 0 1 4-10z"></path>
-          </svg>
-          <select formControlName="country" required class="w-full outline-none text-gray-700 bg-transparent">
-            <option value="" disabled selected hidden>Selecciona tu país</option>
-            @for (item of this.ListCountries(); track item.countryName; let idx = $index) {
-            <option [value]="item.id">{{ item.countryName }}</option>
-            }
-          </select>
-        </div>
-        @if (userForm.get('country')?.touched && userForm.get('country')?.invalid) {
-        <p class="text-red-500 text-sm mt-1">Seleccione un país.</p>
-        }
+      <div class="form-control w-full">
+        <label class="label"><span class="label-text">País *</span></label>
+        <select formControlName="country" class="select select-bordered select-sm w-full">
+          <option value="" disabled selected hidden>Selecciona un país</option>
+          @for (item of ListCountries(); track item.id) {
+            <option [value]="item.id">{{ item.flag }} {{ item.countryName }}</option>
+          }
+        </select>
       </div>
 
-      <!-- Teléfono -->
-      <div class="w-full">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
-
-        <div
-          class="flex items-center border border-gray-300 rounded-lg px-2 py-2 bg-white focus-within:ring-2 focus-within:ring-blue-500">
-          <!-- Selector de país -->
-          <div class="relative">
-            <button type="button" (click)="this.toggleDropdown.set(!this.toggleDropdown())"
-              class="flex items-center px-2 text-gray-700 hover:text-blue-500 focus:outline-none">
-              @if(!this.selectedCountry().phoneCode) {
-              <svg class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 16 16" aria-hidden="true">
-                <g fill="none">
-                  <path
-                    d="M7.25 11.5C6.83579 11.5 6.5 11.8358 6.5 12.25C6.5 12.6642 6.83579 13 7.25 13H8.75C9.16421 13 9.5 12.6642 9.5 12.25C9.5 11.8358 9.16421 11.5 8.75 11.5H7.25Z"
-                    fill="currentColor"></path>
-                  <path fill-rule="evenodd" clip-rule="evenodd"
-                    d="M6 1C4.61929 1 3.5 2.11929 3.5 3.5V12.5C3.5 13.8807 4.61929 15 6 15H10C11.3807 15 12.5 13.8807 12.5 12.5V3.5C12.5 2.11929 11.3807 1 10 1H6ZM10 2.5H9.5V3C9.5 3.27614 9.27614 3.5 9 3.5H7C6.72386 3.5 6.5 3.27614 6.5 3V2.5H6C5.44771 2.5 5 2.94772 5 3.5V12.5C5 13.0523 5.44772 13.5 6 13.5H10C10.5523 13.5 11 13.0523 11 12.5V3.5C11 2.94772 10.5523 2.5 10 2.5Z"
-                    fill="currentColor"></path>
-                </g>
-              </svg>
+      <!-- Teléfono con selector de país -->
+      <div class="form-control w-full">
+        <label class="label"><span class="label-text">Teléfono *</span></label>
+        <div class="join w-full">
+          <!-- Selector prefijo -->
+          <div class="dropdown">
+            <button type="button" tabindex="0"
+                    class="join-item btn btn-sm btn-bordered border border-base-300 px-2"
+                    (click)="toggleDropdown.set(!toggleDropdown())">
+              @if (selectedCountry().phoneCode) {
+                <span>{{ selectedCountry().flag }} {{ selectedCountry().phoneCode }}</span>
               } @else {
-
-              <span class="mr-1">{{ this.selectedCountry().flag }}</span>
-              <span class="text-sm">{{ this.selectedCountry().phoneCode }}</span>
+                <span class="opacity-50">+</span>
               }
-              <svg class="w-4 h-4 ml-1 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+              <svg class="w-3 h-3 ml-1 opacity-60" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
                 <path fill="currentColor" d="M4 6l4 4 4-4z" />
               </svg>
             </button>
-
-            <!-- Menú desplegable -->
-
-            @if (this.toggleDropdown()) {
-            <div class="absolute z-10 mt-1 bg-white border border-gray-200 rounded-lg shadow-md w-60">
-              @for (c of ListCountries(); track c.id) {
-              <button type="button" class="flex w-full items-center px-2 py-1 text-sm hover:bg-gray-100"
-                (click)="this.changeCountry(c)">
-                <span class="mr-2">{{ c.flag }}</span>
-                <span class="mr-2">{{ c.phoneCode }}</span>
-                <span class="mr-2">{{ c.countryName }}</span>
-              </button>
-              }
-            </div>
+            @if (toggleDropdown()) {
+              <ul tabindex="0"
+                  class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-64 z-[80] max-h-60 overflow-y-auto">
+                @for (c of ListCountries(); track c.id) {
+                  <li>
+                    <button type="button" class="text-sm" (click)="changeCountry(c)">
+                      {{ c.flag }} {{ c.phoneCode }} — {{ c.countryName }}
+                    </button>
+                  </li>
+                }
+              </ul>
             }
           </div>
-
-          <!-- Campo de número -->
-          <input type="tel" formControlName="phone" placeholder="Número"
-            class="w-full outline-none px-2 text-gray-700 placeholder-gray-400 bg-transparent" inputmode="numeric"
-            autocomplete="tel" />
+          <input type="tel" formControlName="phone" inputmode="numeric"
+                 class="join-item input input-bordered input-sm w-full" placeholder="Número" />
         </div>
-
         @if (userForm.get('phone')?.touched && userForm.get('phone')?.invalid) {
-        <p class="text-red-500 text-sm">Ingresa un número válido.</p>
+          <label class="label"><span class="label-text-alt text-error">Número requerido.</span></label>
         }
       </div>
 
-
-      <!-- Servicios -->
-      <div class="w-full">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Servicios para:</label>
-        <div class="flex items-center border border-gray-300 rounded-lg px-3 py-2
-             focus-within:ring-2 focus-within:ring-blue-500 bg-white">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" fill="none"
-            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="2" y1="12" x2="22" y2="12"></line>
-            <path d="M12 2a15 15 0 0 1 4 10 15 15 0 0 1-4 10 15 15 0 0 1-4-10 15 15 0 0 1 4-10z"></path>
-          </svg>
-          <select formControlName="services" required class="w-full outline-none text-gray-700 bg-transparent">
-            <option value="" disabled selected hidden>Selecciona los servicios</option>
-            @for (item of this.ListServices(); track item.id; let idx = $index) {
-            <option [value]="item.id">{{ item.country.countryName }} | Servicio: {{ item.sortName }} | {{ item.longName
-              }} - {{ item.country.countryName }} </option>
-            }
-          </select>
-        </div>
-        @if (userForm.get('services')?.touched && userForm.get('services')?.invalid) {
-        <p class="text-red-500 text-sm mt-1">Selecciona los servicios.</p>
-        }
-      </div>
-
-      <!-- Plan -->
-      <div class="w-full">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Planes: </label>
-        <div class="flex items-center border border-gray-300 rounded-lg px-3 py-2
-             focus-within:ring-2 focus-within:ring-blue-500 bg-white">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" fill="none"
-            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="2" y1="12" x2="22" y2="12"></line>
-            <path d="M12 2a15 15 0 0 1 4 10 15 15 0 0 1-4 10 15 15 0 0 1-4-10 15 15 0 0 1 4-10z"></path>
-          </svg>
-          <select formControlName="planes" required class="w-full outline-none text-gray-700 bg-transparent">
-            <option value="" disabled selected hidden>Selecciona el plan</option>
-            @for (item of this.ListPlan(); track item.id; let idx = $index) {
-            <option [value]="item.id">Cliente: {{ item.service.country.countryName }} | Servicio: {{ item.service.sortName }} | Para: {{item.global ? "GLOBAL" : item.country.countryName}} |
-              {{ item.title_prefix }} - {{ item.title_name }} - {{ item.title_suffix }} | {{ item.currencySymbol }}{{
-              item.price }} / {{ item.kind }}</option>
-            }
-          </select>
-        </div>
-        @if (userForm.get('plan')?.touched && userForm.get('plan')?.invalid) {
-        <p class="text-red-500 text-sm mt-1">Selecciona el plan.</p>
-        }
-      </div>
-
-      <!-- Fecha registro -->
-      <div class="w-full">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Registro</label>
-
-        <div class="flex items-center border border-gray-300 rounded-lg px-3 py-2
-           focus-within:ring-2 focus-within:ring-blue-500 bg-white">
-          <!-- Ícono de calendario -->
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" viewBox="0 0 24 24"
-            fill="none">
-            <path stroke="currentColor" stroke-width="2" d="M8 7V3m8 4V3M3 11h18M5 5h14a2 2 0 0 1 2 2v14a2 2 0
-               0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z" />
-          </svg>
-
-          <!-- Campo tipo fecha -->
-          <input type="date" formControlName="createdAt"
-            class="w-full outline-none text-gray-700 placeholder-gray-400" />
-        </div>
-
-        @if (userForm.get('createdAt')?.touched && userForm.get('createdAt')?.invalid) {
-        <p class="text-red-500 text-sm mt-1">
-          @if (userForm.get('createdAt')?.errors?.['required']) {
-          La fecha es obligatoria.
-          } @else if (userForm.get('createdAt')?.errors?.['futureDate']) {
-          No puedes ingresar una fecha futura.
+      <div class="form-control w-full">
+        <label class="label">
+          <span class="label-text">Rol</span>
+          <span class="label-text-alt opacity-60">Sin rol → módulo cliente</span>
+        </label>
+        <select formControlName="role" class="select select-bordered select-sm w-full">
+          <option value="">Sin rol (Cliente)</option>
+          @for (r of ListRoles(); track r.id) {
+            <option [value]="r.name">{{ r.label }} — acceso panel admin</option>
           }
-        </p>
-        }
+        </select>
       </div>
 
-
-      <!-- Servidores -->
-      <div class="w-full">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Servidores para:</label>
-        <div class="flex items-center border border-gray-300 rounded-lg px-3 py-2
-             focus-within:ring-2 focus-within:ring-blue-500 bg-white">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" fill="none"
-            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="2" y1="12" x2="22" y2="12"></line>
-            <path d="M12 2a15 15 0 0 1 4 10 15 15 0 0 1-4 10 15 15 0 0 1-4-10 15 15 0 0 1 4-10z"></path>
-          </svg>
-          <select formControlName="servers" required class="w-full outline-none text-gray-700 bg-transparent">
-            <option value="" disabled selected hidden>Selecciona los servicios</option>
-            @for (item of this.ListServers(); track item.id; let idx = $index) {
-            <option [value]="item.id">{{ item.name }} | IP: {{ item.host }} | {{ item.country.countryName }} | active:
-              {{ item.active }} </option>
-            }
-          </select>
-        </div>
-        @if (userForm.get('servers')?.touched && userForm.get('servers')?.invalid) {
-        <p class="text-red-500 text-sm mt-1">Selecciona los Servidores.</p>
-        }
-      </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-      <!-- Rol -->
-      <div class="w-full">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Rol</label>
-        <div class="flex items-center border border-gray-300 rounded-lg px-3 py-2
-             focus-within:ring-2 focus-within:ring-blue-500 bg-white">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" viewBox="0 0 24 24"
-            fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M20 21v-2a4 4 0 0 0-3-3.87" />
-            <path d="M4 21v-2a4 4 0 0 1 3-3.87" />
-            <circle cx="12" cy="7" r="4" />
-          </svg>
-          <select formControlName="role" required class="w-full outline-none text-gray-700 bg-transparent">
-            <option value="" disabled selected hidden>Selecciona un rol</option>
-            <option value="standar">Standard</option>
-            <option value="soporte">Soporte</option>
-            <option value="admin">Administrador</option>
-          </select>
-        </div>
-        @if (userForm.get('role')?.touched && userForm.get('role')?.invalid) {
-        <p class="text-red-500 text-sm mt-1">Seleccione un rol.</p>
-        }
-      </div>
-
-      <!-- Observaciones -->
-    <div class="w-full  md:col-span-2">
-      <label class="block text-sm font-medium text-gray-700 mb-1">Nota</label>
-
-      <div
-        class="flex border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-blue-500"
-      >
-        <!-- Ícono opcional (nota o texto) -->
-        <svg xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0 mt-1"
-            viewBox="0 0 20 20" fill="none">
-          <path fill="currentColor"
-                d="M4 4a2 2 0 0 1 2-2h6.586A2 2 0 0 1 14 2.586L17.414 6A2 2 0 0 1 18 7.414V16a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4zm2 0v12h10V8h-3a1 1 0 0 1-1-1V4H6z"/>
-        </svg>
-
-        <!-- Campo textarea -->
-        <textarea
-          formControlName="observations"
-          placeholder="Escribe aquí una breve nota..."
-          rows="4"
-          maxlength="500"
-          class="w-full outline-none text-gray-700 placeholder-gray-400 bg-transparent resize-none"
-        ></textarea>
-      </div>
-
-      @if (userForm.get('observations')?.touched && userForm.get('observations')?.invalid) {
-        <p class="text-red-500 text-sm mt-1">
-          @if (userForm.get('observations')?.errors?.['required']) {
-            Este campo es obligatorio.
-          } @else if (userForm.get('observations')?.errors?.['maxlength']) {
-            Has superado el máximo de caracteres permitidos.
+      <div class="form-control w-full">
+        <label class="label"><span class="label-text">Servicio</span></label>
+        <select formControlName="services" class="select select-bordered select-sm w-full">
+          <option value="">Sin servicio</option>
+          @for (item of ListServices(); track item.id) {
+            <option [value]="item.id">{{ item.sortName }} — {{ item.country?.countryName }}</option>
           }
-        </p>
-      }
-    </div>
+        </select>
+      </div>
 
+      <div class="form-control w-full">
+        <label class="label"><span class="label-text">Plan</span></label>
+        <select formControlName="planes" class="select select-bordered select-sm w-full">
+          <option value="">Sin plan</option>
+          @for (item of ListPlan(); track item.id) {
+            <option [value]="item.id">
+              {{ item.title_prefix }} {{ item.title_name }} {{ item.title_suffix }}
+              — {{ item.currencySymbol }}{{ item.price }}/{{ item.kind }}
+            </option>
+          }
+        </select>
+      </div>
 
-      <!-- Botones -->
+      <div class="form-control w-full">
+        <label class="label"><span class="label-text">Servidor</span></label>
+        <select formControlName="servers" class="select select-bordered select-sm w-full">
+          <option value="">Sin servidor</option>
+          @for (item of ListServers(); track item.id) {
+            <option [value]="item.id">{{ item.name }} — {{ item.country.countryName }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="form-control w-full">
+        <label class="label"><span class="label-text">Fecha inicio servicio</span></label>
+        <input type="date" formControlName="createdAt" class="input input-bordered input-sm w-full" />
+      </div>
+
+      <div class="form-control w-full md:col-span-2">
+        <label class="label"><span class="label-text">Observaciones</span></label>
+        <textarea formControlName="observations" class="textarea textarea-bordered textarea-sm w-full"
+                  rows="2" placeholder="Notas internas..." maxlength="500"></textarea>
+      </div>
+
       <div class="modal-action md:col-span-2">
-        <button class="btn btn-ghost" type="button" (click)="cerrarDialogo()">Cancelar</button>
-        <button class="btn btn-primary" type="submit" [disabled]="userForm.invalid">Crear</button>
+        <button class="btn btn-ghost btn-sm" type="button" (click)="cerrarDialogo()">Cancelar</button>
+        <button class="btn btn-primary btn-sm" type="submit" [disabled]="userForm.invalid">Crear</button>
       </div>
     </form>
-
-
-    @if (hasError()) {
-    <div role="alert" class="alert alert-error alert-soft animate-fadeIn fixed bottom-5 right-5 w-64">
-      <span>{{hasError()}}.</span>
-    </div>
-    }
-
   </div>
   <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
 </dialog>
 
-<!-- ÚNICO modal de Agregar Se4rvicio a Usuario -->
-<dialog id="add_service_user" class="modal">
-  <div class="modal-box max-w-2xl">
-
-    <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button></form>
-    <h2 class="text-lg font-bold">Nuevo servicio para usuario</h2>
-    <p class="mb-4 text-sm opacity-70">Asigna un nuevo servicio al usuario.</p>
-    <form class="grid gap-3 md:grid-cols-2" [formGroup]="userServiceForm" (ngSubmit)="onSubmitAssignService()" novalidate autocomplete="on">
-
-      <!-- Servicios -->
-      <div class="w-full">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Servicios para:</label>
-        <div class="flex items-center border border-gray-300 rounded-lg px-3 py-2
-             focus-within:ring-2 focus-within:ring-blue-500 bg-white">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" fill="none"
-            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="2" y1="12" x2="22" y2="12"></line>
-            <path d="M12 2a15 15 0 0 1 4 10 15 15 0 0 1-4 10 15 15 0 0 1-4-10 15 15 0 0 1 4-10z"></path>
-          </svg>
-          <select formControlName="services" required class="w-full outline-none text-gray-700 bg-transparent">
-            <option value="" disabled selected hidden>Selecciona los servicios</option>
-            @for (item of this.ListServices(); track item.id; let idx = $index) {
-            <option [value]="item.id">{{ item.country.countryName }} | Servicio: {{ item.sortName }} | {{ item.longName
-              }} - {{ item.country.countryName }} </option>
-            }
-          </select>
-        </div>
-        @if (userServiceForm.get('services')?.touched && userServiceForm.get('services')?.invalid) {
-        <p class="text-red-500 text-sm mt-1">Selecciona los servicios.</p>
-        }
-      </div>
-
-      <!-- Plan -->
-      <div class="w-full">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Planes: </label>
-        <div class="flex items-center border border-gray-300 rounded-lg px-3 py-2
-             focus-within:ring-2 focus-within:ring-blue-500 bg-white">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" fill="none"
-            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="2" y1="12" x2="22" y2="12"></line>
-            <path d="M12 2a15 15 0 0 1 4 10 15 15 0 0 1-4 10 15 15 0 0 1-4-10 15 15 0 0 1 4-10z"></path>
-          </svg>
-          <select formControlName="planes" required class="w-full outline-none text-gray-700 bg-transparent">
-            <option value="" disabled selected hidden>Selecciona el plan</option>
-            @for (item of this.ListPlan(); track item.id; let idx = $index) {
-            <option [value]="item.id">Cliente: {{ item.service.country.countryName }} | Servicio: {{ item.service.sortName }} | Para: {{item.global ? "GLOBAL" : item.country.countryName}} |
-              {{ item.title_prefix }} - {{ item.title_name }} - {{ item.title_suffix }} | {{ item.currencySymbol }}{{
-              item.price }} / {{ item.kind }}</option>
-            }
-          </select>
-        </div>
-        @if (userServiceForm.get('plan')?.touched && userServiceForm.get('plan')?.invalid) {
-        <p class="text-red-500 text-sm mt-1">Selecciona el plan.</p>
-        }
-      </div>
-
-      <!-- Fecha registro -->
-      <div class="w-full">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Registro</label>
-
-        <div class="flex items-center border border-gray-300 rounded-lg px-3 py-2
-           focus-within:ring-2 focus-within:ring-blue-500 bg-white">
-          <!-- Ícono de calendario -->
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" viewBox="0 0 24 24"
-            fill="none">
-            <path stroke="currentColor" stroke-width="2" d="M8 7V3m8 4V3M3 11h18M5 5h14a2 2 0 0 1 2 2v14a2 2 0
-               0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z" />
-          </svg>
-
-          <!-- Campo tipo fecha -->
-          <input type="date" formControlName="createdAt"
-            class="w-full outline-none text-gray-700 placeholder-gray-400" />
-        </div>
-
-        @if (userServiceForm.get('createdAt')?.touched && userServiceForm.get('createdAt')?.invalid) {
-        <p class="text-red-500 text-sm mt-1">
-          @if (userServiceForm.get('createdAt')?.errors?.['required']) {
-          La fecha es obligatoria.
-          } @else if (userServiceForm.get('createdAt')?.errors?.['futureDate']) {
-          No puedes ingresar una fecha futura.
-          }
-        </p>
-        }
-      </div>
-
-
-      <!-- Servidores -->
-      <div class="w-full">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Servidores para:</label>
-        <div class="flex items-center border border-gray-300 rounded-lg px-3 py-2
-             focus-within:ring-2 focus-within:ring-blue-500 bg-white">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" fill="none"
-            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="2" y1="12" x2="22" y2="12"></line>
-            <path d="M12 2a15 15 0 0 1 4 10 15 15 0 0 1-4 10 15 15 0 0 1-4-10 15 15 0 0 1 4-10z"></path>
-          </svg>
-          <select formControlName="servers" required class="w-full outline-none text-gray-700 bg-transparent">
-            <option value="" disabled selected hidden>Selecciona los servicios</option>
-            @for (item of this.ListServers(); track item.id; let idx = $index) {
-            <option [value]="item.id">{{ item.name }} | IP: {{ item.host }} | {{ item.country.countryName }} | active:
-              {{ item.active }} </option>
-            }
-          </select>
-        </div>
-        @if (userServiceForm.get('servers')?.touched && userServiceForm.get('servers')?.invalid) {
-        <p class="text-red-500 text-sm mt-1">Selecciona los Servidores.</p>
-        }
-      </div>
-
-      <!-- Observaciones -->
-    <div class="w-full  md:col-span-2">
-      <label class="block text-sm font-medium text-gray-700 mb-1">Nota</label>
-
-      <div
-        class="flex border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-blue-500"
-      >
-        <!-- Ícono opcional (nota o texto) -->
-        <svg xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0 mt-1"
-            viewBox="0 0 20 20" fill="none">
-          <path fill="currentColor"
-                d="M4 4a2 2 0 0 1 2-2h6.586A2 2 0 0 1 14 2.586L17.414 6A2 2 0 0 1 18 7.414V16a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4zm2 0v12h10V8h-3a1 1 0 0 1-1-1V4H6z"/>
-        </svg>
-
-        <!-- Campo textarea -->
-        <textarea
-          formControlName="observations"
-          placeholder="Escribe aquí una breve nota..."
-          rows="4"
-          maxlength="500"
-          class="w-full outline-none text-gray-700 placeholder-gray-400 bg-transparent resize-none"
-        ></textarea>
-      </div>
-
-      @if (userServiceForm.get('observations')?.touched && userServiceForm.get('observations')?.invalid) {
-        <p class="text-red-500 text-sm mt-1">
-          @if (userServiceForm.get('observations')?.errors?.['required']) {
-            Este campo es obligatorio.
-          } @else if (userServiceForm.get('observations')?.errors?.['maxlength']) {
-            Has superado el máximo de caracteres permitidos.
-          }
-        </p>
-      }
-    </div>
-
-
-      <!-- Botones -->
-      <div class="modal-action md:col-span-2">
-        <button class="btn btn-ghost" type="button" (click)="cerrarDialogoAssignService()">Cancelar</button>
-        <button class="btn btn-primary" type="submit" [disabled]="userServiceForm.invalid">Crear</button>
-      </div>
+<!-- CONTACTAR usuario -->
+<dialog id="user_contact_modal" class="modal">
+  <div class="modal-box max-w-lg">
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button>
     </form>
 
-
-    @if (hasError()) {
-    <div role="alert" class="alert alert-error alert-soft animate-fadeIn fixed bottom-5 right-5 w-64">
-      <span>{{hasError()}}.</span>
-    </div>
+    <h2 class="text-lg font-bold">Enviar mensaje</h2>
+    @if (contactUser()) {
+      <p class="text-sm opacity-70 mb-4">
+        Para: <strong>{{ contactUser()!.firstNames }} {{ contactUser()!.lastNames }}</strong>
+        <span class="opacity-50 ml-1">({{ contactUser()!.email }})</span>
+      </p>
     }
 
+    <form [formGroup]="contactForm" (ngSubmit)="sendContact()" class="flex flex-col gap-3" novalidate>
+      <div class="form-control w-full">
+        <label class="label"><span class="label-text">Asunto *</span></label>
+        <input formControlName="subject" type="text" class="input input-bordered input-sm w-full"
+               placeholder="Asunto del mensaje" />
+        @if (contactForm.get('subject')?.touched && contactForm.get('subject')?.invalid) {
+          <label class="label">
+            <span class="label-text-alt text-error">Mínimo 3 caracteres.</span>
+          </label>
+        }
+      </div>
+
+      <div class="form-control w-full">
+        <label class="label"><span class="label-text">Mensaje</span></label>
+        <textarea formControlName="body" class="textarea textarea-bordered textarea-sm w-full"
+                  rows="5" placeholder="Escribe tu mensaje aquí..."></textarea>
+      </div>
+
+      <!-- Adjuntos -->
+      <div>
+        <div class="label pb-0.5">
+          <span class="label-text text-xs opacity-70">Adjuntos</span>
+          <span class="label-text-alt text-xs opacity-50">{{ contactFiles().length }} archivo(s)</span>
+        </div>
+
+        <label class="flex items-center gap-2 border-2 border-dashed rounded-lg px-4 py-3 cursor-pointer hover:border-primary transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-50 shrink-0" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          <span class="text-xs opacity-60">Haz clic para adjuntar imágenes, videos o documentos</span>
+          <input type="file" class="hidden" multiple
+                 accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip"
+                 (change)="handleContactFiles($event)" />
+        </label>
+
+        @if (contactFiles().length) {
+          <div class="mt-2 flex flex-wrap gap-2">
+            @for (att of contactFiles(); track att.name; let i = $index) {
+              <div class="relative group rounded-lg overflow-hidden border bg-base-200 flex items-center gap-2 pr-2"
+                   [class.w-20]="att.type === 'image' || att.type === 'video'"
+                   [class.h-20]="att.type === 'image' || att.type === 'video'"
+                   [class.px-3]="att.type === 'document'"
+                   [class.py-2]="att.type === 'document'">
+
+                @if (att.type === 'image') {
+                  <img [src]="attachmentPreviewUrl(att)" class="w-full h-full object-cover" [alt]="att.name" />
+                } @else if (att.type === 'video') {
+                  <video [src]="attachmentPreviewUrl(att)" class="w-full h-full object-cover" muted></video>
+                } @else {
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-50 shrink-0" viewBox="0 0 24 24" fill="none"
+                       stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                  </svg>
+                  <span class="text-[10px] truncate max-w-[120px]" [title]="att.name">
+                    {{ att.name }}<br/><span class="opacity-50">{{ formatBytes(att.size) }}</span>
+                  </span>
+                }
+
+                <button type="button"
+                        class="absolute top-0.5 right-0.5 btn btn-circle btn-error btn-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                        (click)="removeContactFile(i)" aria-label="Eliminar adjunto">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 24 24" fill="none"
+                       stroke="currentColor" stroke-width="3">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                </button>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="modal-action pt-1">
+        <button type="button" class="btn btn-ghost btn-sm" (click)="cerrarDialogoContact()">Cancelar</button>
+        <button type="submit" class="btn btn-primary btn-sm" [disabled]="contactForm.invalid || sendingMsg()">
+          @if (sendingMsg()) {
+            <span class="loading loading-spinner loading-xs"></span>
+          } @else {
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2">
+              <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
+          }
+          Enviar
+        </button>
+      </div>
+    </form>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
+</dialog>
+
+<!-- NOTIFICAR ESTADO DE SERVICIO -->
+<dialog id="notify_service_modal" class="modal">
+  <div class="modal-box w-11/12 max-w-2xl max-h-[92vh] overflow-y-auto">
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button>
+    </form>
+
+    <h2 class="text-lg font-bold flex items-center gap-2">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+      </svg>
+      Notificar estado de servicio
+    </h2>
+
+    @if (notifyTarget()) {
+      <p class="text-sm opacity-60 mt-1 mb-4">
+        Destinatario:
+        <strong>{{ notifyTarget()!.user.firstNames }} {{ notifyTarget()!.user.lastNames }}</strong>
+        <span class="ml-1 opacity-50">({{ notifyTarget()!.user.email }})</span>
+      </p>
+
+      <!-- Canales de envío -->
+      <div class="mb-5">
+        <p class="text-sm font-semibold mb-2">Canales de envío</p>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+
+          <!-- Sistema (in_app) -->
+          <label class="flex items-center gap-2 cursor-pointer rounded-lg border p-3 transition-colors"
+                 [class.border-primary]="isChannelSelected('in_app')"
+                 [class.bg-primary]="isChannelSelected('in_app')"
+                 [class.bg-opacity-10]="isChannelSelected('in_app')">
+            <input type="checkbox" class="checkbox checkbox-primary checkbox-sm"
+                   [checked]="isChannelSelected('in_app')"
+                   (change)="toggleChannel('in_app')" />
+            <span class="flex flex-col">
+              <span class="text-xs font-medium leading-tight">Sistema</span>
+              <span class="text-[10px] opacity-50 leading-tight">Panel web</span>
+            </span>
+          </label>
+
+          <!-- Email -->
+          <label class="flex items-center gap-2 cursor-pointer rounded-lg border p-3 transition-colors"
+                 [class.border-primary]="isChannelSelected('email')"
+                 [class.bg-primary]="isChannelSelected('email')"
+                 [class.bg-opacity-10]="isChannelSelected('email')">
+            <input type="checkbox" class="checkbox checkbox-primary checkbox-sm"
+                   [checked]="isChannelSelected('email')"
+                   (change)="toggleChannel('email')" />
+            <span class="flex flex-col">
+              <span class="text-xs font-medium leading-tight">Email</span>
+              <span class="text-[10px] opacity-50 leading-tight">Correo electrónico</span>
+            </span>
+          </label>
+
+          <!-- WhatsApp -->
+          <label class="flex items-center gap-2 cursor-pointer rounded-lg border p-3 transition-colors"
+                 [class.border-primary]="isChannelSelected('whatsapp')"
+                 [class.bg-primary]="isChannelSelected('whatsapp')"
+                 [class.bg-opacity-10]="isChannelSelected('whatsapp')">
+            <input type="checkbox" class="checkbox checkbox-primary checkbox-sm"
+                   [checked]="isChannelSelected('whatsapp')"
+                   (change)="toggleChannel('whatsapp')" />
+            <span class="flex flex-col">
+              <span class="text-xs font-medium leading-tight">WhatsApp</span>
+              <span class="text-[10px] opacity-50 leading-tight">Twilio</span>
+            </span>
+          </label>
+
+          <!-- Telegram -->
+          <label class="flex items-center gap-2 cursor-pointer rounded-lg border p-3 transition-colors"
+                 [class.border-primary]="isChannelSelected('telegram')"
+                 [class.bg-primary]="isChannelSelected('telegram')"
+                 [class.bg-opacity-10]="isChannelSelected('telegram')">
+            <input type="checkbox" class="checkbox checkbox-primary checkbox-sm"
+                   [checked]="isChannelSelected('telegram')"
+                   (change)="toggleChannel('telegram')" />
+            <span class="flex flex-col">
+              <span class="text-xs font-medium leading-tight">Telegram</span>
+              <span class="text-[10px] opacity-50 leading-tight">Bot</span>
+            </span>
+          </label>
+        </div>
+
+        <!-- Seleccionar todos -->
+        <button type="button" class="btn btn-ghost btn-xs mt-2 opacity-60"
+                (click)="notifyChannels.set(['in_app','email','whatsapp','telegram'])">
+          Seleccionar todos
+        </button>
+      </div>
+
+      <!-- Plantilla editable -->
+      <div class="mb-4 space-y-3">
+        <p class="text-sm font-semibold">Plantilla del mensaje</p>
+
+        <!-- Asunto -->
+        <label class="form-control w-full">
+          <div class="label pb-0.5">
+            <span class="label-text text-xs opacity-70">Asunto</span>
+          </div>
+          <input type="text" class="input input-bordered input-sm w-full"
+                 [value]="notifySubjectEdit()"
+                 (input)="notifySubjectEdit.set($any($event.target).value)"
+                 placeholder="Asunto del mensaje" />
+        </label>
+
+        <!-- Cuerpo -->
+        <label class="form-control w-full">
+          <div class="label pb-0.5">
+            <span class="label-text text-xs opacity-70">Cuerpo</span>
+            <span class="label-text-alt text-xs opacity-50">Editable — admite texto, emojis y saltos de línea</span>
+          </div>
+          <textarea class="textarea textarea-bordered w-full text-xs leading-relaxed font-mono min-h-[200px]"
+                    [value]="notifyBodyEdit()"
+                    (input)="notifyBodyEdit.set($any($event.target).value)"
+                    placeholder="Escribe el mensaje aquí…"></textarea>
+        </label>
+
+        <!-- Adjuntos -->
+        <div>
+          <div class="label pb-0.5">
+            <span class="label-text text-xs opacity-70">Adjuntos (imágenes, videos, archivos)</span>
+            <span class="label-text-alt text-xs opacity-50">{{ notifyFiles().length }} archivo(s)</span>
+          </div>
+
+          <!-- Zona de carga -->
+          <label class="flex items-center gap-2 border-2 border-dashed rounded-lg px-4 py-3 cursor-pointer hover:border-primary transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-50" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <span class="text-xs opacity-60">Haz clic para adjuntar o arrastra aquí</span>
+            <input type="file" class="hidden" multiple
+                   accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip"
+                   (change)="handleNotifyFiles($event)" />
+          </label>
+
+          <!-- Miniaturas -->
+          @if (notifyFiles().length) {
+            <div class="mt-2 flex flex-wrap gap-2">
+              @for (att of notifyFiles(); track att.name; let i = $index) {
+                <div class="relative group rounded-lg overflow-hidden border bg-base-200 flex items-center gap-2 pr-2"
+                     [class.w-20]="att.type === 'image' || att.type === 'video'"
+                     [class.h-20]="att.type === 'image' || att.type === 'video'"
+                     [class.px-3]="att.type === 'document'"
+                     [class.py-2]="att.type === 'document'">
+
+                  @if (att.type === 'image') {
+                    <img [src]="attachmentPreviewUrl(att)" class="w-full h-full object-cover" [alt]="att.name" />
+                  } @else if (att.type === 'video') {
+                    <video [src]="attachmentPreviewUrl(att)" class="w-full h-full object-cover" muted></video>
+                  } @else {
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-50 shrink-0" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                      <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                    <span class="text-[10px] truncate max-w-[120px]" [title]="att.name">
+                      {{ att.name }}<br/><span class="opacity-50">{{ formatBytes(att.size) }}</span>
+                    </span>
+                  }
+
+                  <!-- Botón eliminar -->
+                  <button type="button"
+                          class="absolute top-0.5 right-0.5 btn btn-circle btn-error btn-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                          (click)="removeNotifyFile(i)" aria-label="Eliminar adjunto">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="3">
+                      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                  </button>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Acciones -->
+      <div class="flex items-center justify-between gap-2 pt-2 border-t">
+        <span class="text-xs opacity-50">
+          @if (notifyChannels().length) {
+            {{ notifyChannels().length }} canal(es) · {{ notifyFiles().length }} adjunto(s)
+          } @else {
+            <span class="text-warning">Selecciona al menos un canal</span>
+          }
+        </span>
+        <div class="flex gap-2">
+          <button type="button" class="btn btn-ghost btn-sm" (click)="cerrarDialogoNotify()">Cancelar</button>
+          <button type="button" class="btn btn-primary btn-sm"
+                  [disabled]="!notifyChannels().length || sendingNotify()"
+                  (click)="sendNotify()">
+            @if (sendingNotify()) {
+              <span class="loading loading-spinner loading-xs"></span>
+            } @else {
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2">
+                <line x1="22" y1="2" x2="11" y2="13"/>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+              </svg>
+            }
+            Enviar notificación
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+  <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
+</dialog>
+
+<!-- ENVIAR CONFIGURACIÓN DE SERVICIO -->
+<dialog id="send_config_modal" class="modal">
+  <div class="modal-box w-11/12 max-w-2xl max-h-[92vh] overflow-y-auto">
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button>
+    </form>
+
+    <h2 class="text-lg font-bold flex items-center gap-2">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2">
+        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+        <line x1="8" y1="21" x2="16" y2="21"/>
+        <line x1="12" y1="17" x2="12" y2="21"/>
+      </svg>
+      Enviar configuración de servicio
+    </h2>
+
+    @if (configTarget()) {
+      <p class="text-sm opacity-60 mt-1 mb-4">
+        Para:
+        <strong>{{ configTarget()!.user.firstNames }} {{ configTarget()!.user.lastNames }}</strong>
+        <span class="ml-1 opacity-50">({{ configTarget()!.user.email }})</span>
+      </p>
+
+      <!-- Canales de envío -->
+      <div class="mb-5">
+        <p class="text-sm font-semibold mb-2">Canales de envío</p>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+
+          <label class="flex items-center gap-2 cursor-pointer rounded-lg border p-3 transition-colors"
+                 [class.border-primary]="isConfigChannelSelected('in_app')"
+                 [class.bg-primary]="isConfigChannelSelected('in_app')"
+                 [class.bg-opacity-10]="isConfigChannelSelected('in_app')">
+            <input type="checkbox" class="checkbox checkbox-primary checkbox-sm"
+                   [checked]="isConfigChannelSelected('in_app')"
+                   (change)="toggleConfigChannel('in_app')" />
+            <span class="flex flex-col">
+              <span class="text-xs font-medium leading-tight">Sistema</span>
+              <span class="text-[10px] opacity-50 leading-tight">Panel web</span>
+            </span>
+          </label>
+
+          <label class="flex items-center gap-2 cursor-pointer rounded-lg border p-3 transition-colors"
+                 [class.border-primary]="isConfigChannelSelected('email')"
+                 [class.bg-primary]="isConfigChannelSelected('email')"
+                 [class.bg-opacity-10]="isConfigChannelSelected('email')">
+            <input type="checkbox" class="checkbox checkbox-primary checkbox-sm"
+                   [checked]="isConfigChannelSelected('email')"
+                   (change)="toggleConfigChannel('email')" />
+            <span class="flex flex-col">
+              <span class="text-xs font-medium leading-tight">Email</span>
+              <span class="text-[10px] opacity-50 leading-tight">Correo electrónico</span>
+            </span>
+          </label>
+
+          <label class="flex items-center gap-2 cursor-pointer rounded-lg border p-3 transition-colors"
+                 [class.border-primary]="isConfigChannelSelected('whatsapp')"
+                 [class.bg-primary]="isConfigChannelSelected('whatsapp')"
+                 [class.bg-opacity-10]="isConfigChannelSelected('whatsapp')">
+            <input type="checkbox" class="checkbox checkbox-primary checkbox-sm"
+                   [checked]="isConfigChannelSelected('whatsapp')"
+                   (change)="toggleConfigChannel('whatsapp')" />
+            <span class="flex flex-col">
+              <span class="text-xs font-medium leading-tight">WhatsApp</span>
+              <span class="text-[10px] opacity-50 leading-tight">Twilio</span>
+            </span>
+          </label>
+
+          <label class="flex items-center gap-2 cursor-pointer rounded-lg border p-3 transition-colors"
+                 [class.border-primary]="isConfigChannelSelected('telegram')"
+                 [class.bg-primary]="isConfigChannelSelected('telegram')"
+                 [class.bg-opacity-10]="isConfigChannelSelected('telegram')">
+            <input type="checkbox" class="checkbox checkbox-primary checkbox-sm"
+                   [checked]="isConfigChannelSelected('telegram')"
+                   (change)="toggleConfigChannel('telegram')" />
+            <span class="flex flex-col">
+              <span class="text-xs font-medium leading-tight">Telegram</span>
+              <span class="text-[10px] opacity-50 leading-tight">Bot</span>
+            </span>
+          </label>
+        </div>
+        <button type="button" class="btn btn-ghost btn-xs mt-2 opacity-60"
+                (click)="configChannels.set(['in_app','email','whatsapp','telegram'])">
+          Seleccionar todos
+        </button>
+      </div>
+
+      <!-- Plantilla editable -->
+      <div class="mb-4 space-y-3">
+        <p class="text-sm font-semibold">Plantilla del mensaje</p>
+
+        <!-- Asunto -->
+        <label class="form-control w-full">
+          <div class="label pb-0.5">
+            <span class="label-text text-xs opacity-70">Asunto</span>
+          </div>
+          <input type="text" class="input input-bordered input-sm w-full"
+                 [value]="configSubjectEdit()"
+                 (input)="configSubjectEdit.set($any($event.target).value)"
+                 placeholder="Asunto del mensaje" />
+        </label>
+
+        <!-- Cuerpo -->
+        <label class="form-control w-full">
+          <div class="label pb-0.5">
+            <span class="label-text text-xs opacity-70">Cuerpo</span>
+            <span class="label-text-alt text-xs opacity-50">Editable — incluye URL de suscripción, pasos, etc.</span>
+          </div>
+          <textarea class="textarea textarea-bordered w-full text-xs leading-relaxed font-mono min-h-[220px]"
+                    [value]="configBodyEdit()"
+                    (input)="configBodyEdit.set($any($event.target).value)"
+                    placeholder="Escribe el mensaje aquí…"></textarea>
+        </label>
+
+        <!-- Adjuntos -->
+        <div>
+          <div class="label pb-0.5">
+            <span class="label-text text-xs opacity-70">Adjuntos (imágenes, videos, archivos)</span>
+            <span class="label-text-alt text-xs opacity-50">{{ configFiles().length }} archivo(s)</span>
+          </div>
+
+          <!-- Zona de carga -->
+          <label class="flex items-center gap-2 border-2 border-dashed rounded-lg px-4 py-3 cursor-pointer hover:border-primary transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-50" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <span class="text-xs opacity-60">Haz clic para adjuntar o arrastra aquí</span>
+            <input type="file" class="hidden" multiple
+                   accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip"
+                   (change)="handleConfigFiles($event)" />
+          </label>
+
+          <!-- Miniaturas -->
+          @if (configFiles().length) {
+            <div class="mt-2 flex flex-wrap gap-2">
+              @for (att of configFiles(); track att.name; let i = $index) {
+                <div class="relative group rounded-lg overflow-hidden border bg-base-200 flex items-center gap-2 pr-2"
+                     [class.w-20]="att.type === 'image' || att.type === 'video'"
+                     [class.h-20]="att.type === 'image' || att.type === 'video'"
+                     [class.px-3]="att.type === 'document'"
+                     [class.py-2]="att.type === 'document'">
+
+                  @if (att.type === 'image') {
+                    <img [src]="attachmentPreviewUrl(att)" class="w-full h-full object-cover" [alt]="att.name" />
+                  } @else if (att.type === 'video') {
+                    <video [src]="attachmentPreviewUrl(att)" class="w-full h-full object-cover" muted></video>
+                  } @else {
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-50 shrink-0" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                      <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                    <span class="text-[10px] truncate max-w-[120px]" [title]="att.name">
+                      {{ att.name }}<br/><span class="opacity-50">{{ formatBytes(att.size) }}</span>
+                    </span>
+                  }
+
+                  <!-- Botón eliminar -->
+                  <button type="button"
+                          class="absolute top-0.5 right-0.5 btn btn-circle btn-error btn-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                          (click)="removeConfigFile(i)" aria-label="Eliminar adjunto">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="3">
+                      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                  </button>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Acciones -->
+      <div class="flex items-center justify-between gap-2 pt-2 border-t">
+        <span class="text-xs opacity-50">
+          @if (configChannels().length) {
+            {{ configChannels().length }} canal(es) · {{ configFiles().length }} adjunto(s)
+          } @else {
+            <span class="text-warning">Selecciona al menos un canal</span>
+          }
+        </span>
+        <div class="flex gap-2">
+          <button type="button" class="btn btn-ghost btn-sm" (click)="cerrarDialogoConfig()">Cancelar</button>
+          <button type="button" class="btn btn-primary btn-sm"
+                  [disabled]="!configChannels().length || sendingConfig()"
+                  (click)="sendConfig()">
+            @if (sendingConfig()) {
+              <span class="loading loading-spinner loading-xs"></span>
+            } @else {
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2">
+                <line x1="22" y1="2" x2="11" y2="13"/>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+              </svg>
+            }
+            Enviar configuración
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+  <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
+</dialog>
+
+<!-- ASIGNAR SERVICIO a usuario existente -->
+<dialog id="add_service_user" class="modal">
+  <div class="modal-box max-w-2xl">
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button>
+    </form>
+    <h2 class="text-lg font-bold">Asignar servicio</h2>
+    <p class="text-sm opacity-70 mb-3">
+      Asigna un nuevo plan a
+      <strong>{{ selectedUser().firstNames }} {{ selectedUser().lastNames }}</strong>.
+    </p>
+
+    <form class="grid gap-3 md:grid-cols-2" [formGroup]="userServiceForm"
+          (ngSubmit)="onSubmitAssignService()" novalidate>
+      <div class="form-control w-full">
+        <label class="label"><span class="label-text">Servicio *</span></label>
+        <select formControlName="services" class="select select-bordered select-sm w-full">
+          <option value="" disabled selected hidden>Selecciona un servicio</option>
+          @for (item of ListServices(); track item.id) {
+            <option [value]="item.id">{{ item.sortName }} — {{ item.country?.countryName }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="form-control w-full">
+        <label class="label"><span class="label-text">Plan *</span></label>
+        <select formControlName="planes" class="select select-bordered select-sm w-full">
+          <option value="" disabled selected hidden>Selecciona un plan</option>
+          @for (item of ListPlan(); track item.id) {
+            <option [value]="item.id">
+              {{ item.title_prefix }} {{ item.title_name }} {{ item.title_suffix }}
+              — {{ item.currencySymbol }}{{ item.price }}/{{ item.kind }}
+              | {{ item.service?.country?.countryName }}
+            </option>
+          }
+        </select>
+      </div>
+
+      <div class="form-control w-full">
+        <label class="label"><span class="label-text">Servidor</span></label>
+        <select formControlName="servers" class="select select-bordered select-sm w-full">
+          <option value="">Sin servidor</option>
+          @for (item of ListServers(); track item.id) {
+            <option [value]="item.id">{{ item.name }} — {{ item.host }} — {{ item.country.countryName }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="form-control w-full">
+        <label class="label"><span class="label-text">Fecha inicio</span></label>
+        <input type="date" formControlName="createdAt" class="input input-bordered input-sm w-full" />
+      </div>
+
+      <div class="form-control w-full md:col-span-2">
+        <label class="label"><span class="label-text">Observaciones</span></label>
+        <textarea formControlName="observations" class="textarea textarea-bordered textarea-sm w-full"
+                  rows="2" placeholder="Notas internas..." maxlength="500"></textarea>
+      </div>
+
+      <div class="modal-action md:col-span-2">
+        <button class="btn btn-ghost btn-sm" type="button" (click)="cerrarDialogoAssignService()">Cancelar</button>
+        <button class="btn btn-primary btn-sm" type="submit" [disabled]="userServiceForm.invalid">Asignar</button>
+      </div>
+    </form>
   </div>
   <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
 </dialog>

@@ -1,383 +1,482 @@
+<!-- BREADCRUMB -->
+<div class="breadcrumbs text-sm pt-2">
+  <ul><li><a>Panel</a></li><li aria-current="page">Dashboard</li></ul>
+</div>
 
-      <!-- BREADCRUMB + TITULAR -->
-      <section class="container mx-auto max-w-7xl px-2 md:px-4">
-        <div class="breadcrumbs text-sm pt-2"><ul><li><a>Panel</a></li><li aria-current="page">Dashboard</li></ul></div>
-        <div class="mt-2 flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">Resumen global</h1>
-            <p class="text-base-content/70">Estado de usuarios, servidores, dispositivos, pagos y certificados.</p>
-          </div>
-          <div class="flex items-center gap-2">
-            <a href="#/dashboard/users" class="btn btn-outline">Ir a Usuarios</a>
-            <a href="#/dashboard/servers" class="btn btn-outline">Ir a Servidores</a>
-            <a href="#/dashboard/payments" class="btn btn-outline">Ir a Pagos</a>
-          </div>
+<!-- No permission -->
+@if (!canView()) {
+  <div class="flex flex-col items-center justify-center py-24 text-center gap-3 text-base-content/40">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-14 w-14 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m0 0v2m0-2h2m-2 0H10m9-7a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    </svg>
+    <p class="text-lg font-semibold">Sin acceso al dashboard</p>
+    <p class="text-sm">Tu rol no tiene permiso para ver esta sección.</p>
+  </div>
+}
+
+@if (canView()) {
+
+  <!-- Header -->
+  <div class="mt-2 flex flex-wrap items-end justify-between gap-4 mb-6">
+    <div>
+      <p class="text-sm text-base-content/50 mb-0.5">{{ greeting() }}</p>
+      <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">Resumen global</h1>
+      <p class="text-sm text-base-content/50 mt-1 flex items-center gap-1.5">
+        <span class="inline-block w-2 h-2 rounded-full bg-success animate-pulse"></span>
+        Estado en tiempo real del sistema
+      </p>
+    </div>
+    <div class="flex items-center gap-2 flex-wrap">
+      @if (canSeeUsers())    { <a routerLink="/panel/users"    class="btn btn-outline btn-sm">👥 Usuarios</a> }
+      @if (canSeePayments()) { <a routerLink="/panel/payments" class="btn btn-outline btn-sm">💳 Pagos</a> }
+      @if (canSeeActivity()) { <a routerLink="/panel/activity" class="btn btn-outline btn-sm">📊 Actividad</a> }
+    </div>
+  </div>
+
+  <!-- Loading skeleton -->
+  @if (loading()) {
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 mb-5">
+      @for (i of [1,2,3,4]; track i) {
+        <div class="bg-base-100 border rounded-xl p-5 shadow-sm space-y-3">
+          <div class="skeleton h-3 w-20 rounded"></div>
+          <div class="skeleton h-8 w-14 rounded"></div>
+          <div class="skeleton h-2.5 w-32 rounded"></div>
         </div>
-      </section>
+      }
+    </div>
+  }
 
-      <!-- KPIs -->
-      <section class="container mx-auto max-w-7xl px-2 md:px-4 mt-4">
-        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
-          <div class="stat bg-base-100/80 border rounded-xl shadow-sm">
-            <div class="stat-figure text-primary">
-              <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            </div>
-            <div class="stat-title">Usuarios</div>
-            <div class="stat-value text-3xl">1,284</div>
-            <div class="stat-desc">+86 este mes</div>
-          </div>
+  <!-- ── KPI CARDS ──────────────────────────────────────────────────────── -->
+  @if (!loading() && stats(); as s) {
 
-          <div class="stat bg-base-100/80 border rounded-xl shadow-sm">
-            <div class="stat-figure text-success">
-              <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M2 20h.01M7 20h.01M12 20h.01M17 20h.01M22 20h.01"/></svg>
-            </div>
-            <div class="stat-title">Dispositivos activos</div>
-            <div class="stat-value text-3xl">876</div>
-            <div class="stat-desc">+5.3% semanal</div>
-          </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 mb-6">
 
-          <div class="stat bg-base-100/80 border rounded-xl shadow-sm">
-            <div class="stat-figure text-warning">
-              <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 3h18v18H3z"/><path d="M9 9h6v6H9z"/></svg>
+      <!-- Clientes totales -->
+      @if (canSeeUsers()) {
+        <div class="relative bg-base-100 border rounded-xl shadow-sm p-5 overflow-hidden group hover:shadow-md transition-shadow">
+          <div class="absolute -right-4 -top-4 w-20 h-20 rounded-full bg-primary/5 group-hover:bg-primary/10 transition-colors"></div>
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="text-xs text-base-content/50 font-medium uppercase tracking-wider">Clientes totales</p>
+              <p class="text-3xl font-extrabold mt-1">{{ s.clientes.total }}</p>
+              <p class="text-xs text-base-content/50 mt-1">
+                <span class="text-success font-semibold">{{ s.clientes.activos }}</span> activos ·
+                <span class="text-warning font-semibold">{{ s.clientes.suspendidos }}</span> susp.
+              </p>
             </div>
-            <div class="stat-title">Sesiones 24h</div>
-            <div class="stat-value text-3xl">312</div>
-            <div class="stat-desc">85.7% online</div>
-          </div>
-
-          <div class="stat bg-base-100/80 border rounded-xl shadow-sm">
-            <div class="stat-figure text-info">
-              <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 8c-1.657 0-3 1.343-3 3 0 .5.134.965.364 1.364l-.364.636H6v6h12v-6h-3l-.364-.636c.23-.399.364-.864.364-1.364 0-1.657-1.343-3-3-3z"/></svg>
-            </div>
-            <div class="stat-title">Ingresos (30d)</div>
-            <div class="stat-value text-3xl">$4,920</div>
-            <div class="stat-desc">+12% respecto al mes</div>
-          </div>
-        </div>
-      </section>
-
-      <!-- SALUD & MINI GRÁFICAS -->
-      <section class="container mx-auto max-w-7xl px-2 md:px-4 mt-4 grid grid-cols-1 lg:grid-cols-3 gap-3">
-        <!-- Salud del sistema -->
-        <div class="card bg-base-100 border shadow-sm">
-          <div class="card-body">
-            <div class="flex items-center justify-between">
-              <h2 class="card-title text-base">Salud de servidores</h2>
-              <span class="badge badge-success">OK</span>
-            </div>
-            <div class="mt-2 grid grid-cols-2 gap-3 text-sm">
-              <div class="p-3 rounded-lg border bg-base-200/60">
-                <div class="flex items-center justify-between">
-                  <span>vpn-eu-1</span><span class="badge badge-success">UP</span>
-                </div>
-                <div class="mt-2">
-                  <!-- sparkline -->
-                  <svg viewBox="0 0 100 24" class="w-full h-8">
-                    <polyline fill="none" stroke="currentColor" stroke-width="2" points="0,18 15,10 30,12 45,8 60,12 75,6 90,10 100,7"></polyline>
-                  </svg>
-                </div>
-                <p class="text-xs opacity-70">Carga 35% · Lat 42ms</p>
-              </div>
-              <div class="p-3 rounded-lg border bg-base-200/60">
-                <div class="flex items-center justify-between">
-                  <span>vpn-us-1</span><span class="badge badge-success">UP</span>
-                </div>
-                <div class="mt-2">
-                  <svg viewBox="0 0 100 24" class="w-full h-8">
-                    <polyline fill="none" stroke="currentColor" stroke-width="2" points="0,14 12,12 24,8 36,10 48,6 60,10 72,9 84,7 100,6"></polyline>
-                  </svg>
-                </div>
-                <p class="text-xs opacity-70">Carga 28% · Lat 55ms</p>
-              </div>
-            </div>
-            <div class="mt-3">
-              <button class="btn btn-outline btn-sm" onclick="document.getElementById('add_server')?.showModal()">Agregar servidor</button>
-              <a href="#/dashboard/servers" class="btn btn-ghost btn-sm">Ver todos</a>
-            </div>
-          </div>
-        </div>
-
-        <!-- Tráfico -->
-        <div class="card bg-base-100 border shadow-sm">
-          <div class="card-body">
-            <div class="flex items-center justify-between">
-              <h2 class="card-title text-base">Tráfico (Gb · 24h)</h2>
-              <span class="badge">+8%</span>
-            </div>
-            <div class="mt-2">
-              <svg viewBox="0 0 100 40" class="w-full h-24">
-                <defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="currentColor" stop-opacity="0.35"/><stop offset="100%" stop-color="currentColor" stop-opacity="0"/></linearGradient></defs>
-                <path d="M0,30 L10,28 L20,25 L30,24 L40,20 L50,18 L60,16 L70,14 L80,17 L90,15 L100,12 L100,40 L0,40 Z" fill="url(#g1)"></path>
-                <polyline fill="none" stroke="currentColor" stroke-width="2" points="0,30 10,28 20,25 30,24 40,20 50,18 60,16 70,14 80,17 90,15 100,12"></polyline>
+            <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+              <svg class="h-5 w-5 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
               </svg>
             </div>
-            <p class="text-xs opacity-70">Pico 12:00 · 380 Mb/s</p>
+          </div>
+          <div class="mt-3 h-1.5 w-full bg-base-300 rounded-full overflow-hidden">
+            <div class="h-full bg-primary rounded-full transition-all duration-700"
+                 [style.width.%]="pct(s.clientes.activos, s.clientes.total)"></div>
           </div>
         </div>
+      }
 
-        <!-- Pagos -->
-        <div class="card bg-base-100 border shadow-sm">
-          <div class="card-body">
-            <div class="flex items-center justify-between">
-              <h2 class="card-title text-base">Pagos</h2>
-              <span class="badge badge-warning">4 pendientes</span>
+      <!-- Dispositivos activos -->
+      @if (canSeeServers()) {
+        <div class="relative bg-base-100 border rounded-xl shadow-sm p-5 overflow-hidden group hover:shadow-md transition-shadow">
+          <div class="absolute -right-4 -top-4 w-20 h-20 rounded-full bg-success/5 group-hover:bg-success/10 transition-colors"></div>
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="text-xs text-base-content/50 font-medium uppercase tracking-wider">Dispositivos activos</p>
+              <p class="text-3xl font-extrabold mt-1">{{ s.devices.activos }}</p>
+              <p class="text-xs text-base-content/50 mt-1">
+                <span class="text-success font-semibold">{{ s.servidores.activos }}</span> servidores en línea
+              </p>
             </div>
-            <ul class="mt-2 text-sm space-y-2">
-              <li class="flex items-center justify-between">
-                <span>#P-1024 · $12 · carlos</span><span class="badge badge-ghost">Verificando</span>
-              </li>
-              <li class="flex items-center justify-between">
-                <span>#P-1025 · $24 · ana</span><span class="badge badge-warning">Pendiente</span>
-              </li>
-              <li class="flex items-center justify-between">
-                <span>#P-1026 · $12 · luis</span><span class="badge badge-success">Aceptado</span>
-              </li>
-            </ul>
+            <div class="w-10 h-10 rounded-xl bg-success/10 flex items-center justify-center shrink-0">
+              <svg class="h-5 w-5 text-success" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+              </svg>
+            </div>
+          </div>
+          <div class="mt-3 h-1.5 w-full bg-base-300 rounded-full">
+            <div class="h-full bg-success rounded-full" style="width:100%"></div>
+          </div>
+        </div>
+      }
+
+      <!-- Vencen en 7 días -->
+      <div class="relative bg-base-100 border rounded-xl shadow-sm p-5 overflow-hidden group hover:shadow-md transition-shadow"
+           [class.border-warning]="s.vencen_7d > 0">
+        <div class="absolute -right-4 -top-4 w-20 h-20 rounded-full transition-colors"
+             [ngClass]="s.vencen_7d > 0 ? 'bg-warning/5' : 'bg-base-300/30'"></div>
+        <div class="flex items-start justify-between">
+          <div>
+            <p class="text-xs text-base-content/50 font-medium uppercase tracking-wider">Vencen en 7 días</p>
+            <p class="text-3xl font-extrabold mt-1" [class.text-warning]="s.vencen_7d > 0">{{ s.vencen_7d }}</p>
+            <p class="text-xs text-base-content/50 mt-1">Requieren renovación pronto</p>
+          </div>
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+               [ngClass]="s.vencen_7d > 0 ? 'bg-warning/10' : 'bg-base-200'">
+            <svg class="h-5 w-5"
+                 [class.text-warning]="s.vencen_7d > 0"
+                 [class.opacity-30]="s.vencen_7d === 0"
+                 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path d="M12 8v4l3 3M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/>
+            </svg>
+          </div>
+        </div>
+        @if (s.vencen_7d > 0) {
+          <div class="mt-3 flex items-center gap-1.5">
+            <span class="inline-block w-2 h-2 rounded-full bg-warning animate-pulse"></span>
+            <span class="text-xs text-warning font-medium">Atención requerida</span>
+          </div>
+        } @else {
+          <div class="mt-3 h-1.5 bg-base-300 rounded-full"></div>
+        }
+      </div>
+
+      <!-- Pagos pendientes -->
+      @if (canSeePayments()) {
+        <div class="relative bg-base-100 border rounded-xl shadow-sm p-5 overflow-hidden group hover:shadow-md transition-shadow"
+             [ngClass]="s.pagos.pendientes > 0 ? 'border-error/40' : ''">
+          <div class="absolute -right-4 -top-4 w-20 h-20 rounded-full transition-colors"
+               [ngClass]="s.pagos.pendientes > 0 ? 'bg-error/5' : 'bg-base-300/30'"></div>
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="text-xs text-base-content/50 font-medium uppercase tracking-wider">Pagos pendientes</p>
+              <p class="text-3xl font-extrabold mt-1" [class.text-error]="s.pagos.pendientes > 0">{{ s.pagos.pendientes }}</p>
+              <p class="text-xs text-base-content/50 mt-1">En estado Verificando / Pendiente</p>
+            </div>
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                 [ngClass]="s.pagos.pendientes > 0 ? 'bg-error/10' : 'bg-base-200'">
+              <svg class="h-5 w-5"
+                   [class.text-error]="s.pagos.pendientes > 0"
+                   [class.opacity-30]="s.pagos.pendientes === 0"
+                   xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>
+              </svg>
+            </div>
+          </div>
+          @if (s.pagos.pendientes > 0) {
             <div class="mt-3">
-              <a href="#/dashboard/payments" class="btn btn-ghost btn-sm">Ver pagos</a>
+              <a routerLink="/panel/payments" class="text-xs text-error font-semibold hover:underline">Revisar pagos →</a>
             </div>
-          </div>
+          } @else {
+            <div class="mt-3 h-1.5 bg-base-300 rounded-full"></div>
+          }
         </div>
-      </section>
+      }
 
-      <!-- TABLAS RESUMEN -->
-      <section class="container mx-auto max-w-7xl px-2 md:px-4 mt-4 grid grid-cols-1 xl:grid-cols-2 gap-3">
-        <!-- Últimos usuarios -->
-        <div class="bg-base-100 border rounded-xl shadow-sm overflow-x-auto">
-          <div class="flex items-center justify-between p-4 pb-2">
-            <h3 class="font-semibold">Últimos usuarios</h3>
-            <button class="btn btn-primary btn-sm" onclick="document.getElementById('add_user')?.showModal()">
-              <svg class="h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-              Agregar
-            </button>
-          </div>
-          <table class="table table-sm">
-            <thead><tr><th>Usuario</th><th class="hidden md:table-cell">Email</th><th>Estado</th><th class="text-right">Acciones</th></tr></thead>
-            <tbody>
-              <tr class="hover">
-                <td>
-                  <div class="flex items-center gap-3">
-                    <div class="avatar"><div class="w-10 rounded-xl"><img src="https://i.pravatar.cc/100?img=5" alt="Ana"/></div></div>
-                    <div><div class="font-medium">Ana Rojas</div><div class="text-xs opacity-70">pe-000132</div></div>
-                  </div>
-                </td>
-                <td class="hidden md:table-cell">ana.rojas____mail.com</td>
-                <td><span class="badge badge-success">Activo</span></td>
-                <td class="text-right">
-                  <div class="join">
-                    <button class="btn btn-ghost btn-xs join-item" onclick="document.getElementById('view_user')?.showModal()">Ver</button>
-                    <button class="btn btn-ghost btn-xs join-item" onclick="document.getElementById('edit_user')?.showModal()">Editar</button>
-                  </div>
-                </td>
-              </tr>
-              <tr class="hover">
-                <td>
-                  <div class="flex items-center gap-3">
-                    <div class="avatar"><div class="w-10 rounded-xl"><img src="https://i.pravatar.cc/100?img=22" alt="Luis"/></div></div>
-                    <div><div class="font-medium">Luis Farfán</div><div class="text-xs opacity-70">pe-000219</div></div>
-                  </div>
-                </td>
-                <td class="hidden md:table-cell">luis.farfan____mail.com</td>
-                <td><span class="badge">Inactivo</span></td>
-                <td class="text-right">
-                  <div class="join">
-                    <button class="btn btn-ghost btn-xs join-item" onclick="document.getElementById('view_user')?.showModal()">Ver</button>
-                    <button class="btn btn-ghost btn-xs join-item" onclick="document.getElementById('edit_user')?.showModal()">Editar</button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <div class="p-3 pt-0 text-right">
-            <a href="#/dashboard/users" class="link link-hover text-sm">Ver todos los usuarios →</a>
-          </div>
-        </div>
+    </div>
 
-        <!-- Últimas operaciones (Pagos / Certs / Dispositivos) -->
-        <div class="bg-base-100 border rounded-xl shadow-sm overflow-x-auto">
-          <div class="p-4 pb-2 flex items-center justify-between">
-            <h3 class="font-semibold">Actividad reciente</h3>
-            <span class="badge">Últimas 24h</span>
-          </div>
-          <ul class="menu p-2">
-            <li>
-              <div class="flex items-center justify-between gap-2">
-                <div class="flex items-center gap-3">
-                  <span class="badge badge-success">Pago</span>
-                  <span>#P-1026 aceptado · $12</span>
-                </div>
-                <span class="text-xs opacity-70">hace 12m</span>
-              </div>
-            </li>
-            <li>
-              <div class="flex items-center justify-between gap-2">
-                <div class="flex items-center gap-3">
-                  <span class="badge badge-info">Cert</span>
-                  <span>Emitido c-0001 (personal)</span>
-                </div>
-                <span class="text-xs opacity-70">hace 28m</span>
-              </div>
-            </li>
-            <li>
-              <div class="flex items-center justify-between gap-2">
-                <div class="flex items-center gap-3">
-                  <span class="badge badge-warning">Srv</span>
-                  <span>vpn-eu-1 actualizado</span>
-                </div>
-                <span class="text-xs opacity-70">hace 1h</span>
-              </div>
-            </li>
-            <li>
-              <div class="flex items-center justify-between gap-2">
-                <div class="flex items-center gap-3">
-                  <span class="badge">Dev</span>
-                  <span>Nuevo dispositivo para Ana</span>
-                </div>
-                <span class="text-xs opacity-70">hace 2h</span>
-              </div>
-            </li>
-          </ul>
-        </div>
-      </section>
+    <!-- ── MIDDLE ROW ───────────────────────────────────────────────────── -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
 
-      <!-- RESÚMENES: Dispositivos / Pagos / Certificados -->
-      <section class="container mx-auto max-w-7xl px-2 md:px-4 mt-4 grid grid-cols-1 lg:grid-cols-3 gap-3">
-        <!-- Dispositivos -->
+      <!-- Clientes por estado -->
+      @if (canSeeUsers()) {
         <div class="card bg-base-100 border shadow-sm">
-          <div class="card-body">
+          <div class="card-body gap-4">
             <div class="flex items-center justify-between">
-              <h3 class="card-title text-base">Dispositivos</h3>
-              <span class="badge">876 activos</span>
+              <h2 class="font-bold text-base">Clientes por estado</h2>
+              <a routerLink="/panel/users" class="text-xs text-primary hover:underline">Ver todos →</a>
             </div>
-            <table class="table table-xs">
-              <thead><tr><th>Usuario</th><th>Device</th><th class="text-right">Estado</th></tr></thead>
-              <tbody>
-                <tr><td>Ana</td><td>iPhone 14</td><td class="text-right"><span class="badge badge-success">OK</span></td></tr>
-                <tr><td>Luis</td><td>MacBook</td><td class="text-right"><span class="badge">Suspend</span></td></tr>
-              </tbody>
-            </table>
-            <div class="card-actions justify-end">
-              <a class="btn btn-ghost btn-sm" href="#/dashboard/devices">Ver dispositivos</a>
+
+            <!-- Stacked progress bar -->
+            <div class="flex h-2.5 rounded-full overflow-hidden gap-px">
+              <div class="bg-success rounded-l-full transition-all duration-700"
+                   [style.width.%]="pct(s.clientes.activos, s.clientes.total)"></div>
+              <div class="bg-warning transition-all duration-700"
+                   [style.width.%]="pct(s.clientes.suspendidos, s.clientes.total)"></div>
+              <div class="bg-base-300 rounded-r-full transition-all duration-700"
+                   [style.width.%]="pct(s.clientes.pendientes, s.clientes.total)"></div>
+            </div>
+
+            <div class="space-y-2.5">
+              <div class="flex justify-between items-center">
+                <div class="flex items-center gap-2 text-sm">
+                  <span class="w-2.5 h-2.5 rounded-full bg-success shrink-0"></span>Activos
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-sm font-semibold">{{ s.clientes.activos }}</span>
+                  <span class="text-xs text-base-content/40">{{ pct(s.clientes.activos, s.clientes.total) }}%</span>
+                </div>
+              </div>
+              <div class="flex justify-between items-center">
+                <div class="flex items-center gap-2 text-sm">
+                  <span class="w-2.5 h-2.5 rounded-full bg-warning shrink-0"></span>Suspendidos
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-sm font-semibold">{{ s.clientes.suspendidos }}</span>
+                  <span class="text-xs text-base-content/40">{{ pct(s.clientes.suspendidos, s.clientes.total) }}%</span>
+                </div>
+              </div>
+              <div class="flex justify-between items-center">
+                <div class="flex items-center gap-2 text-sm">
+                  <span class="w-2.5 h-2.5 rounded-full bg-base-300 shrink-0"></span>Pendientes
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-sm font-semibold">{{ s.clientes.pendientes }}</span>
+                  <span class="text-xs text-base-content/40">{{ pct(s.clientes.pendientes, s.clientes.total) }}%</span>
+                </div>
+              </div>
+              <div class="flex justify-between items-center border-t border-base-200 pt-2">
+                <span class="text-sm font-semibold">Total</span>
+                <span class="text-sm font-bold">{{ s.clientes.total }}</span>
+              </div>
             </div>
           </div>
         </div>
+      }
 
-        <!-- Pagos -->
+      <!-- Infraestructura -->
+      @if (canSeeServers()) {
         <div class="card bg-base-100 border shadow-sm">
-          <div class="card-body">
+          <div class="card-body gap-4">
             <div class="flex items-center justify-between">
-              <h3 class="card-title text-base">Pagos</h3>
-              <span class="badge badge-warning">Pend: 4</span>
+              <h2 class="font-bold text-base">Infraestructura</h2>
+              <a routerLink="/panel/servers" class="text-xs text-primary hover:underline">Ver servidores →</a>
             </div>
-            <table class="table table-xs">
-              <thead><tr><th>ID</th><th>Monto</th><th class="text-right">Estado</th></tr></thead>
-              <tbody>
-                <tr><td>#P-1025</td><td>$24</td><td class="text-right"><span class="badge badge-warning">Pendiente</span></td></tr>
-                <tr><td>#P-1026</td><td>$12</td><td class="text-right"><span class="badge badge-success">Aceptado</span></td></tr>
-              </tbody>
-            </table>
-            <div class="card-actions justify-end">
-              <a class="btn btn-ghost btn-sm" href="#/dashboard/payments">Ver pagos</a>
+            <div class="space-y-3">
+
+              <!-- Servidores -->
+              <div class="flex items-center gap-3 p-3 rounded-xl bg-success/5 border border-success/20">
+                <div class="w-9 h-9 rounded-lg bg-success/15 flex items-center justify-center shrink-0">
+                  <svg class="h-5 w-5 text-success" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+                  </svg>
+                </div>
+                <div class="flex-1">
+                  <p class="text-xs text-base-content/50">Servidores activos</p>
+                  <p class="text-lg font-bold leading-tight">{{ s.servidores.activos }}</p>
+                </div>
+                <span class="badge badge-success badge-sm">Online</span>
+              </div>
+
+              <!-- Dispositivos -->
+              <div class="flex items-center gap-3 p-3 rounded-xl bg-info/5 border border-info/20">
+                <div class="w-9 h-9 rounded-lg bg-info/15 flex items-center justify-center shrink-0">
+                  <svg class="h-5 w-5 text-info" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                  </svg>
+                </div>
+                <div class="flex-1">
+                  <p class="text-xs text-base-content/50">Dispositivos conectados</p>
+                  <p class="text-lg font-bold leading-tight">{{ s.devices.activos }}</p>
+                </div>
+              </div>
+
+              <!-- Próximos a vencer -->
+              <div class="flex items-center gap-3 p-3 rounded-xl border transition-colors"
+                   [ngClass]="s.vencen_7d > 0 ? 'bg-warning/5 border-warning/20' : 'bg-base-200/40 border-base-300'">
+                <div class="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+                     [ngClass]="s.vencen_7d > 0 ? 'bg-warning/15' : 'bg-base-300'">
+                  <svg class="h-5 w-5"
+                       [class.text-warning]="s.vencen_7d > 0"
+                       [class.opacity-30]="s.vencen_7d === 0"
+                       xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path d="M12 8v4l3 3M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/>
+                  </svg>
+                </div>
+                <div class="flex-1">
+                  <p class="text-xs text-base-content/50">Vencen en 7 días</p>
+                  <p class="text-lg font-bold leading-tight" [class.text-warning]="s.vencen_7d > 0">{{ s.vencen_7d }}</p>
+                </div>
+                @if (s.vencen_7d > 0) {
+                  <span class="badge badge-warning badge-sm">Alerta</span>
+                }
+              </div>
+
             </div>
           </div>
         </div>
+      }
 
-        <!-- Certificados -->
-        <div class="card bg-base-100 border shadow-sm">
-          <div class="card-body">
-            <div class="flex items-center justify-between">
-              <h3 class="card-title text-base">Certificados .ovpn</h3>
-              <span class="badge">Activos 1,102</span>
-            </div>
-            <table class="table table-xs">
-              <thead><tr><th>Cert</th><th>Usuario</th><th class="text-right">Expira</th></tr></thead>
-              <tbody>
-                <tr><td>c-0001</td><td>carlos</td><td class="text-right"><span class="badge badge-ghost">29d</span></td></tr>
-                <tr><td>c-0002</td><td>ana</td><td class="text-right"><span class="badge badge-warning">5d</span></td></tr>
-              </tbody>
-            </table>
-            <div class="card-actions justify-end">
-              <a class="btn btn-ghost btn-sm" href="#/dashboard/certificates">Ver certificados</a>
-            </div>
+      <!-- Acciones rápidas -->
+      <div class="card bg-base-100 border shadow-sm">
+        <div class="card-body gap-4">
+          <h2 class="font-bold text-base">Acciones rápidas</h2>
+          <div class="flex flex-col gap-2">
+
+            @if (canSeeUsers()) {
+              <a routerLink="/panel/users"
+                 class="flex items-center gap-3 p-3 rounded-xl border border-base-300 hover:border-primary hover:bg-primary/5 transition-all group">
+                <span class="text-lg">👥</span>
+                <span class="text-sm font-medium flex-1">Gestionar usuarios</span>
+                <svg class="h-4 w-4 opacity-30 group-hover:opacity-100 group-hover:text-primary transition-all"
+                     xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path d="M9 18l6-6-6-6"/>
+                </svg>
+              </a>
+            }
+
+            @if (canSeePayments()) {
+              <a routerLink="/panel/payments"
+                 class="flex items-center gap-3 p-3 rounded-xl border transition-all group"
+                 [ngClass]="s.pagos.pendientes > 0
+                   ? 'border-error/30 bg-error/5 hover:border-error'
+                   : 'border-base-300 hover:border-error hover:bg-error/5'">
+                <span class="text-lg">💳</span>
+                <span class="text-sm font-medium flex-1">Pagos pendientes</span>
+                @if (s.pagos.pendientes > 0) {
+                  <span class="badge badge-error badge-sm">{{ s.pagos.pendientes }}</span>
+                }
+                <svg class="h-4 w-4 opacity-30 group-hover:opacity-100 group-hover:text-error transition-all"
+                     xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path d="M9 18l6-6-6-6"/>
+                </svg>
+              </a>
+            }
+
+            @if (canSeeServers()) {
+              <a routerLink="/panel/devices"
+                 class="flex items-center gap-3 p-3 rounded-xl border border-base-300 hover:border-info hover:bg-info/5 transition-all group">
+                <span class="text-lg">🖥️</span>
+                <span class="text-sm font-medium flex-1">Dispositivos</span>
+                <svg class="h-4 w-4 opacity-30 group-hover:opacity-100 group-hover:text-info transition-all"
+                     xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path d="M9 18l6-6-6-6"/>
+                </svg>
+              </a>
+            }
+
+            @if (canSeeActivity()) {
+              <a routerLink="/panel/activity"
+                 class="flex items-center gap-3 p-3 rounded-xl border border-base-300 hover:border-secondary hover:bg-secondary/5 transition-all group">
+                <span class="text-lg">📊</span>
+                <span class="text-sm font-medium flex-1">Ver actividad</span>
+                <svg class="h-4 w-4 opacity-30 group-hover:opacity-100 group-hover:text-secondary transition-all"
+                     xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path d="M9 18l6-6-6-6"/>
+                </svg>
+              </a>
+            }
+
           </div>
         </div>
-      </section>
+      </div>
 
-      <!-- QUICK ACTIONS -->
-      <section class="container mx-auto max-w-7xl px-2 md:px-4 mt-4">
-        <div class="bg-base-100 border rounded-xl shadow-sm p-4">
-          <div class="flex flex-wrap items-center gap-2">
-            <span class="font-semibold">Acciones rápidas</span>
-            <div class="divider divider-horizontal"></div>
-            <button class="btn btn-outline btn-sm" onclick="document.getElementById('add_user')?.showModal()">Nuevo usuario</button>
-            <button class="btn btn-outline btn-sm" onclick="document.getElementById('add_server')?.showModal()">Nuevo servidor</button>
-            <a class="btn btn-outline btn-sm" href="#/dashboard/certificates">Emitir certificado</a>
-            <a class="btn btn-outline btn-sm" href="#/dashboard/payments">Registrar pago</a>
+    </div>
+
+    <!-- ── BOTTOM ROW: Finance + Activity ───────────────────────────────── -->
+    @if (canSeeFinance() || canSeeActivity()) {
+      <div class="grid grid-cols-1 gap-4 mb-6"
+           [ngClass]="canSeeFinance() && canSeeActivity() ? 'lg:grid-cols-2' : 'lg:grid-cols-1'">
+
+        <!-- Ingresos mensuales -->
+        @if (canSeeFinance()) {
+          <div class="card bg-base-100 border shadow-sm">
+            <div class="card-body gap-4">
+              <div class="flex items-center justify-between">
+                <h2 class="font-bold text-base">Ingresos {{ currentYear }}</h2>
+                @if (financeSummary(); as fs) {
+                  <span class="text-sm font-bold text-success">{{ fs.currency }} {{ fs.totalRevenue | number:'1.0-0' }}</span>
+                }
+              </div>
+
+              @if (loadingFinance()) {
+                <div class="flex items-end gap-1 h-24">
+                  @for (i of [1,2,3,4,5,6,7,8,9,10,11,12]; track i) {
+                    <div class="flex-1 skeleton rounded-t" [style.height.px]="20 + i * 2"></div>
+                  }
+                </div>
+              } @else if (monthlyRevenue().length > 0) {
+                <!-- Bar sparkline -->
+                <div class="flex items-end gap-1" style="height: 96px">
+                  @for (m of monthlyRevenue(); track m.month) {
+                    <div class="flex-1 flex flex-col items-center gap-1 group cursor-default relative h-full justify-end">
+                      <div class="absolute bottom-5 left-1/2 -translate-x-1/2 bg-base-300 text-[10px] px-1.5 py-0.5 rounded shadow
+                                  opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+                        {{ m.revenue | number:'1.0-0' }}
+                      </div>
+                      <div class="w-full rounded-t bg-primary/70 group-hover:bg-primary transition-colors duration-200"
+                           [style.height.%]="barHeight(m)"
+                           style="min-height: 3px; transition: height 0.6s ease;">
+                      </div>
+                      <span class="text-[9px] text-base-content/40 shrink-0">{{ monthLabel(m.month) }}</span>
+                    </div>
+                  }
+                </div>
+                @if (financeSummary(); as fs) {
+                  <div class="grid grid-cols-3 gap-2 pt-3 border-t border-base-200">
+                    <div class="text-center">
+                      <p class="text-[10px] text-base-content/40 uppercase tracking-wide">Ingresos</p>
+                      <p class="text-sm font-bold text-success">{{ fs.currency }} {{ fs.totalRevenue | number:'1.0-0' }}</p>
+                    </div>
+                    <div class="text-center border-x border-base-200">
+                      <p class="text-[10px] text-base-content/40 uppercase tracking-wide">Gastos</p>
+                      <p class="text-sm font-bold text-error">{{ fs.currency }} {{ fs.totalExpenses | number:'1.0-0' }}</p>
+                    </div>
+                    <div class="text-center">
+                      <p class="text-[10px] text-base-content/40 uppercase tracking-wide">Neto</p>
+                      <p class="text-sm font-bold"
+                         [class.text-success]="fs.net >= 0"
+                         [class.text-error]="fs.net < 0">
+                        {{ fs.currency }} {{ fs.net | number:'1.0-0' }}
+                      </p>
+                    </div>
+                  </div>
+                }
+              } @else {
+                <div class="flex items-center justify-center h-24 text-sm text-base-content/40">
+                  Sin datos de ingresos disponibles
+                </div>
+              }
+            </div>
           </div>
-        </div>
-      </section>
+        }
 
+        <!-- Actividad reciente -->
+        @if (canSeeActivity()) {
+          <div class="card bg-base-100 border shadow-sm">
+            <div class="card-body gap-4">
+              <div class="flex items-center justify-between">
+                <h2 class="font-bold text-base">Actividad reciente</h2>
+                <a routerLink="/panel/activity" class="text-xs text-primary hover:underline">Ver todo →</a>
+              </div>
 
+              @if (loadingActivity()) {
+                <div class="space-y-3">
+                  @for (i of [1,2,3,4]; track i) {
+                    <div class="flex items-center gap-3">
+                      <div class="skeleton w-8 h-8 rounded-lg shrink-0"></div>
+                      <div class="flex-1 space-y-1.5">
+                        <div class="skeleton h-3 w-40 rounded"></div>
+                        <div class="skeleton h-2.5 w-24 rounded"></div>
+                      </div>
+                    </div>
+                  }
+                </div>
+              } @else if (recentActivity().length === 0) {
+                <div class="text-center py-8 text-sm text-base-content/40">Sin actividad reciente</div>
+              } @else {
+                <ul class="space-y-0.5">
+                  @for (entry of recentActivity(); track entry.id) {
+                    <li class="flex items-start gap-3 py-2 hover:bg-base-200/50 rounded-lg px-2 -mx-2 transition-colors">
+                      <div class="w-8 h-8 rounded-lg flex items-center justify-center text-base shrink-0 mt-0.5"
+                           [ngClass]="entry.result === 'success' ? 'bg-success/10' : 'bg-error/10'">
+                        {{ activityIcon(entry.action) }}
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <p class="text-xs font-medium truncate">{{ entry.action }}</p>
+                        <p class="text-[10px] text-base-content/40 truncate">{{ entry.actorEmail }}</p>
+                      </div>
+                      <div class="flex flex-col items-end gap-1 shrink-0">
+                        <span class="badge badge-xs" [ngClass]="activityResultClass(entry.result)">{{ entry.result }}</span>
+                        <span class="text-[9px] text-base-content/30">{{ entry.createdAt | date:'HH:mm' }}</span>
+                      </div>
+                    </li>
+                  }
+                </ul>
+              }
+            </div>
+          </div>
+        }
 
-
-<!-- MODALES RÁPIDOS -->
-<dialog id="add_user" class="modal">
-  <div class="modal-box max-w-2xl">
-    <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button></form>
-    <h3 class="text-lg font-bold">Nuevo usuario</h3>
-    <p class="text-sm opacity-70 mb-3">Crea una cuenta y asigna un rol inicial.</p>
-    <div class="grid gap-3 md:grid-cols-2">
-      <label class="input input-bordered w-full"><input type="text" placeholder="Nombres" class="w-full" /></label>
-      <label class="input input-bordered w-full"><input type="text" placeholder="Apellidos" class="w-full" /></label>
-      <label class="input input-bordered w-full md:col-span-2"><input type="email" placeholder="Email" class="w-full" /></label>
-      <label class="input input-bordered w-full md:col-span-2"><input type="password" placeholder="Contraseña temporal" class="w-full" /></label>
-      <label class="select select-bordered w-full md:col-span-2">
-        <select class="w-full" aria-label="Rol">
-          <option selected>standar</option>
-          <option>soporte</option>
-          <option>admin</option>
-        </select>
-      </label>
-    </div>
-    <div class="modal-action">
-      <button class="btn btn-ghost" type="button">Cancelar</button>
-      <button class="btn btn-primary" type="button">Crear</button>
-    </div>
-  </div>
-  <form method="dialog" class="modal-backdrop"><button>close</button></form>
-</dialog>
-
-<dialog id="add_server" class="modal">
-  <div class="modal-box max-w-2xl">
-    <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button></form>
-    <h3 class="text-lg font-bold">Nuevo servidor</h3>
-    <p class="text-sm opacity-70 mb-3">Registra un servidor SSH para OpenVPN/WireGuard.</p>
-    <div class="grid gap-3 md:grid-cols-2">
-      <label class="input input-bordered w-full"><input type="text" placeholder="Nombre" class="w-full" /></label>
-      <label class="input input-bordered w-full"><input type="text" placeholder="Ubicación (región)" class="w-full" /></label>
-      <label class="input input-bordered w-full"><input type="text" placeholder="IP" class="w-full" /></label>
-      <label class="input input-bordered w-full"><input type="number" placeholder="Puerto SSH (22)" value="22" class="w-full" /></label>
-      <label class="input input-bordered w-full"><input type="text" placeholder="Usuario SSH" class="w-full" /></label>
-      <label class="input input-bordered w-full md:col-span-2"><input type="text" placeholder="Ruta a llave privada" class="w-full" /></label>
-      <label class="label cursor-pointer justify-start gap-3 md:col-span-2">
-        <input type="checkbox" class="toggle toggle-success" checked />
-        <span>Activo</span>
-      </label>
-    </div>
-    <div class="modal-action">
-      <button class="btn btn-ghost" type="button">Cancelar</button>
-      <button class="btn btn-primary" type="button">Guardar</button>
-    </div>
-  </div>
-  <form method="dialog" class="modal-backdrop"><button>close</button></form>
-</dialog>
-
-<!-- Atajo: Ctrl/Cmd + K enfoca búsqueda -->
-<script>
-  document.addEventListener('keydown', (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
-      const input = document.getElementById('global-search');
-      if (input) { e.preventDefault(); input.focus(); }
+      </div>
     }
-  });
-</script>
+
+    <!-- Footer timestamp -->
+    <p class="text-xs text-base-content/30 text-right pb-2">
+      Actualizado: {{ s.generado_en | date:'dd/MM/yyyy HH:mm:ss' }}
+    </p>
+
+  }
+
+}

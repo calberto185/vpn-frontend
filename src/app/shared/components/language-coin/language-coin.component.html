@@ -1,45 +1,68 @@
-<!-- <div class="navbar-end flex items-end "> -->
+<!-- Selector de idioma -->
+<details class="dropdown dropdown-end" #langDetails>
+  <summary class="flex items-center gap-1 px-2 py-1.5 rounded-md hover:bg-base-200 transition-colors cursor-pointer list-none">
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24"
+      stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10" />
+      <path stroke-linecap="round" stroke-linejoin="round"
+        d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20" />
+    </svg>
+    <span class="hidden sm:inline text-sm font-medium text-base-content">
+      {{ localeService.currentLanguageCode().toUpperCase() }}
+    </span>
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-base-content/60" fill="none" viewBox="0 0 24 24"
+      stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+    </svg>
+  </summary>
+  <ul class="dropdown-content z-[200] menu menu-sm p-2 shadow-lg bg-base-100 rounded-xl w-44 mt-1 border border-base-200">
+    @for (lang of localeService.availableLanguages(); track lang.code) {
+      <li>
+        <a class="flex items-center gap-2 text-base-content"
+           [class.font-bold]="lang.code === localeService.currentLanguageCode()"
+           (click)="selectLanguage(lang.code)">
+          <span>{{ lang.flag }}</span>
+          <span>{{ lang.nativeName }}</span>
+        </a>
+      </li>
+    }
+    @if (localeService.availableLanguages().length === 0) {
+      <li><span class="text-xs text-base-content/50 px-2">Cargando...</span></li>
+    }
+  </ul>
+</details>
 
-  <!-- Selector de idioma -->
-  <div class="dropdown dropdown-end">
-    <button tabindex="0" class="flex items-center gap-1 px-2 py-1.5 rounded-md hover:bg-base-200 transition-colors">
-      <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24"
-        stroke="currentColor" stroke-width="2">
-        <circle cx="12" cy="12" r="10" />
-        <path stroke-linecap="round" stroke-linejoin="round"
-          d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20" />
-      </svg>
-      <span class="hidden sm:inline text-sm font-medium">{{ this.selectedLanguage().toUpperCase() }}</span>
-      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 opacity-70" fill="none" viewBox="0 0 24 24"
-        stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-      </svg>
-    </button>
-    <ul tabindex="0" class="dropdown-content z-[1] menu menu-sm p-2 shadow-lg bg-base-100 rounded-xl w-40">
-      <li><a class="flex items-center gap-2" (click)="onLanguageChange('es')">🇪🇸 <span>Español</span></a></li>
-      <!-- <li><a class="flex items-center gap-2" (click)="onLanguageChange('en')">🇺🇸 <span>English</span></a></li>
-                    <li><a class="flex items-center gap-2" (click)="onLanguageChange('ru')">🇷🇺 <span>Русский</span></a></li> -->
-    </ul>
-  </div>
-
-  <!-- Selector de moneda -->
-  <div class="dropdown dropdown-end">
-    <button tabindex="0" class="flex items-center gap-1 px-2 py-1.5 rounded-md hover:bg-base-200 transition-colors">
-      <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24"
-        stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round"
-          d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-2m4-2a2 2 0 00-2-2H9a2 2 0 000 4h10a2 2 0 002-2z" />
-      </svg>
-      <span class="hidden sm:inline text-sm font-medium">{{ this.selectedCurrency() }}</span>
-      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 opacity-70" fill="none" viewBox="0 0 24 24"
-        stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-      </svg>
-    </button>
-    <ul tabindex="0" class="dropdown-content z-[1] menu menu-sm p-2 shadow-lg bg-base-100 rounded-xl w-36">
-      <!-- <li><a class="flex items-center gap-2" (click)="onCurrencyChange('PEN')">🇵🇪 PEN</a></li>
-      <li><a class="flex items-center gap-2" (click)="onCurrencyChange('USD')">🇺🇸 USD</a></li> -->
-      <li><a class="flex items-center gap-2" (click)="onCurrencyChange('RUB')">🇷🇺 RUB</a></li>
-    </ul>
-  </div>
-<!-- </div> -->
+<!-- Selector de moneda -->
+<details class="dropdown dropdown-end" #coinDetails>
+  <summary class="flex items-center gap-1 px-2 py-1.5 rounded-md hover:bg-base-200 transition-colors cursor-pointer list-none">
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24"
+      stroke="currentColor" stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round"
+        d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-2m4-2a2 2 0 00-2-2H9a2 2 0 000 4h10a2 2 0 002-2z" />
+    </svg>
+    <span class="hidden sm:inline text-sm font-medium text-base-content">
+      {{ localeService.currentCurrencyCode() || '—' }}
+    </span>
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-base-content/60" fill="none" viewBox="0 0 24 24"
+      stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+    </svg>
+  </summary>
+  <ul class="dropdown-content z-[200] menu menu-sm p-2 shadow-lg bg-base-100 rounded-xl w-56 mt-1 border border-base-200">
+    @for (country of localeService.currenciesForLanguage(); track country.id) {
+      <li>
+        <a class="flex items-center gap-2 text-base-content"
+           [class.font-bold]="country.id === localeService.currentCountry()?.id"
+           (click)="selectCountry(country)">
+          <span>{{ country.flag }}</span>
+          <span class="font-semibold">{{ country.currencyCode }}</span>
+          <span class="text-base-content/50 text-xs">{{ country.currencySymbol }}</span>
+          <span class="ml-auto text-xs text-base-content/40">{{ country.countryName }}</span>
+        </a>
+      </li>
+    }
+    @if (localeService.currenciesForLanguage().length === 0) {
+      <li><span class="text-xs text-base-content/50 px-2">Cargando...</span></li>
+    }
+  </ul>
+</details>

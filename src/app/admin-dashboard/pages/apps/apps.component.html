@@ -1,453 +1,243 @@
-<!-- ====== Países: Gestión ====== -->
-
-<!-- Stats -->
-<section class="container mx-auto max-w-7xl px-2 md:px-4 mt-4">
-  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-    <div class="stat bg-base-100/80 border rounded-xl shadow-sm">
-      <div class="stat-figure text-primary">
-        <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
-      </div>
-      <div class="stat-title">Apps</div>
-      <div class="stat-value text-2xl">{{this.ListApps().length}}</div>
-      <div class="stat-desc">desde modelo</div>
-    </div>
-
-    <div class="stat bg-base-100/80 border rounded-xl shadow-sm">
-      <div class="stat-figure text-success">
-        <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>
-      </div>
-      <div class="stat-title">Activos</div>
-      <div class="stat-value text-2xl">0</div>
-      <div class="stat-desc">en producción</div>
-    </div>
-
-    <div class="stat bg-base-100/80 border rounded-xl shadow-sm">
-      <div class="stat-figure text-warning">
-        <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v5M12 16h.01"/></svg>
-      </div>
-      <div class="stat-title">Inactivos</div>
-      <div class="stat-value text-2xl">1</div>
-      <div class="stat-desc">ocultos</div>
+<!-- ═══════════════════════════════════════════════════════ TOAST -->
+@if (toast()) {
+  <div class="toast toast-top toast-end z-[200]">
+    <div class="alert" [class.alert-success]="toast()!.ok" [class.alert-error]="!toast()!.ok">
+      <span>{{ toast()!.msg }}</span>
     </div>
   </div>
-</section>
+}
 
-<!-- Action bar -->
-<section class="container mx-auto max-w-7xl px-2 md:px-4 mt-4">
-  <div class="bg-base-100 border rounded-xl p-3 md:p-4 shadow-sm">
-    <div class="flex flex-wrap items-center gap-3">
-      <label class="input input-bordered flex items-center gap-2 w-full sm:w-[28rem]" aria-label="Buscar países">
-        <svg class="h-5 w-5 opacity-70" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-        <input id="search-countries" type="text" placeholder="Buscar por país, códigos, moneda o prefijo telefónico" />
-      </label>
-
-      <div class="dropdown">
-        <button tabindex="0" class="btn btn-sm md:btn-md">Estado</button>
-        <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-56 z-[60]">
-          <li><a>Todos</a></li>
-          <li><a>Activos</a></li>
-          <li><a>Inactivos</a></li>
-        </ul>
-      </div>
-
-      <div class="dropdown">
-        <button tabindex="0" class="btn btn-ghost btn-sm md:btn-md">Orden</button>
-        <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-48 z-[60]">
-          <li><a>Recientes</a></li>
-          <li><a>Alfabético</a></li>
-          <li><a>Código país</a></li>
-          <li><a>Moneda</a></li>
-        </ul>
-      </div>
-
-      <div class="ml-auto flex items-center gap-2">
-        <div class="tooltip" data-tip="Seleccionar todo">
-          <input type="checkbox" class="checkbox checkbox-sm" aria-label="Seleccionar todo" />
-        </div>
-
-        <div class="dropdown dropdown-end">
-          <button tabindex="0" class="btn btn-ghost btn-sm md:btn-md">Acciones</button>
-          <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-64 z-[60]">
-            <li><a>Activar</a></li>
-            <li><a>Desactivar</a></li>
-            <li><a>Exportar CSV</a></li>
-            <li><a class="text-error">Eliminar</a></li>
-          </ul>
-        </div>
-
-        <!-- Botón Agregar país -->
-        <button class="btn btn-primary btn-sm md:btn-md" type="button"
-                onclick="document.getElementById('add_apps')?.showModal()">
-          <svg class="h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-               stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-          Agregar Apps
-        </button>
-      </div>
-    </div>
+<!-- ═══════════════════════════════════════════════════════ HEADER -->
+<div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+  <div>
+    <h1 class="text-2xl font-bold">Aplicaciones</h1>
+    <p class="text-base-content/60 text-sm mt-0.5">Apps externas con acceso a la API del sistema</p>
   </div>
-</section>
+  @if (canCreate()) {
+    <button class="btn btn-primary btn-sm gap-1" (click)="openCreateModal()">
+      <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+      </svg>
+      Nueva app
+    </button>
+  }
+</div>
 
-<!-- Tabla -->
-<section class="container mx-auto max-w-7xl px-2 md:px-4 mt-4">
-  <div class="bg-base-100 border rounded-xl shadow-sm overflow-x-auto">
-    <table class="table table-sm w-full">
-      <thead>
+<!-- ═══════════════════════════════════════════════════════ STATS -->
+<div class="grid grid-cols-3 gap-3 mb-6">
+  <div class="stat bg-base-200 rounded-xl p-4">
+    <div class="stat-title text-xs">Total</div>
+    <div class="stat-value text-2xl">{{ totalApps() }}</div>
+  </div>
+  <div class="stat bg-base-200 rounded-xl p-4">
+    <div class="stat-title text-xs">Activas</div>
+    <div class="stat-value text-2xl text-success">{{ activeApps() }}</div>
+  </div>
+  <div class="stat bg-base-200 rounded-xl p-4">
+    <div class="stat-title text-xs">Inactivas</div>
+    <div class="stat-value text-2xl text-warning">{{ inactiveApps() }}</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ TABLE -->
+<div class="overflow-x-auto rounded-xl border border-base-300">
+  <table class="table table-sm table-zebra w-full">
+    <thead>
+      <tr class="text-xs uppercase text-base-content/60">
+        <th>App</th>
+        <th>Tipo</th>
+        <th class="hidden md:table-cell">Ruta</th>
+        <th class="hidden lg:table-cell">Queries</th>
+        <th>Estado</th>
+        <th class="text-right">Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      @if (apps().length === 0) {
         <tr>
-          <th class="w-8">
-            <input type="checkbox" class="checkbox checkbox-xs" aria-label="Seleccionar todas" />
-          </th>
-          <th>Apps</th>
-          <th class="hidden xl:table-cell">Códigos</th>
-          <th class="hidden xl:table-cell">Moneda</th>
-          <th>Estado</th>
-          <th class="text-right w-48">Acciones</th>
+          <td colspan="6" class="text-center py-10 text-base-content/40">Sin apps registradas</td>
         </tr>
-      </thead>
-      <tbody>
-        @for (c of this.ListApps(); track c.id) {
-          <tr class="hover">
-            <!-- Checkbox -->
-            <td>
-              <input type="checkbox" class="checkbox checkbox-xs" aria-label="Seleccionar " />
-            </td>
-
-            <!-- País -->
-            <td>
-              <div class="flex items-center gap-3">
-                <div class="avatar placeholder">
-                  <div class="bg-primary/10 text-primary w-10 h-10 rounded-xl flex items-center justify-center text-xl">
-                    {{ c.name }}
-                  </div>
-                </div>
-                <div>
-                  <div class="font-medium leading-tight">{{ c.description }}</div>
-                  <div class="text-[11px] opacity-70 break-all">
-                    UUID: {{ c.id }}
-                  </div>
-                </div>
-              </div>
-            </td>
-
-            <!-- Códigos -->
-            <td class="hidden xl:table-cell">
-              <div class="leading-tight text-[12px]">
-                <div><span class="opacity-70">kind:</span> {{ c.kind }}</div>
-                <div><span class="opacity-70">access:</span> {{ c.access }}</div>
-              </div>
-            </td>
-
-            <!-- Estado -->
-            <td>
-              @if (c.active) {
-                <span class="badge badge-success">Activo</span>
-              } @else {
-                <span class="badge badge-ghost">Inactivo</span>
+      }
+      @for (app of apps(); track app.id) {
+        <tr class="hover">
+          <td>
+            <div class="font-medium leading-tight">{{ app.name }}</div>
+            <div class="text-[11px] text-base-content/50 mt-0.5">{{ app.description }}</div>
+          </td>
+          <td>
+            <span class="badge badge-outline badge-sm">{{ kindLabel(app.kind) }}</span>
+          </td>
+          <td class="hidden md:table-cell">
+            <code class="text-xs bg-base-300 rounded px-1.5 py-0.5">{{ app.route }}</code>
+          </td>
+          <td class="hidden lg:table-cell text-sm">
+            {{ app.queries }}
+          </td>
+          <td>
+            @if (app.active) {
+              <span class="badge badge-success badge-sm">Activa</span>
+            } @else {
+              <span class="badge badge-ghost badge-sm">Inactiva</span>
+            }
+          </td>
+          <td class="text-right">
+            <div class="flex items-center justify-end gap-1">
+              @if (canUpdate()) {
+                <button class="btn btn-ghost btn-xs" (click)="openEditModal(app)">Editar</button>
+                <button class="btn btn-ghost btn-xs" (click)="toggleActive(app)">
+                  {{ app.active ? 'Desactivar' : 'Activar' }}
+                </button>
               }
-            </td>
-
-
-            <!-- Acciones -->
-            <td class="text-right">
-              <div class="flex items-center justify-end gap-1.5">
-                <div class="dropdown dropdown-end">
-                  <button class="btn btn-ghost btn-xs">Gestionar</button>
-                  <ul class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-48 z-[60]">
-                    <!-- <li><a (click)="onView(c)">Ver</a></li>
-                    <li><a (click)="onEdit(c)">Editar</a></li>
-                    <li><a (click)="onToggleActive(c)">Activar/Desactivar</a></li> -->
-                  </ul>
-                </div>
-                <!-- <button class="btn btn-ghost btn-xs text-error" type="button" (click)="onDelete(c)">
-                  <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
-                       viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path d="M3 6h18"/><path d="M8 6v14a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V6"/>
-                    <path d="M10 11v6M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
+              @if (canDelete()) {
+                <button class="btn btn-ghost btn-xs text-error" (click)="openDeleteModal(app)">
+                  <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
                   </svg>
-                </button> -->
-              </div>
-            </td>
-          </tr>
-        }
-      </tbody>
-    </table>
-  </div>
+                </button>
+              }
+            </div>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
 
-  <!-- Paginación -->
-  <div class="mt-3 flex items-center justify-between">
-    <p class="text-sm opacity-70">
-      Mostrando 1–{{ ListApps().length }} de {{ ListApps().length }}
-    </p>
-    <nav class="join">
-      <button class="btn btn-xs join-item" disabled>«</button>
-      <button class="btn btn-xs join-item btn-active" aria-current="page">1</button>
-      <button class="btn btn-xs join-item" disabled>»</button>
-    </nav>
-  </div>
-</section>
-
-
-<!-- ====== MODALES ====== -->
-
-<!-- Ver Apps -->
-<dialog id="view_country" class="modal">
-  <div class="modal-box w-11/12 max-w-4xl">
-    <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button></form>
-    <h3 class="text-lg font-bold">Detalle del país</h3>
-
-    <div class="grid gap-4 md:grid-cols-3 mt-3">
-      <div class="md:col-span-2 card border bg-base-200/60">
-        <div class="card-body p-4">
-          <h4 class="card-title text-sm">Información</h4>
-          <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-            <span class="opacity-70">OID:</span><span class="break-all">6898b65ec882eb1f46e43934</span>
-            <span class="opacity-70">País:</span><span>Argentina 🇦🇷</span>
-            <span class="opacity-70">countryCode:</span><span>ar</span>
-            <span class="opacity-70">Idioma:</span><span>Spanish (es)</span>
-            <span class="opacity-70">Moneda:</span><span>Argentine Peso (ARS)</span>
-            <span class="opacity-70">Símbolo:</span><span>$</span>
-            <span class="opacity-70">Formato:</span><span>###,###,###.##</span>
-            <span class="opacity-70">Teléfono:</span><span>+54</span>
-            <span class="opacity-70">Activo:</span><span>No</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="card border bg-base-200/60">
-        <div class="card-body p-4">
-          <h4 class="card-title text-sm">Estado</h4>
-          <div class="flex flex-wrap gap-2">
-            <span class="badge badge-ghost">Inactivo</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="modal-action">
-      <button class="btn" type="button" onclick="document.getElementById('edit_country')?.showModal()">Editar</button>
-      <button class="btn btn-error btn-outline" type="button" onclick="document.getElementById('delete_country')?.showModal()">Eliminar</button>
-    </div>
-  </div>
-  <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
-</dialog>
-
-<!-- Agregar Apps -->
-<dialog id="add_apps" class="modal">
-  <div class="modal-box max-w-3xl">
-    <!-- Cerrar -->
+<!-- ═══════════════════════════════════════════════════════ MODAL CREAR -->
+<dialog id="modal_app_create" class="modal">
+  <div class="modal-box max-w-lg">
     <form method="dialog">
       <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button>
     </form>
+    <h3 class="text-lg font-bold mb-4">Nueva aplicación</h3>
 
-    <!-- Encabezado -->
-    <h3 class="text-lg font-bold">Nueva APP</h3>
-    <p class="text-sm opacity-70 mb-3">Registra una app para que pueda interactuar con el sistema.</p>
-
-    <!-- Formulario reactivo -->
-    <form class="grid gap-3 md:grid-cols-2" [formGroup]="appsForm" (ngSubmit)="onSubmit()" novalidate autocomplete="on">
-
-      <!-- name -->
-      <div class="w-full md:col-span-2">
-        <label for="name" class="block text-sm font-medium text-gray-700 mb-1">
-          Nombre de App
-        </label>
-        <div
-          class="flex items-center border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-blue-500">
-          <!-- ícono etiqueta/nombre -->
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" viewBox="0 0 24 24"
-            fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h10v10H7z" />
-            <path stroke-linecap="round" stroke-linejoin="round" d="M3 12h3" />
-          </svg>
-
-          <input type="text" id="name" placeholder="Nombre del plan"
-            class="w-full outline-none text-gray-700 placeholder-gray-400" formControlName="name" required
-            minlength="2" aria-label="Prefix del Plan" />
-        </div>
-
-        @if (appsForm.get('name')?.touched && appsForm.get('name')?.invalid) {
-        <p class="text-red-500 text-sm mt-1 md:col-span-2">
-          @if (appsForm.get('name')?.errors?.['required']) { Ingrese el nombre del App. }
-          @if (appsForm.get('name')?.errors?.['minlength']) { Debe tener al menos 2 caracteres. }
-        </p>
+    <form [formGroup]="createForm" (ngSubmit)="onSubmit()" class="grid gap-3" novalidate>
+      <div class="form-control">
+        <label class="label"><span class="label-text">Nombre *</span></label>
+        <input class="input input-bordered w-full" formControlName="name" placeholder="Mi App" />
+        @if (createForm.get('name')?.touched && createForm.get('name')?.invalid) {
+          <span class="text-error text-xs mt-1">El nombre es requerido (mín. 2 caracteres)</span>
         }
       </div>
 
-      <!-- description -->
-      <div class="w-full md:col-span-2">
-        <label for="description" class="block text-sm font-medium text-gray-700 mb-1">
-          Descripcion del APP
-        </label>
-        <div
-          class="flex items-center border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-blue-500">
-          <!-- ícono etiqueta/nombre -->
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" viewBox="0 0 24 24"
-            fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h10v10H7z" />
-            <path stroke-linecap="round" stroke-linejoin="round" d="M3 12h3" />
-          </svg>
-
-          <input type="text" id="description" placeholder="Nombre del plan"
-            class="w-full outline-none text-gray-700 placeholder-gray-400" formControlName="description" required
-            minlength="2" aria-label="Nombre del Plan" />
-        </div>
-
-        @if (appsForm.get('description')?.touched && appsForm.get('description')?.invalid) {
-        <p class="text-red-500 text-sm mt-1 md:col-span-2">
-          @if (appsForm.get('description')?.errors?.['required']) { Ingrese la descripcion del App. }
-          @if (appsForm.get('description')?.errors?.['minlength']) { Debe tener al menos 2 caracteres. }
-        </p>
+      <div class="form-control">
+        <label class="label"><span class="label-text">Descripción *</span></label>
+        <input class="input input-bordered w-full" formControlName="description" placeholder="Descripción breve" />
+        @if (createForm.get('description')?.touched && createForm.get('description')?.invalid) {
+          <span class="text-error text-xs mt-1">La descripción es requerida</span>
         }
       </div>
 
-      <!-- route -->
-      <div class="w-full md:col-span-2">
-        <label for="route" class="block text-sm font-medium text-gray-700 mb-1">
-          recurso API al que la app tiene acceso
-        </label>
-        <div
-          class="flex items-center border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-blue-500">
-          <!-- ícono etiqueta/nombre -->
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" viewBox="0 0 24 24"
-            fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h10v10H7z" />
-            <path stroke-linecap="round" stroke-linejoin="round" d="M3 12h3" />
-          </svg>
-
-          <input type="text" id="route" placeholder="Suffix del plan"
-            class="w-full outline-none text-gray-700 placeholder-gray-400" formControlName="route" required
-            minlength="2" aria-label="Suffix del Plan" />
-        </div>
-
-        @if (appsForm.get('route')?.touched && appsForm.get('route')?.invalid) {
-        <p class="text-red-500 text-sm mt-1 md:col-span-2">
-          @if (appsForm.get('route')?.errors?.['required']) { Ingrese el recurso API al que el App tiene acceso. }
-          @if (appsForm.get('route')?.errors?.['minlength']) { Debe tener al menos 2 caracteres. }
-        </p>
+      <div class="form-control">
+        <label class="label"><span class="label-text">Ruta / recurso API *</span></label>
+        <input class="input input-bordered w-full" formControlName="route" placeholder="/api/mi-app" />
+        @if (createForm.get('route')?.touched && createForm.get('route')?.invalid) {
+          <span class="text-error text-xs mt-1">La ruta es requerida</span>
         }
       </div>
 
-      <!-- kind -->
-      <div class="w-full  md:col-span-2">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de App</label>
-        <div class="flex items-center border border-gray-300 rounded-lg px-3 py-2
-             focus-within:ring-2 focus-within:ring-blue-500 bg-white">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" fill="none"
-            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="2" y1="12" x2="22" y2="12"></line>
-            <path d="M12 2a15 15 0 0 1 4 10 15 15 0 0 1-4 10 15 15 0 0 1-4-10 15 15 0 0 1 4-10z"></path>
-          </svg>
-          <select formControlName="kind" required class="w-full outline-none text-gray-700 bg-transparent">
-            <option value="" disabled selected hidden>Selecciona el tipo de APP</option>
-            <option value="hora">App</option>
-            <option value="dia">WorkFlow</option>
-            <!-- @for (item of this.ListCountries(); track item.countryName; let idx = $index) {
-          <option [value]="item.countryName">{{item.countryName}} - {{ item.currencyName }} - {{ item.currencySymbol }}</option>
-        } -->
+      <div class="grid grid-cols-2 gap-3">
+        <div class="form-control">
+          <label class="label"><span class="label-text">Tipo *</span></label>
+          <select class="select select-bordered w-full" formControlName="kind">
+            @for (k of kindOptions; track k.value) {
+              <option [value]="k.value">{{ k.label }}</option>
+            }
           </select>
         </div>
-        @if (appsForm.get('kind')?.touched && appsForm.get('kind')?.invalid) {
-        <p class="text-red-500 text-sm mt-1">Seleccione el tipo de App.</p>
-        }
+        <div class="form-control justify-end pb-2">
+          <label class="label cursor-pointer gap-3">
+            <input type="checkbox" class="toggle toggle-success" formControlName="active" />
+            <span class="label-text">Activa</span>
+          </label>
+        </div>
       </div>
 
-
-      <!-- Activo -->
-      <div class="w-full md:col-span-2">
-        <label class="label cursor-pointer justify-start gap-3">
-          <input type="checkbox" class="toggle" formControlName="active" aria-label="Activo" />
-          <span class="text-gray-700">Activo</span>
-        </label>
-      </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      <!-- Acciones -->
-      <div class="modal-action md:col-span-2">
-        <button class="btn btn-ghost" type="button" (click)="cerrarDialogo()">Cancelar</button>
-        <button class="btn btn-primary" type="submit" [disabled]="appsForm.invalid">Crear</button>
+      <div class="modal-action mt-2">
+        <button class="btn btn-ghost" type="button"
+          onclick="document.getElementById('modal_app_create')?.close()">Cancelar</button>
+        <button class="btn btn-primary" type="submit" [disabled]="createForm.invalid || saving()">
+          @if (saving()) { <span class="loading loading-spinner loading-sm"></span> }
+          Crear
+        </button>
       </div>
     </form>
-
-  </div>
-
-  <form method="dialog" class="modal-backdrop">
-    <button aria-label="Cerrar">close</button>
-  </form>
-</dialog>
-
-<!-- Editar país -->
-<dialog id="edit_country" class="modal">
-  <div class="modal-box max-w-3xl">
-    <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button></form>
-    <h3 class="text-lg font-bold">Editar país</h3>
-
-    <div class="grid gap-3 md:grid-cols-2 mt-2">
-      <label class="input input-bordered w-full md:col-span-2"><input type="text" value="6898b65ec882eb1f46e43934" class="w-full" disabled /></label>
-
-      <label class="input input-bordered w-full md:col-span-2"><input type="text" value="Argentina" class="w-full" /></label>
-      <label class="input input-bordered w-full"><input type="text" value="ar" class="w-full" /></label>
-
-      <label class="input input-bordered w-full"><input type="text" value="Spanish" class="w-full" /></label>
-      <label class="input input-bordered w-full"><input type="text" value="es" class="w-full" /></label>
-
-      <label class="input input-bordered w-full"><input type="text" value="Argentine Peso" class="w-full" /></label>
-      <label class="input input-bordered w-full"><input type="text" value="ARS" class="w-full" /></label>
-
-      <label class="input input-bordered w-full"><input type="text" value="$" class="w-full" /></label>
-      <label class="input input-bordered w-full"><input type="text" value="###,###,###.##" class="w-full" /></label>
-
-      <label class="input input-bordered w-full"><input type="text" value="🇦🇷" class="w-full" /></label>
-      <label class="input input-bordered w-full"><input type="text" value="+54" class="w-full" /></label>
-
-      <label class="label cursor-pointer justify-start gap-3 md:col-span-2">
-        <input type="checkbox" class="toggle" aria-label="Activo" />
-        <span>Activo</span>
-      </label>
-    </div>
-
-    <div class="modal-action">
-      <button class="btn btn-ghost" type="button">Cancelar</button>
-      <button class="btn btn-primary" type="button">Guardar</button>
-    </div>
   </div>
   <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
 </dialog>
 
-<!-- Eliminar país -->
-<dialog id="delete_country" class="modal">
-  <div class="modal-box">
-    <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button></form>
-    <h3 class="text-lg font-bold text-error">Eliminar país</h3>
-    <p class="py-2">Esta acción es permanente. ¿Deseas continuar?</p>
-    <div class="modal-action">
-      <button class="btn" type="button">Cancelar</button>
-      <button class="btn btn-error" type="button">Eliminar</button>
-    </div>
+<!-- ═══════════════════════════════════════════════════════ MODAL EDITAR -->
+<dialog id="modal_app_edit" class="modal">
+  <div class="modal-box max-w-lg">
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button>
+    </form>
+    <h3 class="text-lg font-bold mb-4">Editar aplicación</h3>
+
+    <form [formGroup]="editForm" (ngSubmit)="onEditSubmit()" class="grid gap-3">
+      <div class="form-control">
+        <label class="label"><span class="label-text">Nombre *</span></label>
+        <input class="input input-bordered w-full" formControlName="name" />
+      </div>
+      <div class="form-control">
+        <label class="label"><span class="label-text">Descripción *</span></label>
+        <textarea class="textarea textarea-bordered w-full" rows="2" formControlName="description"></textarea>
+      </div>
+      <div class="form-control">
+        <label class="label"><span class="label-text">Ruta *</span></label>
+        <input class="input input-bordered w-full" formControlName="route" />
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div class="form-control">
+          <label class="label"><span class="label-text">Tipo *</span></label>
+          <select class="select select-bordered w-full" formControlName="kind">
+            @for (k of kindOptions; track k.value) {
+              <option [value]="k.value">{{ k.label }}</option>
+            }
+          </select>
+        </div>
+        <div class="form-control justify-end pb-2">
+          <label class="label cursor-pointer gap-3">
+            <input type="checkbox" class="toggle toggle-success" formControlName="active" />
+            <span class="label-text">Activa</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="modal-action mt-2">
+        <button class="btn btn-ghost" type="button"
+          onclick="document.getElementById('modal_app_edit')?.close()">Cancelar</button>
+        <button class="btn btn-primary" type="submit" [disabled]="editForm.invalid || saving()">
+          @if (saving()) { <span class="loading loading-spinner loading-sm"></span> }
+          Guardar
+        </button>
+      </div>
+    </form>
   </div>
-  <form method="dialog" class="modal-backdrop"><button>close</button></form>
+  <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
 </dialog>
 
-<!-- Atajo: Ctrl/Cmd + K enfoca búsqueda -->
-<script>
-  document.addEventListener('keydown', (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
-      const input = document.getElementById('search-countries');
-      if (input) { e.preventDefault(); input.focus(); }
+<!-- ═══════════════════════════════════════════════════════ MODAL ELIMINAR -->
+<dialog id="modal_app_delete" class="modal">
+  <div class="modal-box max-w-sm">
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button>
+    </form>
+    <h3 class="text-lg font-bold text-error">Eliminar app</h3>
+    @if (deleteTarget()) {
+      <p class="py-3 text-sm">
+        ¿Eliminar <strong>{{ deleteTarget()!.name }}</strong>? Esta acción es permanente y revocará el token de acceso.
+      </p>
     }
-  });
-</script>
+    <div class="modal-action">
+      <button class="btn btn-ghost" type="button"
+        onclick="document.getElementById('modal_app_delete')?.close()">Cancelar</button>
+      <button class="btn btn-error" type="button" (click)="confirmDelete()" [disabled]="deleting()">
+        @if (deleting()) { <span class="loading loading-spinner loading-sm"></span> }
+        Eliminar
+      </button>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
+</dialog>

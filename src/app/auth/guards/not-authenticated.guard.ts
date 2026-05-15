@@ -3,23 +3,21 @@ import { CanMatchFn, Route, Router, UrlSegment } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { firstValueFrom } from 'rxjs';
 
-export const NotAuthenticatedGuard: CanMatchFn = async  (
+export const NotAuthenticatedGuard: CanMatchFn = async (
   route: Route,
   segments: UrlSegment[]
 ) => {
   const authService = inject(AuthService);
-  const router = inject(Router);
+  const router      = inject(Router);
 
-  const isAuthenticated = await firstValueFrom(authService.checkStatus());
+  const isAuthenticated = await firstValueFrom(authService.ensureAuthChecked());
 
-  const isAdmin = authService.role?.()?.toLocaleLowerCase().includes("admin");
-  if(isAuthenticated === true) {
-    if(isAdmin) {
-      router.navigateByUrl("/panel");
-    } else {
-      router.navigateByUrl("/client");
-    }
+  if (isAuthenticated === true) {
+    const role = authService.role?.()?.toLowerCase() ?? null;
+    // Panel = cualquier rol asignado por el admin (no 'client', no vacío)
+    const isPanelUser = role !== null && role !== '' && role !== 'client';
+    router.navigateByUrl(isPanelUser ? '/panel' : '/client');
     return false;
   }
   return true;
-}
+};

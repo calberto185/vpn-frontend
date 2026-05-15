@@ -1,8 +1,4 @@
 <router-outlet />
-<app-loading-overlay [isVisible]="isLoading"></app-loading-overlay>
-<app-error-overlay
-  [isVisible]="!!error"
-  [title]="error?.title || ''"
-  [message]="error?.message || ''"
-  (onChange)="error?.call() || null"
-></app-error-overlay>
+<app-loading-overlay [isVisible]="isLoading()"></app-loading-overlay>
+<app-error-overlay></app-error-overlay>
+<app-toast></app-toast>

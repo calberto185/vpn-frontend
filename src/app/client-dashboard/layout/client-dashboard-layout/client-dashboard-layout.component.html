@@ -18,74 +18,135 @@
         </label>
 
         <!-- Brand -->
-        <a class="btn btn-ghost h-auto min-h-0 px-1 md:px-2 text-xl md:text-2xl font-extrabold tracking-tight">
-          <span class="mr-1">VPN</span><span class="text-primary">CarlosVM</span>
+        <a class="btn btn-ghost h-auto min-h-0 px-1 md:px-2 font-extrabold tracking-tight">
+          @if (brandingState.logoUrl()) {
+            <img [src]="brandingState.logoUrl()!" [alt]="brandingState.name()" class="h-8 w-auto max-w-[140px] object-contain" />
+          } @else {
+            <span class="text-xl md:text-2xl text-primary">{{ brandingState.name() }}</span>
+          }
         </a>
 
         <div class="divider divider-horizontal mx-1 hidden sm:flex"></div>
-        <span class="badge badge-primary badge-outline hidden sm:inline-flex">Mis Servicios: {{this.title_services()}}</span>
 
-
-
-
+        <!-- Service chips (max 3 + overflow) -->
+        <div class="hidden md:flex items-center gap-1 flex-wrap max-w-xs">
+          @if (!_profile()?.services?.length) {
+            <span class="badge badge-sm badge-ghost opacity-60">Sin servicios</span>
+          } @else {
+            @for (svc of _profile()!.services.slice(0, 3); track svc.service_id) {
+              <span class="badge badge-sm font-medium cursor-default"
+                    [class.badge-success]="svc.active && !svc.endedAt"
+                    [class.badge-warning]="!svc.active || !!svc.endedAt"
+                    [title]="svc.service_longName + ' · ' + svc.plan_title_name">
+                {{ svc.service_sortName }}
+              </span>
+            }
+            @if ((_profile()!.services.length) > 3) {
+              <span class="badge badge-sm badge-ghost cursor-default"
+                    [title]="overflowServiceNames()">
+                +{{ _profile()!.services.length - 3 }} más
+              </span>
+            }
+          }
+        </div>
 
         <!-- acciones a la derecha -->
         <div class="ml-auto flex items-center gap-1 md:gap-3">
-          <!-- <label class="input input-bordered hidden md:flex items-center gap-2 w-64">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-            <input id="global-search" type="text" placeholder="Buscar… (⌘/Ctrl + K)" />
-          </label> -->
-             <!-- Toolbar selectors -->
-              <div class="dropdown dropdown-end ">
-                <app-language-coin></app-language-coin>
+          <!-- Toolbar selectors -->
+          <div class="dropdown dropdown-end">
+            <app-language-coin></app-language-coin>
+          </div>
+
+          <!-- Bell Notification Dropdown -->
+          <div class="dropdown dropdown-end">
+            <label tabindex="0" class="btn btn-ghost btn-circle" aria-label="Notificaciones">
+              <div class="indicator">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2">
+                  <path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 1 0-12 0v3.2a2 2 0 0 1-.6 1.4L4 17h5"/>
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+                @if (msgUnreadCount() > 0) {
+                  <span class="badge badge-primary badge-xs indicator-item">{{ msgUnreadCount() > 9 ? '9+' : msgUnreadCount() }}</span>
+                }
+              </div>
+            </label>
+
+            <div tabindex="0" class="dropdown-content z-[100] mt-3 w-80 bg-base-100 rounded-2xl shadow-xl border border-base-300 overflow-hidden">
+              <!-- Header -->
+              <div class="flex items-center justify-between px-4 py-3 border-b border-base-300 bg-base-200/50">
+                <span class="font-semibold text-sm">{{ 'nav.notifications' | translate }}</span>
+                @if (msgUnreadCount() > 0) {
+                  <span class="badge badge-primary badge-sm">{{ msgUnreadCount() }} sin leer</span>
+                } @else {
+                  <span class="text-xs text-base-content/50">{{ 'nav.all_up_to_date' | translate }}</span>
+                }
               </div>
 
-          <!-- <div class="dropdown dropdown-end">
-            <label class="swap swap-rotate ml-2">
-              <input type="checkbox" aria-label="Cambiar tema" (change)="changeTheme()">
-              <svg class="swap-on h-6 w-6 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M160 256a96 96 0 1096-96 96.11 96.11 0 00-96 96z"/><path d="M256 48a24 24 0 0124 24v32a24 24 0 01-48 0V72a24 24 0 0124-24zm0 328a24 24 0 00-24 24v32a24 24 0 0048 0v-32a24 24 0 00-24-24zM394.35 117.65a24 24 0 00-33.94 0l-22.63 22.63a24 24 0 1033.94 33.94l22.63-22.63a24 24 0 000-33.94zM117.65 394.35a24 24 0 000 33.94l22.63 22.63a24 24 0 0033.94-33.94l-22.63-22.63a24 24 0 00-33.94 0zM464 232h-32a24 24 0 000 48h32a24 24 0 000-48zM80 232H48a24 24 0 000 48h32a24 24 0 000-48zM394.35 394.35a24 24 0 010 33.94l-22.63 22.63a24 24 0 01-33.94-33.94l22.63-22.63a24 24 0 0133.94 0zM117.65 117.65a24 24 0 0133.94 0l22.63 22.63a24 24 0 11-33.94 33.94l-22.63-22.63a24 24 0 010-33.94z"/></svg>
-              <svg
-                  class="swap-off h-6 w-6 fill-current"
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round">
-                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-              </svg>
-            </label>
-          </div> -->
+              <!-- Preview list -->
+              @if (msgPreview().length === 0) {
+                <div class="px-4 py-8 text-center text-sm text-base-content/50">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mx-auto mb-2 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 1 0-12 0v3.2a2 2 0 0 1-.6 1.4L4 17h5"/>
+                  </svg>
+                  {{ 'nav.no_new_messages' | translate }}
+                </div>
+              } @else {
+                <ul class="divide-y divide-base-200 max-h-72 overflow-y-auto">
+                  @for (msg of msgPreview(); track msg.id) {
+                    <li>
+                      <button type="button"
+                         (click)="onNotificationClick(msg)"
+                         class="w-full text-left flex items-start gap-3 px-4 py-3 hover:bg-base-200 transition-colors cursor-pointer">
+                        <!-- Avatar inicial -->
+                        <div class="avatar placeholder shrink-0 mt-0.5">
+                          <div class="bg-primary text-primary-content rounded-full w-8 text-xs font-bold">
+                            <span>{{ (msg.from_name || 'A').charAt(0).toUpperCase() }}</span>
+                          </div>
+                        </div>
+                        <!-- Content -->
+                        <div class="flex-1 min-w-0">
+                          <div class="flex items-center justify-between gap-1">
+                            <span class="text-xs font-semibold truncate">{{ msg.from_name || 'Admin' }}</span>
+                            <span class="text-xs text-base-content/40 shrink-0">{{ timeAgo(msg.createdAt) }}</span>
+                          </div>
+                          <p class="text-xs font-medium truncate text-base-content/80">{{ msg.subject }}</p>
+                          <p class="text-xs text-base-content/50 truncate">{{ msg.body }}</p>
+                        </div>
+                      </button>
+                    </li>
+                  }
+                </ul>
+              }
 
-          <button class="btn btn-ghost btn-circle" aria-label="Notificaciones">
-            <div class="indicator">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none"
-                   stroke="currentColor" stroke-width="2"><path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 1 0-12 0v3.2a2 2 0 0 1-.6 1.4L4 17h5"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-              <span class="badge badge-primary badge-xs indicator-item"></span>
+              <!-- Footer -->
+              <div class="border-t border-base-300">
+                <a routerLink="/client/messages"
+                   class="flex items-center justify-center gap-1 py-3 text-xs font-medium text-primary hover:bg-base-200 transition-colors">
+                  {{ 'nav.see_all_messages' | translate }}
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                  </svg>
+                </a>
+              </div>
             </div>
-          </button>
+          </div>
 
           <div class="dropdown dropdown-end">
             <label tabindex="0" class="btn btn-ghost btn-circle avatar">
               <div class="w-8 md:w-9 rounded-full">
-                <!-- <img src="https://i.pravatar.cc/100?img=13" alt="Admin" /> -->
-                  <img [src]="this.user()?.picture && this.user()?.picture?.trim() ? this.user()?.picture : ('https://i.pravatar.cc/100?u=' + this.user()?.id)"
-                    [alt]="(this.user()?.firstNames || '') " />
+                <img [src]="_profile()?.picture && _profile()!.picture!.trim() ? _profile()!.picture : ('https://i.pravatar.cc/100?u=' + _profile()?.id)"
+                  [alt]="_profile()?.firstNames || ''" />
               </div>
             </label>
             <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[60] p-2 shadow bg-base-100 rounded-box w-56">
-              <li><a routerLink="/client/profile" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">Mi perfil</a></li>
-              <li><a>Preferencias</a></li>
-              <li><a class="text-error" (click)="logout()">Salir</a></li>
+              <li><a routerLink="/client/profile" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">{{ 'nav.profile' | translate }}</a></li>
+              <li><a routerLink="/client/preferences" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">{{ 'nav.preferences' | translate }}</a></li>
+              <li><a class="text-error" (click)="logout()">{{ 'nav.logout' | translate }}</a></li>
             </ul>
           </div>
 
         </div>
-
-
       </div>
     </header>
 
@@ -96,72 +157,189 @@
       </section>
 
       <footer class="mt-10 py-8 text-center text-sm text-base-content/70">
-        © 2025 VPN CarlosVM · Panel de Administración
+        © {{ currentYear }} {{ brandingState.name() }}
       </footer>
     </main>
   </div>
 
   <!-- SIDEBAR (fixed dentro del drawer) -->
-      <div class="drawer-side">
-        <label for="sidebar" class="drawer-overlay" aria-label="Cerrar menú"></label>
+  <div class="drawer-side z-40">
+    <label for="sidebar" class="drawer-overlay" aria-label="Cerrar menú"></label>
 
-        <aside class="h-full w-64 bg-base-200 border-r sticky top-0">
-          <!-- Encabezado del sidebar (oculto en lg, ya lo muestra el navbar) -->
-          <div class="border-b p-4 text-center lg:hidden">
-            <a class="btn btn-ghost h-auto min-h-0 p-0 text-xl font-extrabold tracking-tight">
-              VPN<span class="text-primary">CarlosVM</span>
-            </a>
-          </div>
+    <aside class="flex flex-col h-full bg-base-200 border-r overflow-hidden transition-[width] duration-200 ease-in-out"
+           [class.w-64]="!sidebarCollapsed()"
+           [class.w-14]="sidebarCollapsed()">
 
-          <nav class="menu p-4 text-base-content" role="navigation" aria-label="Navegación principal">
-            <ul>
-              <li><a routerLink="/client/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
-                <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0 7-7 7 7M5 10v10h14V10"/></svg>Dashboard</a></li>
-              <li><a routerLink="/client/tutorial" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
-                <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 6l7 4-7 4-7-4 7-4z"/><path d="M12 14l7-4v8l-7 4-7-4v-8l7 4z"/></svg>Tutorial</a></li>
-              <li><a routerLink="/client/devices" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
-                <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-7 4h8M4 6h16v12H4z"/></svg>Dispositivos</a></li>
-              <li><a routerLink="/client/payments" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
-                <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8a3 3 0 100 6m0-11v2m0 12v2M6 12h12"/></svg>Pagos</a></li>
-              <!-- <li><a routerLink="/client/plans" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
-                <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2h6v2m-3-2V7m9 4a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Planes</a></li> -->
-              <!-- <li><a routerLink="/client/support" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
-                <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87M15 10a4 4 0 11-8 0 4 4 0 018 0z"/></svg>Soporte</a></li> -->
-              <!-- <li><a routerLink="/client/certificates" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
-                <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 6l7 4-7 4-7-4 7-4z"/><path d="M12 14l7-4v8l-7 4-7-4v-8l7 4z"/></svg>Certificados</a></li> -->
-
-                <!-- <li><a routerLink="/panel/settings" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
-                <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.325 4.317l.369-2.211a1 1 0 011.992 0l.369 2.211a8.003 8.003 0 014.39 2.538l2.06-.864a1 1 0 011.302.596l.75 2.06a1 1 0 01-.596 1.302l-2.06.75a8.06 8.06 0 010 4.74l2.06.75a1 1 0 01.596 1.302l-.75 2.06a1 1 0 01-1.302.596l-2.06-.864a8.003 8.003 0 01-4.39 2.538l-.369 2.211a1 1 0 01-1.992 0l-.369-2.211a8.003 8.003 0 01-4.39-2.538l-2.06.864a1 1 0 01-1.302-.596l-.75-2.06a1 1 0 01.596-1.302l2.06-.75a8.06 8.06 0 010-4.74l-2.06-.75a1 1 0 01-.596-1.302l.75-2.06a1 1 0 011.302-.596l2.06.864a8.003 8.003 0 014.39-2.538z"/><circle cx="12" cy="12" r="3"/></svg>Settings</a></li> -->
-
-
-            </ul>
-          </nav>
-        </aside>
+      <!-- Mobile brand (visible solo en móvil) -->
+      <div class="shrink-0 border-b p-4 text-center lg:hidden">
+        <a class="btn btn-ghost h-auto min-h-0 p-0 font-extrabold tracking-tight">
+          @if (brandingState.logoUrl()) {
+            <img [src]="brandingState.logoUrl()!" [alt]="brandingState.name()" class="h-7 w-auto max-w-[120px] object-contain" />
+          } @else {
+            <span class="text-xl text-primary">{{ brandingState.name() }}</span>
+          }
+        </a>
       </div>
+
+      <!-- Desktop header: brand + botón colapsar (solo desktop) -->
+      <div class="hidden lg:flex shrink-0 items-center border-b h-12 overflow-hidden"
+           [class.px-3]="!sidebarCollapsed()"
+           [class.justify-between]="!sidebarCollapsed()"
+           [class.justify-center]="sidebarCollapsed()">
+        @if (!sidebarCollapsed()) {
+          <span class="text-sm font-extrabold tracking-tight whitespace-nowrap select-none flex items-center gap-1.5">
+            @if (brandingState.logoUrl()) {
+              <img [src]="brandingState.logoUrl()!" [alt]="brandingState.name()" class="h-6 w-auto max-w-[100px] object-contain" />
+            } @else {
+              <span class="text-primary">{{ brandingState.name() }}</span>
+            }
+          </span>
+        }
+        <button class="btn btn-ghost btn-xs btn-square shrink-0"
+                (click)="toggleSidebar()"
+                [attr.aria-label]="sidebarCollapsed() ? 'Expandir menú' : 'Contraer menú'">
+          <svg class="h-4 w-4 transition-transform duration-200"
+               [class.rotate-180]="sidebarCollapsed()"
+               fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- ── COLLAPSED: solo iconos con tooltip ───────────────── -->
+      @if (sidebarCollapsed()) {
+        <nav class="flex-1 overflow-y-auto overflow-x-hidden py-2" role="navigation">
+          <ul class="flex flex-col items-center gap-1 px-1">
+            <li class="tooltip tooltip-right w-full" data-tip="Dashboard">
+              <a routerLink="/client/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }"
+                 class="btn btn-ghost btn-sm w-full flex justify-center">
+                <svg class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0 7-7 7 7M5 10v10h14V10"/></svg>
+              </a>
+            </li>
+            <li class="tooltip tooltip-right w-full" [attr.data-tip]="'nav.my_account' | translate">
+              <button class="btn btn-ghost btn-sm w-full flex justify-center" (click)="toggleSidebar()">
+                <svg class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+              </button>
+            </li>
+            <li class="tooltip tooltip-right w-full" [attr.data-tip]="'nav.communication' | translate">
+              <button class="btn btn-ghost btn-sm w-full flex justify-center relative" (click)="toggleSidebar()">
+                <svg class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+                @if (msgUnreadCount() > 0) {
+                  <span class="badge badge-primary badge-xs absolute top-1 right-1">{{ msgUnreadCount() }}</span>
+                }
+              </button>
+            </li>
+            <li class="tooltip tooltip-right w-full" [attr.data-tip]="'nav.resources' | translate">
+              <button class="btn btn-ghost btn-sm w-full flex justify-center" (click)="toggleSidebar()">
+                <svg class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+              </button>
+            </li>
+          </ul>
+        </nav>
+      }
+
+      <!-- ── EXPANDED: nav completo ──────────────────────────── -->
+      @if (!sidebarCollapsed()) {
+        <nav class="flex-1 overflow-y-auto overflow-x-hidden menu p-3 text-sm text-base-content" role="navigation" aria-label="Navegación principal">
+          <ul class="space-y-0.5">
+
+            <!-- ── Dashboard ──────────────────────────────────── -->
+            <li><a routerLink="/client/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0 7-7 7 7M5 10v10h14V10"/></svg>
+              {{ 'nav.dashboard' | translate }}</a></li>
+
+            <!-- ── Mi cuenta ───────────────────────────────────── -->
+            <li>
+              <details [open]="isGroupActive(['/client/plans', '/client/devices', '/client/payments'])">
+                <summary [class.text-primary]="isGroupActive(['/client/plans', '/client/devices', '/client/payments'])"
+                         [class.font-semibold]="isGroupActive(['/client/plans', '/client/devices', '/client/payments'])">
+                  <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                  {{ 'nav.my_account' | translate }}
+                </summary>
+                <ul>
+                  <li><a routerLink="/client/plans" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2"/></svg>
+                    {{ 'nav.my_services' | translate }}</a></li>
+                  <li><a routerLink="/client/devices" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-7 4h8M4 6h16v12H4z"/></svg>
+                    {{ 'nav.devices' | translate }}</a></li>
+                  <li><a routerLink="/client/payments" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                    {{ 'nav.payments' | translate }}</a></li>
+                </ul>
+              </details>
+            </li>
+
+            <!-- ── Comunicación ────────────────────────────────── -->
+            <li>
+              <details [open]="isGroupActive(['/client/messages', '/client/support'])">
+                <summary [class.text-primary]="isGroupActive(['/client/messages', '/client/support'])"
+                         [class.font-semibold]="isGroupActive(['/client/messages', '/client/support'])">
+                  <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+                  {{ 'nav.communication' | translate }}
+                  @if (msgUnreadCount() > 0) {
+                    <span class="badge badge-primary badge-xs ml-auto">{{ msgUnreadCount() }}</span>
+                  }
+                </summary>
+                <ul>
+                  <li>
+                    <a routerLink="/client/messages" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
+                      <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+                      {{ 'nav.messages' | translate }}
+                      @if (msgUnreadCount() > 0) {
+                        <span class="badge badge-primary badge-xs ml-auto">{{ msgUnreadCount() }}</span>
+                      }
+                    </a>
+                  </li>
+                  <li><a routerLink="/client/support" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    {{ 'nav.support' | translate }}</a></li>
+                </ul>
+              </details>
+            </li>
+
+            <!-- ── Recursos ────────────────────────────────────── -->
+            <li>
+              <details [open]="isGroupActive(['/client/tutorial'])">
+                <summary [class.text-primary]="isGroupActive(['/client/tutorial'])"
+                         [class.font-semibold]="isGroupActive(['/client/tutorial'])">
+                  <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                  {{ 'nav.resources' | translate }}
+                </summary>
+                <ul>
+                  <li><a routerLink="/client/tutorial" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 6l7 4-7 4-7-4 7-4z"/><path d="M12 14l7-4v8l-7 4-7-4v-8l7 4z"/></svg>
+                    {{ 'nav.tutorial' | translate }}</a></li>
+                </ul>
+              </details>
+            </li>
+
+          </ul>
+        </nav>
+      } <!-- end @if (!sidebarCollapsed()) -->
+
+    </aside>
+  </div>
 
 </div>
 
 <!-- Dialog Seleccionar Plan -->
 <dialog id="view_select_plans" class="modal">
-  <!-- Fullscreen -->
   <div class="modal-box max-w-none w-screen h-[100dvh] max-h-none p-0 rounded-none overflow-hidden">
     <form method="dialog">
       <button class="btn btn-sm btn-circle btn-ghost absolute right-4 top-4" aria-label="Cerrar">✕</button>
     </form>
 
-    <!-- Layout interno a pantalla completa -->
     <div class="h-full flex flex-col">
-      <!-- Header con título + selector idioma/moneda -->
       <div class="flex items-center justify-between border-b p-4">
         <h3 class="text-lg font-bold">
-          Elige el plan que mejor te convenga!
+          {{ 'nav.choose_plan' | translate }}
         </h3>
         <div class="flex items-center gap-2 pr-12">
           <app-language-coin></app-language-coin>
         </div>
       </div>
 
-      <!-- Zona con scroll -->
       <div class="flex-1 overflow-auto p-4">
         <app-show-client-plans></app-show-client-plans>
       </div>
@@ -174,25 +352,21 @@
 </dialog>
 
 <dialog id="view_fill_missing_fields" class="modal">
-  <!-- Fullscreen -->
   <div class="modal-box max-w-none w-screen h-[100dvh] max-h-none p-0 rounded-none overflow-hidden">
     <form method="dialog">
       <button class="btn btn-sm btn-circle btn-ghost absolute right-4 top-4" aria-label="Cerrar">✕</button>
     </form>
 
-    <!-- Layout interno a pantalla completa -->
     <div class="h-full flex flex-col">
-      <!-- Header con título + selector idioma/moneda -->
       <div class="flex items-center justify-between border-b p-4">
         <h3 class="text-lg font-bold">
-          Elige el plan que mejor te convenga!
+          {{ 'nav.choose_plan' | translate }}
         </h3>
         <div class="flex items-center gap-2 pr-12">
           <app-language-coin></app-language-coin>
         </div>
       </div>
 
-      <!-- Zona con scroll -->
       <div class="flex-1 overflow-auto p-4">
         <app-show-client-plans></app-show-client-plans>
       </div>
@@ -203,8 +377,6 @@
     <button aria-label="Cerrar">close</button>
   </form>
 </dialog>
-
-
 
 <!-- Atajo global: Ctrl/Cmd + K -->
 <script>

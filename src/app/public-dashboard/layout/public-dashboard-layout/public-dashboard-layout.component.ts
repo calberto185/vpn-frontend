@@ -1,16 +1,20 @@
+import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { Router, RouterLink, RouterOutlet } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { LoginPageComponent } from "../../../auth/pages/login-page/login-page.component";
-import { RegisterPageComponent } from "../../../auth/pages/register-page/register-page.component";
-import { ShowClientPlansComponent } from "../../components/show-client-plans/show-client-plans.component";
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { LanguageCoinComponent } from "../../../shared/components/language-coin/language-coin.component";
+import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 import { PlansService } from '../../services/plans/plans.service'
 import PlanEntity from '../../interfaces/plan.interface';
+import { PublicContentService } from '../../services/content/public-content.service';
+import { PublicHomeContent, I18nStr } from '../../interfaces/home-content.interface';
+import { LocaleService } from '../../../shared/services/locale/locale.service';
+import { BrandingStateService } from '../../../shared/services/branding/branding-state.service';
 
 @Component({
   selector: 'app-public-dashboard-layout',
-  imports: [RouterOutlet, RouterLink, ReactiveFormsModule, FormsModule, LoginPageComponent, RegisterPageComponent, ShowClientPlansComponent, LanguageCoinComponent],
+  imports: [CommonModule, RouterLink, ReactiveFormsModule, FormsModule, LoginPageComponent, LanguageCoinComponent, TranslatePipe],
   templateUrl: './public-dashboard-layout.component.html',
   styleUrl: './public-dashboard-layout.component.css'
 })
@@ -19,18 +23,38 @@ export class PublicDashboardLayoutComponent implements OnInit{
   selectedLanguage = signal("es");
   selectedCurrency = signal("PEN");
   ListPlans = signal<PlanEntity[]>([])
+  homeContent = signal<PublicHomeContent | null>(null);
+  readonly year = new Date().getFullYear();
 
   plansService = inject(PlansService);
+  publicContentService = inject(PublicContentService);
+  localeService = inject(LocaleService);
+  brandingState = inject(BrandingStateService);
 
   router = inject(Router);
 
   async ngOnInit() {
-     await this.fillListPlans();
+    this.localeService.loadLanguages();
+    this.localeService.loadTranslations();
+    this.localeService.loadCountries();
+    await this.fillListPlans();
+    await this.fillHomeContent();
   }
-    async fillListPlans() {
+
+  /** Render an i18n field: if plain string returns as-is, if object resolves for active lang */
+  display(val: I18nStr | null | undefined, fallback = ''): string {
+    if (val == null) return fallback;
+    if (typeof val === 'string') return val;
+    return this.localeService.display(val, fallback);
+  }
+  async fillListPlans() {
     this.plansService.getPlans().subscribe((resp:any) => {
-      console.log("plansService getPlans: ", resp)
       this.ListPlans.set(resp?.data  ?? [])
+    });
+  }
+  async fillHomeContent() {
+    this.publicContentService.getHomeContent().subscribe((resp) => {
+      this.homeContent.set(resp?.data ?? null);
     });
   }
   changeTheme() {
@@ -64,5 +88,5 @@ export class PublicDashboardLayoutComponent implements OnInit{
     // });
 
     this.router.navigateByUrl('/auth/register');
-}
+  }
 }

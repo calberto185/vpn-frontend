@@ -13,7 +13,8 @@ const baseUrl = environment.apiUrl
 @Injectable({providedIn: 'root'})
 export class SessionsService {
   private http = inject(HttpClient);
-  get(): Observable<ResponseEntity<SessionsEntity[]>> {
-    return this.http.get<ResponseEntity<SessionsEntity[]>>(baseUrl+'/system/client/sessions');
+
+  get(page = 1, limit = 20): Observable<any> {
+    return this.http.get<any>(`${baseUrl}/system/client/sessions`, { params: { page, limit } });
   }
 }

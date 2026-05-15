@@ -1,0 +1,521 @@
+<!-- ═══════════════════════════════════════════════════════════════════
+     ADMIN — MENSAJES
+════════════════════════════════════════════════════════════════════ -->
+<div class="min-h-screen bg-base-200/40">
+
+  <!-- Header -->
+  <div class="bg-base-100 border-b border-base-200 sticky top-16 z-10 shadow-sm">
+    <div class="container mx-auto max-w-6xl px-4 py-3 flex items-center gap-3">
+      <div class="flex-1">
+        <div class="flex items-center gap-2 text-xs text-base-content/50 mb-0.5">
+          <span>Panel</span><span>›</span>
+          <span class="text-base-content/70 font-medium">Mensajes</span>
+        </div>
+        <h1 class="text-lg font-bold leading-none flex items-center gap-2">
+          Mensajes
+          @if (unreadCount() > 0) {
+            <span class="badge badge-error badge-sm">{{ unreadCount() }} nuevo{{ unreadCount() > 1 ? 's' : '' }}</span>
+          }
+        </h1>
+      </div>
+      @if (canCreate()) {
+        <button class="btn btn-primary btn-sm gap-2 rounded-xl" (click)="openCompose()">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>
+          </svg>
+          Nuevo mensaje
+        </button>
+      }
+    </div>
+  </div>
+
+  <div class="container mx-auto max-w-6xl px-4 py-6">
+
+    <!-- Tabs -->
+    <div class="tabs tabs-boxed bg-base-100 border border-base-300 rounded-2xl p-1 mb-6 w-fit">
+      <button class="tab" [class.tab-active]="activeTab() === 'inbox'" (click)="activeTab.set('inbox')">
+        📥 Bandeja de entrada
+        @if (unreadCount() > 0) {
+          <span class="badge badge-error badge-xs ml-1">{{ unreadCount() }}</span>
+        }
+      </button>
+      <button class="tab" [class.tab-active]="activeTab() === 'sent'" (click)="activeTab.set('sent')">
+        📤 Enviados
+      </button>
+      <button class="tab" [class.tab-active]="activeTab() === 'received'" (click)="activeTab.set('received')">
+        📨 Recibidos
+        @if (receivedUnreadCount() > 0) {
+          <span class="badge badge-error badge-xs ml-1">{{ receivedUnreadCount() }}</span>
+        }
+      </button>
+    </div>
+
+    <!-- ── INBOX ─────────────────────────────────────────────────────────────── -->
+    @if (activeTab() === 'inbox') {
+      @if (loading()) {
+        <div class="flex justify-center py-16"><span class="loading loading-spinner loading-lg text-primary"></span></div>
+      } @else if (inbox().length === 0) {
+        <div class="flex flex-col items-center gap-3 py-20 text-base-content/40">
+          <svg class="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0H4m8-4v4"/>
+          </svg>
+          <p class="font-medium">Sin mensajes de clientes</p>
+        </div>
+      } @else {
+        <div class="space-y-2">
+          @for (msg of inbox(); track msg.id) {
+            <div [class]="'bg-base-100 border rounded-2xl p-4 cursor-pointer hover:shadow-md transition-all ' +
+                          (isUnread(msg) ? 'border-primary/30 shadow-sm' : 'border-base-300')"
+                 (click)="openDetail(msg)">
+              <div class="flex items-start gap-3">
+                <div class="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-sm font-bold text-primary shrink-0">
+                  {{ msg.from_name?.charAt(0) || '?' }}
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-2">
+                      <span class="font-semibold text-sm">{{ msg.from_name }}</span>
+                      @if (isUnread(msg)) {
+                        <span class="w-2 h-2 rounded-full bg-primary shrink-0"></span>
+                      }
+                      @if (msg.attachments?.length) {
+                        <span class="text-xs text-base-content/40">📎 {{ msg.attachments.length }}</span>
+                      }
+                    </div>
+                    <span class="text-xs text-base-content/40 shrink-0">{{ msg.createdAt | date:'d MMM, HH:mm' }}</span>
+                  </div>
+                  <p class="text-sm font-medium text-base-content/80 mt-0.5">{{ msg.subject }}</p>
+                  <p class="text-xs text-base-content/50 mt-0.5 line-clamp-1">{{ msg.body }}</p>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    }
+
+    <!-- ── ENVIADOS ───────────────────────────────────────────────────────────── -->
+    @if (activeTab() === 'sent') {
+      @if (sent().length === 0) {
+        <div class="flex flex-col items-center gap-3 py-20 text-base-content/40">
+          <svg class="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+          </svg>
+          <p class="font-medium">Sin mensajes enviados</p>
+        </div>
+      } @else {
+        <div class="space-y-2">
+          @for (msg of sent(); track msg.id) {
+            <div class="bg-base-100 border border-base-300 rounded-2xl p-4 cursor-pointer hover:shadow-md transition-all"
+                 (click)="openDetail(msg)">
+              <div class="flex items-start gap-3">
+                <div class="w-9 h-9 rounded-xl bg-base-200 border border-base-300 flex items-center justify-center text-sm shrink-0">📤</div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <span class="font-semibold text-sm">{{ msg.to_label }}</span>
+                      <div class="flex gap-1">
+                        @for (ch of msg.channels; track ch) {
+                          <span class="text-xs" title="{{ ch }}">{{ channelIcon(ch) }}</span>
+                        }
+                      </div>
+                      @if (msg.attachments?.length) {
+                        <span class="text-xs text-base-content/40">📎 {{ msg.attachments.length }}</span>
+                      }
+                    </div>
+                    <span class="text-xs text-base-content/40 shrink-0">{{ msg.createdAt | date:'d MMM, HH:mm' }}</span>
+                  </div>
+                  <p class="text-sm font-medium text-base-content/80 mt-0.5">{{ msg.subject }}</p>
+                  <p class="text-xs text-base-content/50 mt-0.5 line-clamp-1">{{ msg.body }}</p>
+                </div>
+              </div>
+              <!-- Delivery -->
+              <div class="flex items-center gap-3 mt-3 pt-3 border-t border-base-200">
+                <span class="text-xs text-base-content/40">Entrega:</span>
+                @if (msg.delivery?.email?.sent)    { <span class="badge badge-xs badge-success">📧 Email</span> }
+                @if (msg.delivery?.telegram?.sent) { <span class="badge badge-xs badge-info">✈️ Telegram</span> }
+                @if (msg.delivery?.whatsapp?.sent) { <span class="badge badge-xs badge-success">📱 WhatsApp</span> }
+                @if (!msg.delivery?.email?.sent && !msg.delivery?.telegram?.sent && !msg.delivery?.whatsapp?.sent) {
+                  <span class="badge badge-xs badge-ghost">Solo panel</span>
+                }
+              </div>
+              <!-- Recipients expand -->
+              @if (msg.to !== 'all' && $any(msg.to)?.length > 0) {
+                <div class="mt-2">
+                  <button type="button"
+                    class="flex items-center gap-1 text-xs text-primary hover:underline focus:outline-none"
+                    (click)="$event.stopPropagation(); expandedRecipientsId.set(expandedRecipientsId() === msg.id ? null : msg.id)">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87M15 10a4 4 0 11-8 0 4 4 0 018 0z"/>
+                    </svg>
+                    {{ expandedRecipientsId() === msg.id ? 'Ocultar' : 'Ver' }} destinatarios ({{ $any(msg.to).length }})
+                  </button>
+                  @if (expandedRecipientsId() === msg.id) {
+                    <ul class="mt-1.5 space-y-0.5 pl-5">
+                      @for (name of getRecipientNames(msg); track name) {
+                        <li class="text-xs text-base-content/70 list-disc">{{ name }}</li>
+                      }
+                    </ul>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+    }
+
+    <!-- ── RECIBIDOS ────────────────────────────────────────────────────────────── -->
+    @if (activeTab() === 'received') {
+      @if (received().length === 0) {
+        <div class="flex flex-col items-center gap-3 py-20 text-base-content/40">
+          <svg class="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0H4m8-4v4"/>
+          </svg>
+          <p class="font-medium">Sin mensajes recibidos</p>
+        </div>
+      } @else {
+        <div class="space-y-2">
+          @for (msg of received(); track msg.id) {
+            <div [class]="'bg-base-100 border rounded-2xl p-4 cursor-pointer hover:shadow-md transition-all ' +
+                          (isUnread(msg) ? 'border-primary/30 shadow-sm' : 'border-base-300')"
+                 (click)="openDetail(msg)">
+              <div class="flex items-start gap-3">
+                <div class="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-sm font-bold text-primary shrink-0">
+                  {{ msg.from_name?.charAt(0) || '?' }}
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-2">
+                      <span class="font-semibold text-sm">{{ msg.from_name }}</span>
+                      @if (isUnread(msg)) {
+                        <span class="w-2 h-2 rounded-full bg-primary shrink-0"></span>
+                      }
+                      @if (msg.attachments?.length) {
+                        <span class="text-xs text-base-content/40">📎 {{ msg.attachments.length }}</span>
+                      }
+                    </div>
+                    <span class="text-xs text-base-content/40 shrink-0">{{ msg.createdAt | date:'d MMM, HH:mm' }}</span>
+                  </div>
+                  <p class="text-sm font-medium text-base-content/80 mt-0.5">{{ msg.subject }}</p>
+                  <p class="text-xs text-base-content/50 mt-0.5 line-clamp-1">{{ msg.body }}</p>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    }
+
+  </div><!-- /container -->
+</div>
+
+<!-- ═══════════════════════════ COMPOSE MODAL ═══════════════════════════════ -->
+<dialog id="compose_modal" class="modal modal-bottom sm:modal-middle">
+  <div class="modal-box max-w-2xl w-full">
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-3 top-3">✕</button>
+    </form>
+    <h3 class="font-bold text-lg mb-5 flex items-center gap-2">
+      <svg class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>
+      </svg>
+      Nuevo mensaje
+    </h3>
+
+    <form [formGroup]="composeForm" (ngSubmit)="onSend()" class="space-y-5">
+
+      <!-- Destinatarios -->
+      <div>
+        <label class="text-xs font-semibold uppercase tracking-widest text-base-content/50 mb-2 block">Destinatarios</label>
+        <div class="flex gap-2 flex-wrap mb-3">
+          @for (opt of [['all','Todos','👥'],['tag','Por etiqueta','🏷️'],['individual','Individual','👤']]; track opt[0]) {
+            <button type="button"
+              [class]="'btn btn-sm rounded-xl ' + (toMode() === opt[0] ? 'btn-primary' : 'btn-ghost border border-base-300')"
+              (click)="toMode.set($any(opt[0]))">
+              {{ opt[1] }} {{ opt[2] }}
+            </button>
+          }
+        </div>
+        @if (toMode() === 'tag') {
+          <div class="flex flex-wrap gap-2 p-3 bg-base-200/50 rounded-xl">
+            @for (tag of AVAILABLE_TAGS; track tag) {
+              <button type="button"
+                [class]="'badge badge-md cursor-pointer ' + (selectedTags().includes(tag) ? 'badge-primary' : 'badge-ghost border border-base-300')"
+                (click)="toggleTag(tag)">{{ tag }}</button>
+            }
+          </div>
+        }
+        @if (toMode() === 'individual') {
+          <div class="space-y-2">
+            <input type="text" placeholder="Buscar cliente…" class="input input-bordered input-sm w-full rounded-xl"
+              [value]="clientSearch()" (input)="clientSearch.set($any($event.target).value)"/>
+            <div class="max-h-40 overflow-y-auto space-y-1 rounded-xl border border-base-300 p-2">
+              @for (c of filteredClients(); track c.id) {
+                <label class="flex items-center gap-2 p-2 rounded-lg hover:bg-base-200 cursor-pointer">
+                  <input type="checkbox" class="checkbox checkbox-sm checkbox-primary"
+                    [checked]="selectedIds().includes(c.id)" (change)="toggleClient(c.id)"/>
+                  <span class="text-sm">{{ c.firstNames }} {{ c.lastNames }}</span>
+                  <span class="text-xs text-base-content/40">{{ c.email }}</span>
+                </label>
+              }
+              @if (filteredClients().length === 0) {
+                <p class="text-xs text-center text-base-content/40 py-3">Sin resultados</p>
+              }
+            </div>
+          </div>
+        }
+        <div class="mt-2 flex items-center gap-2 text-xs text-base-content/60">
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87M15 10a4 4 0 11-8 0 4 4 0 018 0z"/>
+          </svg>
+          {{ recipientLabel() }}
+        </div>
+      </div>
+
+      <!-- Canales -->
+      <div>
+        <label class="text-xs font-semibold uppercase tracking-widest text-base-content/50 mb-2 block">Canales de envío</label>
+        <div class="flex flex-wrap gap-2">
+          @for (ch of ALL_CHANNELS; track ch.key) {
+            <button type="button"
+              [class]="'btn btn-sm rounded-xl gap-1.5 ' + (isChannelOn(ch.key) ? 'btn-primary' : 'btn-ghost border border-base-300')"
+              (click)="toggleChannel(ch.key)">
+              {{ ch.icon }} {{ ch.label }}
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Asunto -->
+      <div class="form-control">
+        <label class="text-xs font-semibold uppercase tracking-widest text-base-content/50 mb-1.5 block">Asunto</label>
+        <input type="text" placeholder="Ej: Mantenimiento programado" class="input input-bordered w-full rounded-xl" formControlName="subject"/>
+      </div>
+
+      <!-- Mensaje -->
+      <div class="form-control">
+        <label class="text-xs font-semibold uppercase tracking-widest text-base-content/50 mb-1.5 block">Mensaje</label>
+        <textarea rows="4" placeholder="Escribe aquí el mensaje…" class="textarea textarea-bordered w-full rounded-xl resize-none" formControlName="body"></textarea>
+      </div>
+
+      <!-- Adjuntos -->
+      <div>
+        <label class="text-xs font-semibold uppercase tracking-widest text-base-content/50 mb-2 block">Adjuntos (máx 2 MB por archivo)</label>
+        <label class="btn btn-ghost btn-sm rounded-xl border border-dashed border-base-300 gap-2 cursor-pointer">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
+          </svg>
+          Agregar archivos
+          <input type="file" class="hidden" multiple accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.zip,.apk,.exe"
+            (change)="handleComposeFiles($event)"/>
+        </label>
+        @if (composeFiles().length) {
+          <div class="flex flex-wrap gap-2 mt-2">
+            @for (f of composeFiles(); track f.name; let i = $index) {
+              <div class="flex items-center gap-1.5 bg-base-200 rounded-lg px-2.5 py-1.5 text-xs">
+                <span>{{ f.type === 'image' ? '🖼️' : f.type === 'video' ? '🎥' : '📄' }}</span>
+                <span class="max-w-[120px] truncate">{{ f.name }}</span>
+                <span class="text-base-content/40">{{ formatBytes(f.size) }}</span>
+                <button type="button" class="btn btn-ghost btn-xs p-0 h-auto min-h-0 hover:text-error" (click)="removeComposeFile(i)">✕</button>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="flex justify-end gap-2 pt-1">
+        <button type="button" class="btn btn-ghost btn-sm rounded-xl"
+          onclick="document.getElementById('compose_modal').close()">Cancelar</button>
+        <button type="submit" class="btn btn-primary btn-sm rounded-xl gap-2" [disabled]="saving()">
+          @if (saving()) { <span class="loading loading-spinner loading-xs"></span> }
+          Enviar
+        </button>
+      </div>
+    </form>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button>close</button></form>
+</dialog>
+
+<!-- ═══════════════════════════ THREAD / DETAIL MODAL ════════════════════════ -->
+<dialog id="detail_modal" class="modal modal-bottom sm:modal-middle">
+  <div class="modal-box max-w-2xl w-full p-0 flex flex-col" style="height: min(80vh, 700px)">
+
+    <!-- Header -->
+    @if (selected(); as msg) {
+      <div class="flex items-center justify-between px-5 py-4 border-b border-base-200 shrink-0">
+        <div class="flex-1 min-w-0">
+          <p class="font-bold text-sm truncate">{{ msg.subject }}</p>
+          <p class="text-xs text-base-content/50 mt-0.5">
+            {{ threadMessages().length }} mensaje{{ threadMessages().length !== 1 ? 's' : '' }} ·
+            @if (msg.type === 'admin_to_client') {
+              Para: <span class="font-medium">{{ msg.to_label }}</span>
+            } @else {
+              De: <span class="font-medium">{{ msg.from_name }}</span>
+            }
+          </p>
+          <!-- Recipients detail for outgoing messages -->
+          @if (msg.type === 'admin_to_client' && msg.to !== 'all' && $any(msg.to)?.length > 0) {
+            <div class="flex flex-wrap gap-1 mt-1.5">
+              @for (name of getRecipientNames(msg); track name) {
+                <span class="badge badge-xs badge-ghost">{{ name }}</span>
+              }
+            </div>
+          }
+        </div>
+        <form method="dialog" class="ml-3">
+          <button class="btn btn-sm btn-circle btn-ghost">✕</button>
+        </form>
+      </div>
+    }
+
+    <!-- Thread messages -->
+    <div id="admin-thread-scroll" class="flex-1 overflow-y-auto p-4 space-y-4">
+      @if (loadingThread()) {
+        <div class="flex justify-center py-8"><span class="loading loading-spinner loading-md text-primary"></span></div>
+      } @else {
+        @for (msg of threadMessages(); track msg.id) {
+          <!-- Bubble: admin messages on right, client messages on left -->
+          <div [class]="'flex gap-2.5 ' + (isMyMessage(msg) ? 'flex-row-reverse' : '')">
+
+            <!-- Avatar -->
+            <div [class]="'w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-0.5 ' +
+                           (isMyMessage(msg) ? 'bg-primary text-primary-content' : 'bg-base-300 text-base-content/70')">
+              {{ isMyMessage(msg) ? '🛡' : (msg.from_name?.charAt(0) || '?') }}
+            </div>
+
+            <!-- Content -->
+            <div [class]="'max-w-[78%] ' + (isMyMessage(msg) ? 'items-end' : 'items-start') + ' flex flex-col gap-1'">
+              <div class="flex items-center gap-2 text-xs text-base-content/50"
+                   [class.flex-row-reverse]="isMyMessage(msg)">
+                <span class="font-medium">{{ isMyMessage(msg) ? 'Administración' : msg.from_name }}</span>
+                <span>{{ msg.createdAt | date:'d MMM, HH:mm' }}</span>
+              </div>
+              <div [class]="'rounded-2xl px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap break-words ' +
+                             (isMyMessage(msg)
+                               ? 'bg-primary text-primary-content rounded-tr-none'
+                               : 'bg-base-200 text-base-content rounded-tl-none')">
+                @if (msg.body) {
+                  <p>{{ msg.body }}</p>
+                }
+                <!-- Attachments inside bubble -->
+                @if (msg.attachments?.length) {
+                  <div class="mt-2 space-y-2">
+                    @for (att of msg.attachments; track att.name) {
+                      <!-- Skip hidden payment data attachment -->
+                      @if (att.name !== '__payment_data__.json') {
+                        @if (att.type === 'image') {
+                          <img [src]="attachmentPreviewUrl(att)" [alt]="att.name"
+                            class="max-w-full max-h-60 rounded-xl object-contain cursor-pointer"
+                            (click)="$any($event.target).requestFullscreen?.()"/>
+                        } @else {
+                          <a [href]="attachmentPreviewUrl(att)" [download]="att.name"
+                            [class]="'flex items-center gap-2 p-2 rounded-xl text-xs font-medium hover:opacity-80 transition-opacity ' +
+                                     (isMyMessage(msg) ? 'bg-white/20' : 'bg-base-300')">
+                            <span>{{ att.type === 'video' ? '🎥' : '📄' }}</span>
+                            <span class="truncate">{{ att.name }}</span>
+                            <span class="shrink-0 opacity-60">{{ formatBytes(att.size || 0) }}</span>
+                            <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                            </svg>
+                          </a>
+                        }
+                      }
+                    }
+                  </div>
+                }
+              </div>
+
+              <!-- Botones de comprobante — cuando el mensaje tiene datos de pago -->
+              @if (hasPaymentData(msg)) {
+                <div [class]="'mt-1 flex items-center gap-2 ' + (isMyMessage(msg) ? 'justify-end' : 'justify-start')">
+                  <!-- Descargar comprobante PDF -->
+                  <button type="button"
+                          class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-base-200 hover:bg-base-300 text-[11px] font-medium transition-colors"
+                          (click)="downloadMsgPdf(msg)">
+                    <svg class="w-3.5 h-3.5 text-error" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                      <polyline points="14 2 14 8 20 8"/>
+                      <path d="M9 15l3 3 3-3M12 12v6"/>
+                    </svg>
+                    Descargar comprobante PDF
+                  </button>
+                  <!-- Ver pago -->
+                  <button type="button"
+                     class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary text-[11px] font-medium transition-colors"
+                     (click)="navigateToPayment(msg)">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                    Ver
+                  </button>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      }
+    </div>
+
+    <!-- Reply area (only for inbox messages where admin can reply) -->
+    @if (selected()?.type === 'client_to_admin' && canCreate()) {
+      <div class="shrink-0 border-t border-base-200 p-3 bg-base-100">
+        <!-- Files preview -->
+        @if (replyFiles().length) {
+          <div class="flex flex-wrap gap-1.5 mb-2">
+            @for (f of replyFiles(); track f.name; let i = $index) {
+              <div class="flex items-center gap-1 bg-base-200 rounded-lg px-2 py-1 text-xs">
+                <span>{{ f.type === 'image' ? '🖼️' : f.type === 'video' ? '🎥' : '📄' }}</span>
+                <span class="max-w-[100px] truncate">{{ f.name }}</span>
+                <button type="button" class="text-base-content/40 hover:text-error ml-0.5" (click)="removeReplyFile(i)">✕</button>
+              </div>
+            }
+          </div>
+        }
+        <div class="flex items-end gap-2">
+          <textarea rows="2" placeholder="Escribe tu respuesta…"
+            class="textarea textarea-bordered flex-1 rounded-xl resize-none text-sm"
+            [value]="replyBody()"
+            (input)="replyBody.set($any($event.target).value)"
+            (keydown.enter)="onReplyKeydown($event)">
+          </textarea>
+          <div class="flex flex-col gap-1.5">
+            <!-- Attach file -->
+            <label class="btn btn-ghost btn-square btn-sm rounded-xl cursor-pointer" title="Adjuntar archivo">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
+              </svg>
+              <input type="file" class="hidden" multiple accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.zip,.apk,.exe"
+                (change)="handleReplyFiles($event)"/>
+            </label>
+            <!-- Send -->
+            <button class="btn btn-primary btn-square btn-sm rounded-xl"
+              [disabled]="replying() || (!replyBody().trim() && !replyFiles().length)"
+              (click)="onReply()" title="Enviar (Enter)">
+              @if (replying()) {
+                <span class="loading loading-spinner loading-xs"></span>
+              } @else {
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                </svg>
+              }
+            </button>
+          </div>
+        </div>
+        <p class="text-xs text-base-content/30 mt-1.5 pl-1">Enter para enviar · Shift+Enter para nueva línea</p>
+      </div>
+    }
+
+  </div>
+  <form method="dialog" class="modal-backdrop"><button>close</button></form>
+</dialog>
+
+<!-- Toast -->
+@if (toast(); as t) {
+  <div class="toast toast-end toast-bottom z-50">
+    <div [class]="'alert ' + (t.ok ? 'alert-success' : 'alert-error') + ' shadow-lg'">
+      <span class="text-sm">{{ t.msg }}</span>
+    </div>
+  </div>
+}

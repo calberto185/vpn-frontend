@@ -17,7 +17,7 @@ export class BankAccountService {
   user = computed(() => this._user())
 
   getBankAccount(): Observable<ResponseEntity<BankAccountEntity[]>> {
-    return this.http.post<ResponseEntity<BankAccountEntity[]>>(baseUrl+'/system/bankaccount/get', {});
+    return this.http.post<ResponseEntity<BankAccountEntity[]>>(baseUrl+'/system/client/bankaccount', {});
   }
   register(data: BankAccountEntity): Observable<any> {
     return this.http.post<ResponseEntity<BankAccountEntity>>(baseUrl+'/system/bankaccount/create', data);

@@ -1,0 +1,5 @@
+.bar-col { transition: height 0.4s ease; }
+.pie-ring {
+  border-radius: 50%;
+  transition: background 0.4s ease;
+}

@@ -1,0 +1,676 @@
+<!-- ═══════════════════════════════════════════════════ GLOBAL TOOLTIP OVERLAY -->
+@if (activeTooltip()) {
+  <div class="fixed z-[9999] pointer-events-none"
+    [style.left.px]="activeTooltip()!.x + 14"
+    [style.top.px]="activeTooltip()!.y - 10">
+    <div class="bg-base-100 border border-base-300 rounded-xl shadow-2xl px-3 py-2.5 min-w-[170px] max-w-[240px]">
+      <div class="font-semibold text-xs text-base-content/60 mb-1.5 uppercase tracking-wide">{{ activeTooltip()!.title }}</div>
+      @for (line of activeTooltip()!.lines; track $index) {
+        <div class="text-xs text-base-content leading-relaxed">{{ line }}</div>
+      }
+    </div>
+  </div>
+}
+
+<!-- ═══════════════════════════════════════════════════ HEADER -->
+<div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+  <div>
+    <h1 class="text-2xl font-bold">Finanzas</h1>
+    <p class="text-base-content/60 text-sm mt-0.5">Dashboard financiero — ingresos, gastos y rentabilidad</p>
+  </div>
+
+  <div class="flex flex-wrap items-center gap-2">
+
+    <!-- Currency selector -->
+    <div class="flex items-center gap-1 bg-base-200 rounded-xl p-1">
+      @for (c of currencies; track c.code) {
+        <button class="btn btn-xs rounded-lg"
+          [class.btn-primary]="selectedCurrency() === c.code"
+          [class.btn-ghost]="selectedCurrency() !== c.code"
+          (click)="onCurrencyChange(c.code)">
+          {{ c.symbol }} {{ c.code }}
+        </button>
+      }
+    </div>
+
+    <!-- Year picker -->
+    <select class="select select-bordered select-sm"
+      (change)="onYearChange(+$any($event.target).value)">
+      @for (y of years; track y) {
+        <option [value]="y" [selected]="y === selectedYear()">{{ y }}</option>
+      }
+    </select>
+
+    <!-- Exchange rates button -->
+    <button class="btn btn-outline btn-sm gap-1.5" (click)="openRateModal()" title="Configurar tipos de cambio">
+      <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
+      </svg>
+      Cambio
+    </button>
+
+    <!-- Export XLSX -->
+    <button class="btn btn-success btn-sm gap-1.5" (click)="exportXLSX()" [disabled]="exporting() || loading()">
+      @if (exporting()) {
+        <span class="loading loading-spinner loading-xs"></span>
+      } @else {
+        <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+        </svg>
+      }
+      Exportar XLSX
+    </button>
+
+    <!-- Refresh -->
+    <button class="btn btn-ghost btn-sm" (click)="loadAll()" [disabled]="loading()">
+      <svg class="h-4 w-4" [class.animate-spin]="loading()" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+@if (loading()) {
+  <div class="flex justify-center py-20"><span class="loading loading-spinner loading-lg text-primary"></span></div>
+} @else {
+
+<!-- ═══════════════════════════════════════════════════ KPI CARDS -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+
+  <!-- Revenue -->
+  <div class="card bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 rounded-2xl p-5">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-xs font-semibold uppercase text-primary/70">Ingresos</span>
+      <svg class="h-5 w-5 text-primary" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+    </div>
+    <div class="text-2xl font-bold">{{ currencySymbol() }}{{ summary()?.revenue | number:'1.0-0' }}</div>
+    <div class="text-xs mt-1" [class]="growthClass(summary()?.revenueGrowth ?? 0)">
+      {{ growthIcon(summary()?.revenueGrowth ?? 0) }} {{ summary()?.revenueGrowth | number:'1.1-1' }}% vs año anterior
+    </div>
+  </div>
+
+  <!-- Expenses -->
+  <div class="card bg-gradient-to-br from-error/10 to-error/5 border border-error/20 rounded-2xl p-5">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-xs font-semibold uppercase text-error/70">Gastos Totales</span>
+      <svg class="h-5 w-5 text-error" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+      </svg>
+    </div>
+    <div class="text-2xl font-bold">{{ currencySymbol() }}{{ summary()?.expenses | number:'1.0-0' }}</div>
+    <div class="text-xs mt-1" [class]="growthClass(-(summary()?.expensesGrowth ?? 0))">
+      {{ growthIcon(summary()?.expensesGrowth ?? 0) }} {{ summary()?.expensesGrowth | number:'1.1-1' }}% vs año anterior
+    </div>
+    <div class="mt-2 pt-2 border-t border-error/10 flex gap-3 text-xs text-base-content/60">
+      <span title="Pagos a proveedores">
+        <span class="inline-block w-2 h-2 rounded-sm bg-error/70 mr-1"></span>
+        Prov. {{ currencySymbol() }}{{ summary()?.supplierExpenses | number:'1.0-0' }}
+      </span>
+      <span title="Retiros de dinero">
+        <span class="inline-block w-2 h-2 rounded-sm bg-warning/80 mr-1"></span>
+        Retiros {{ currencySymbol() }}{{ summary()?.withdrawalExpenses | number:'1.0-0' }}
+      </span>
+    </div>
+  </div>
+
+  <!-- Profit -->
+  <div class="card bg-gradient-to-br from-success/10 to-success/5 border border-success/20 rounded-2xl p-5">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-xs font-semibold uppercase text-success/70">Beneficio</span>
+      <svg class="h-5 w-5 text-success" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+      </svg>
+    </div>
+    <div class="text-2xl font-bold" [class]="(summary()?.profit ?? 0) >= 0 ? 'text-success' : 'text-error'">
+      {{ currencySymbol() }}{{ summary()?.profit | number:'1.0-0' }}
+    </div>
+    <div class="text-xs mt-1 text-base-content/50">Margen: {{ summary()?.margin }}%</div>
+  </div>
+
+  <!-- Pending -->
+  <div class="card bg-gradient-to-br from-warning/10 to-warning/5 border border-warning/20 rounded-2xl p-5">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-xs font-semibold uppercase text-warning/70">Pendientes</span>
+      <svg class="h-5 w-5 text-warning" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+    </div>
+    <div class="flex gap-3 flex-wrap">
+      <div>
+        <div class="text-lg font-bold">{{ summary()?.pendingPayments }}</div>
+        <div class="text-xs text-base-content/50">cobros</div>
+      </div>
+      <div>
+        <div class="text-lg font-bold">{{ summary()?.pendingSupplierExp }}</div>
+        <div class="text-xs text-base-content/50">prov.</div>
+      </div>
+      <div>
+        <div class="text-lg font-bold">{{ summary()?.pendingWithdrawals }}</div>
+        <div class="text-xs text-base-content/50">retiros</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ CASHFLOW BAR CHART -->
+<div class="card bg-base-200 rounded-2xl p-5 mb-6">
+  <div class="flex items-center justify-between mb-1">
+    <h2 class="font-bold">Flujo de Caja — últimos 12 meses</h2>
+    <div class="flex items-center gap-3 text-xs">
+      <span class="text-base-content/40">{{ selectedCurrency() }}</span>
+      <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded-sm bg-primary"></span>Ingresos</span>
+      <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded-sm bg-error"></span>Gastos</span>
+      <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded-sm bg-success"></span>Beneficio</span>
+    </div>
+  </div>
+
+  @if (!cashflowHasData()) {
+    <p class="text-base-content/40 text-sm text-center py-10">Sin movimientos en los últimos 12 meses</p>
+  } @else {
+    <!-- Y-axis max label -->
+    <div class="text-[10px] text-base-content/40 mb-1 pl-1">
+      Max: {{ currencySymbol() }}{{ fmt(barChartMax()) }}
+    </div>
+
+    <div class="relative" style="height: 148px;">
+      <!-- Grid lines -->
+      <div class="absolute inset-0 flex flex-col justify-between pointer-events-none">
+        @for (_ of [0,1,2,3,4]; track $index) {
+          <div class="border-t border-base-300/50 w-full"></div>
+        }
+        <div class="border-t border-base-300/50 w-full"></div>
+      </div>
+
+      <!-- Bars -->
+      <div class="absolute inset-0 flex items-end gap-1 pb-6 overflow-x-auto" (mouseleave)="hideTip()">
+        @for (point of cashflow(); track point.label) {
+          <div class="flex flex-col items-center gap-0 flex-1 min-w-[36px] h-full justify-end">
+            <!-- bar group -->
+            <div class="flex items-end gap-0.5 w-full justify-center" style="height: 108px;">
+              <!-- Revenue bar -->
+              <div class="rounded-t-sm bg-primary/80 w-2.5 cursor-pointer transition-opacity hover:opacity-100 opacity-90"
+                [style.height.px]="pxH(point.revenue, barChartMax(), 108)"
+                (mousemove)="showTip($event, point.label, [
+                  'Ingresos: ' + currencySymbol() + fmt(point.revenue),
+                  'Gastos: ' + currencySymbol() + fmt(point.expenses),
+                  'Beneficio: ' + currencySymbol() + fmt(point.profit),
+                  'Margen: ' + (point.revenue > 0 ? ((point.profit / point.revenue) * 100).toFixed(1) : '0') + '%'
+                ])"></div>
+              <!-- Expenses bar -->
+              <div class="rounded-t-sm bg-error/70 w-2.5 cursor-pointer transition-opacity hover:opacity-100 opacity-90"
+                [style.height.px]="pxH(point.expenses, barChartMax(), 108)"
+                (mousemove)="showTip($event, point.label, [
+                  'Gastos: ' + currencySymbol() + fmt(point.expenses),
+                  'Ingresos: ' + currencySymbol() + fmt(point.revenue),
+                  'Beneficio: ' + currencySymbol() + fmt(point.profit)
+                ])"></div>
+              <!-- Profit bar -->
+              <div class="rounded-t-sm w-2.5 cursor-pointer transition-opacity hover:opacity-100 opacity-90"
+                [class]="point.profit >= 0 ? 'bg-success/70' : 'bg-warning/70'"
+                [style.height.px]="pxH(point.profit < 0 ? -point.profit : point.profit, barChartMax(), 108)"
+                (mousemove)="showTip($event, point.label + (point.profit < 0 ? ' ⚠ déficit' : ''), [
+                  'Beneficio: ' + currencySymbol() + fmt(point.profit),
+                  'Ingresos: ' + currencySymbol() + fmt(point.revenue),
+                  'Gastos: ' + currencySymbol() + fmt(point.expenses),
+                  'Margen: ' + (point.revenue > 0 ? ((point.profit / point.revenue) * 100).toFixed(1) : '0') + '%'
+                ])"></div>
+            </div>
+            <!-- X-axis label -->
+            <span class="text-[9px] text-base-content/50 mt-1 truncate w-full text-center">
+              {{ point.label.slice(5) }}/{{ point.label.slice(2,4) }}
+            </span>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>
+
+<!-- ═══════════════════════════════════════════════════ Monthly Revenue + Monthly Expenses -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+
+  <!-- Monthly Revenue -->
+  <div class="card bg-base-200 rounded-2xl p-5">
+    <h2 class="font-bold mb-1">
+      Ingresos mensuales {{ selectedYear() }}
+      <span class="text-xs font-normal text-base-content/40">({{ selectedCurrency() }})</span>
+    </h2>
+    @if (!revenueHasData()) {
+      <p class="text-base-content/40 text-sm text-center py-10">Sin ingresos registrados en {{ selectedYear() }}</p>
+    } @else {
+      <div class="text-[10px] text-base-content/40 mb-1 pl-1">Max: {{ currencySymbol() }}{{ fmt(revenueMax()) }}</div>
+      <div class="flex items-end gap-1 overflow-x-auto" style="height: 140px;" (mouseleave)="hideTip()">
+        @for (m of revenueMonthly(); track m.month) {
+          <div class="flex flex-col items-center gap-0 flex-1 min-w-[20px] h-full justify-end">
+            <div class="rounded-t-sm bg-primary w-full cursor-pointer hover:bg-primary/60 transition-colors"
+              [style.height.px]="pxH(m.total, revenueMax())"
+              (mousemove)="showTip($event, monthLabels[m.month - 1] + ' ' + selectedYear(), [
+                'Total: ' + currencySymbol() + fmt(m.total),
+                'Transacciones: ' + m.count,
+                'Promedio: ' + currencySymbol() + (m.count > 0 ? fmt(m.total / m.count) : '0')
+              ])"></div>
+            <span class="text-[9px] text-base-content/50 mt-1">{{ monthLabels[m.month - 1] }}</span>
+          </div>
+        }
+        @if (revenueMonthly().length === 0) {
+          @for (_ of monthLabels; track $index; let i = $index) {
+            <div class="flex flex-col items-center gap-0 flex-1 min-w-[20px] h-full justify-end">
+              <div class="rounded-t-sm bg-base-300 w-full" style="height: 2px;"></div>
+              <span class="text-[9px] text-base-content/50 mt-1">{{ monthLabels[i] }}</span>
+            </div>
+          }
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Monthly Expenses (stacked) -->
+  <div class="card bg-base-200 rounded-2xl p-5">
+    <h2 class="font-bold mb-1">
+      Gastos mensuales {{ selectedYear() }}
+      <span class="text-xs font-normal text-base-content/40">({{ selectedCurrency() }})</span>
+    </h2>
+    <div class="flex items-center gap-3 text-xs mb-1">
+      <span class="flex items-center gap-1"><span class="inline-block w-2.5 h-2.5 rounded-sm bg-error/80"></span>Proveedores</span>
+      <span class="flex items-center gap-1"><span class="inline-block w-2.5 h-2.5 rounded-sm bg-warning/80"></span>Retiros</span>
+    </div>
+    @if (!expensesHasData()) {
+      <p class="text-base-content/40 text-sm text-center py-8">Sin gastos registrados en {{ selectedYear() }}</p>
+    } @else {
+      <div class="text-[10px] text-base-content/40 mb-1 pl-1">Max: {{ currencySymbol() }}{{ fmt(expensesMax()) }}</div>
+      <div class="flex items-end gap-1 overflow-x-auto" style="height: 140px;" (mouseleave)="hideTip()">
+        @for (m of expensesMonthly(); track m.month) {
+          <div class="flex flex-col items-center gap-0 flex-1 min-w-[20px] h-full justify-end">
+            <!-- Stacked bar: supplier (bottom) + withdrawal (top) -->
+            <div class="relative w-full rounded-t-sm overflow-hidden cursor-pointer"
+              [style.height.px]="pxH(m.total, expensesMax())"
+              (mousemove)="showTip($event, monthLabels[m.month - 1] + ' ' + selectedYear(), [
+                'Total gastos: ' + currencySymbol() + fmt(m.total),
+                'Proveedores: ' + currencySymbol() + fmt(m.supplierTotal ?? 0),
+                'Retiros: ' + currencySymbol() + fmt(m.withdrawalTotal ?? 0),
+                'Transacciones: ' + m.count
+              ])">
+              <!-- Supplier segment (bottom) -->
+              <div class="absolute bottom-0 left-0 w-full bg-error/80"
+                [style.height.%]="m.total > 0 ? ((m.supplierTotal ?? 0) / m.total) * 100 : 50"></div>
+              <!-- Withdrawal segment (top) -->
+              <div class="absolute top-0 left-0 w-full bg-warning/80"
+                [style.height.%]="m.total > 0 ? ((m.withdrawalTotal ?? 0) / m.total) * 100 : 50"></div>
+            </div>
+            <span class="text-[9px] text-base-content/50 mt-1">{{ monthLabels[m.month - 1] }}</span>
+          </div>
+        }
+        @if (expensesMonthly().length === 0) {
+          @for (_ of monthLabels; track $index; let i = $index) {
+            <div class="flex flex-col items-center gap-0 flex-1 min-w-[20px] h-full justify-end">
+              <div class="rounded-t-sm bg-base-300 w-full" style="height: 2px;"></div>
+              <span class="text-[9px] text-base-content/50 mt-1">{{ monthLabels[i] }}</span>
+            </div>
+          }
+        }
+      </div>
+    }
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ Revenue by Service + Revenue by Method -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+
+  <!-- Revenue by Service -->
+  <div class="card bg-base-200 rounded-2xl p-5">
+    <h2 class="font-bold mb-4">
+      Ingresos por servicio
+      <span class="text-xs font-normal text-base-content/40">({{ selectedCurrency() }})</span>
+    </h2>
+    @if (byService().length === 0) {
+      <p class="text-base-content/40 text-sm text-center py-8">Sin datos de servicios para {{ selectedYear() }}</p>
+    } @else {
+      <div class="flex items-center gap-6 mb-4">
+        <!-- Donut chart -->
+        <div class="shrink-0 w-32 h-32 rounded-full"
+          [style.background]="servicePieGradient()"
+          style="mask: radial-gradient(transparent 46%, black 47%); -webkit-mask: radial-gradient(transparent 46%, black 47%);">
+        </div>
+        <!-- Legend -->
+        <ul class="flex flex-col gap-1.5 text-xs flex-1 min-w-0" (mouseleave)="hideTip()">
+          @for (s of servicePieSlices(); track s.label) {
+            <li class="flex items-center gap-2 min-w-0 cursor-pointer"
+              (mousemove)="showTip($event, s.label, [
+                s.pct.toFixed(1) + '% del total',
+                'Total: ' + currencySymbol() + fmt(s.total)
+              ])">
+              <span class="shrink-0 w-2.5 h-2.5 rounded-sm" [style.background]="s.color"></span>
+              <span class="truncate flex-1">{{ s.label }}</span>
+              <span class="font-mono shrink-0 text-base-content/70">{{ s.pct | number:'1.0-1' }}%</span>
+            </li>
+          }
+        </ul>
+      </div>
+      <!-- Horizontal bars -->
+      <div class="space-y-1.5" (mouseleave)="hideTip()">
+        @for (s of byService(); track s._id) {
+          <div class="flex items-center gap-2 cursor-pointer"
+            (mousemove)="showTip($event, s._id, [
+              'Total: ' + currencySymbol() + fmt(s.total),
+              'Transacciones: ' + s.count,
+              ((s.total / (summary()?.revenue || 1)) * 100).toFixed(1) + '% del ingreso total'
+            ])">
+            <span class="text-xs truncate w-32 shrink-0">{{ s._id }}</span>
+            <div class="flex-1 h-2 rounded-full bg-base-300 overflow-hidden">
+              <div class="h-2 rounded-full bg-primary transition-all duration-500"
+                [style.width.%]="(s.total / (summary()?.revenue || 1)) * 100"></div>
+            </div>
+            <span class="text-xs font-mono w-24 text-right shrink-0">{{ currencySymbol() }}{{ s.total | number:'1.0-0' }}</span>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Revenue by Payment Method -->
+  <div class="card bg-base-200 rounded-2xl p-5">
+    <h2 class="font-bold mb-4">
+      Ingresos por método de pago
+      <span class="text-xs font-normal text-base-content/40">({{ selectedCurrency() }})</span>
+    </h2>
+    @if (byMethod().length === 0) {
+      <p class="text-base-content/40 text-sm text-center py-8">Sin datos de métodos de pago para {{ selectedYear() }}</p>
+    } @else {
+      <div class="space-y-3" (mouseleave)="hideTip()">
+        @for (m of byMethod(); track m._id) {
+          <div class="cursor-pointer"
+            (mousemove)="showTip($event, paymentMethodLabel(m._id), [
+              'Total: ' + currencySymbol() + fmt(m.total),
+              'Transacciones: ' + m.count,
+              ((m.total / methodTotal()) * 100).toFixed(1) + '% del total',
+              'Promedio/tx: ' + currencySymbol() + (m.count > 0 ? fmt(m.total / m.count) : '0')
+            ])">
+            <div class="flex justify-between text-xs mb-1">
+              <span class="font-medium">{{ paymentMethodLabel(m._id) }}</span>
+              <span class="font-mono text-base-content/60">{{ currencySymbol() }}{{ m.total | number:'1.0-0' }} · {{ m.count }} pagos</span>
+            </div>
+            <div class="h-3 rounded-full bg-base-300 overflow-hidden">
+              <div class="h-3 rounded-full transition-all duration-500"
+                [style.width.%]="(m.total / methodTotal()) * 100"
+                [style.background]="methodColor(m._id)">
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ Expenses by Supplier + Expenses by Category -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+
+  <!-- Expenses by Supplier -->
+  <div class="card bg-base-200 rounded-2xl p-5">
+    <h2 class="font-bold mb-4">Gastos por proveedor (top 10)</h2>
+    @if (bySupplier().length === 0) {
+      <p class="text-base-content/40 text-sm text-center py-8">Sin gastos de proveedores para {{ selectedYear() }}</p>
+    } @else {
+      <div class="space-y-2.5" (mouseleave)="hideTip()">
+        @for (s of bySupplier(); track s._id; let i = $index) {
+          <div class="flex items-center gap-3 cursor-pointer"
+            (mousemove)="showTip($event, s.supplierName, [
+              'Total: ' + currencySymbol() + fmt(s.total),
+              'Transacciones: ' + s.count,
+              ((s.total / supplierMax()) * 100).toFixed(1) + '% del máximo',
+              'Promedio/tx: ' + currencySymbol() + (s.count > 0 ? fmt(s.total / s.count) : '0')
+            ])">
+            <span class="text-xs text-base-content/40 w-5 text-right shrink-0">{{ i + 1 }}</span>
+            <div class="flex-1 min-w-0">
+              <div class="flex justify-between text-xs mb-1">
+                <span class="truncate font-medium">{{ s.supplierName }}</span>
+                <span class="font-mono shrink-0 ml-2">{{ currencySymbol() }}{{ s.total | number:'1.0-0' }}</span>
+              </div>
+              <div class="h-2 rounded-full bg-base-300 overflow-hidden">
+                <div class="h-2 rounded-full bg-error/70 transition-all duration-500"
+                  [style.width.%]="(s.total / supplierMax()) * 100"></div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Expenses by Category -->
+  <div class="card bg-base-200 rounded-2xl p-5">
+    <h2 class="font-bold mb-4">Gastos por categoría</h2>
+    @if (byCategory().length === 0) {
+      <p class="text-base-content/40 text-sm text-center py-8">Sin datos de categorías para {{ selectedYear() }}</p>
+    } @else {
+      <div class="flex items-center gap-6 mb-4">
+        <!-- Donut chart -->
+        <div class="shrink-0 w-32 h-32 rounded-full"
+          [style.background]="categoryPieGradient()"
+          style="mask: radial-gradient(transparent 46%, black 47%); -webkit-mask: radial-gradient(transparent 46%, black 47%);">
+        </div>
+        <!-- Legend -->
+        <ul class="flex flex-col gap-1.5 text-xs flex-1 min-w-0" (mouseleave)="hideTip()">
+          @for (s of categoryPieSlices(); track s.label) {
+            <li class="flex items-center gap-2 min-w-0 cursor-pointer"
+              (mousemove)="showTip($event, categoryLabel(s.label), [
+                s.pct.toFixed(1) + '% del total',
+                'Total: ' + currencySymbol() + fmt(s.total)
+              ])">
+              <span class="shrink-0 w-2.5 h-2.5 rounded-sm" [style.background]="s.color"></span>
+              <span class="truncate flex-1">{{ categoryLabel(s.label) }}</span>
+              <span class="font-mono shrink-0 text-base-content/70">{{ s.pct | number:'1.0-1' }}%</span>
+            </li>
+          }
+        </ul>
+      </div>
+      <!-- Category breakdown bars -->
+      <div class="space-y-1.5" (mouseleave)="hideTip()">
+        @for (s of byCategory(); track s._id) {
+          <div class="flex items-center gap-2 cursor-pointer"
+            (mousemove)="showTip($event, categoryLabel(s._id), [
+              'Total: ' + currencySymbol() + fmt(s.total),
+              'Transacciones: ' + s.count,
+              (s.total / (summary()?.expenses || 1) * 100).toFixed(1) + '% del gasto total'
+            ])">
+            <span class="text-xs truncate w-28 shrink-0">{{ categoryLabel(s._id) }}</span>
+            <div class="flex-1 h-2 rounded-full bg-base-300 overflow-hidden">
+              <div class="h-2 rounded-full bg-warning/70 transition-all duration-500"
+                [style.width.%]="(s.total / (summary()?.expenses || 1)) * 100"></div>
+            </div>
+            <span class="text-xs font-mono w-24 text-right shrink-0">{{ currencySymbol() }}{{ s.total | number:'1.0-0' }}</span>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ WITHDRAWALS BY RECIPIENT -->
+<div class="card bg-base-200 rounded-2xl p-5 mb-6">
+  <div class="flex items-center justify-between mb-4">
+    <div>
+      <h2 class="font-bold">Retiros de dinero por destinatario {{ selectedYear() }}</h2>
+      <p class="text-xs text-base-content/50 mt-0.5">Quién recibió retiros — pagos a empleados, devoluciones, préstamos, etc.</p>
+    </div>
+    <span class="text-xs text-base-content/40">({{ selectedCurrency() }})</span>
+  </div>
+
+  @if (byWithdrawal().length === 0) {
+    <p class="text-base-content/40 text-sm text-center py-8">Sin retiros completados en {{ selectedYear() }}</p>
+  } @else {
+    <div class="overflow-x-auto">
+      <table class="table table-sm w-full">
+        <thead>
+          <tr class="text-xs uppercase text-base-content/50">
+            <th>#</th>
+            <th>Destinatario</th>
+            <th>Tipos de retiro</th>
+            <th class="text-right">Retiros</th>
+            <th class="text-right">Total ({{ selectedCurrency() }})</th>
+            <th class="text-right">% del total</th>
+            <th>Último retiro</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (w of byWithdrawal(); track w._id; let i = $index) {
+            <tr>
+              <td class="text-base-content/40 font-bold">{{ i + 1 }}</td>
+              <td>
+                <div class="flex items-center gap-2">
+                  <div class="w-7 h-7 rounded-full bg-warning/15 flex items-center justify-center text-xs font-bold text-warning">
+                    {{ (w._id || '?').charAt(0).toUpperCase() }}
+                  </div>
+                  <div>
+                    <div class="font-medium text-sm">{{ w._id }}</div>
+                    @if (w.recipientId) {
+                      <div class="text-xs text-base-content/40">ID: {{ w.recipientId }}</div>
+                    }
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="flex flex-wrap gap-1">
+                  @for (t of w.types; track t) {
+                    <span class="badge badge-xs badge-ghost">{{ withdrawalTypeLabel(t) }}</span>
+                  }
+                </div>
+              </td>
+              <td class="text-right text-sm">{{ w.count }}</td>
+              <td class="text-right font-mono font-semibold text-sm text-warning">
+                {{ currencySymbol() }}{{ w.total | number:'1.2-2' }}
+              </td>
+              <td class="text-right text-xs">
+                <div class="flex items-center justify-end gap-2">
+                  <div class="w-16 h-1.5 rounded-full bg-base-300 overflow-hidden">
+                    <div class="h-1.5 rounded-full bg-warning/70"
+                      [style.width.%]="(w.total / withdrawalMax()) * 100"></div>
+                  </div>
+                  <span class="w-10 text-right text-base-content/60">
+                    {{ ((w.total / (summary()?.withdrawalExpenses || 1)) * 100) | number:'1.0-1' }}%
+                  </span>
+                </div>
+              </td>
+              <td class="text-xs text-base-content/50">{{ w.lastWithdrawal | slice:0:10 }}</td>
+            </tr>
+          }
+        </tbody>
+        <tfoot>
+          <tr class="text-xs font-semibold border-t border-base-300">
+            <td colspan="3" class="text-base-content/60">Total retiros completados</td>
+            <td class="text-right">{{ withdrawalTotalCount() }}</td>
+            <td class="text-right font-mono text-warning">
+              {{ currencySymbol() }}{{ (summary()?.withdrawalExpenses ?? 0) | number:'1.2-2' }}
+            </td>
+            <td colspan="2"></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  }
+</div>
+
+<!-- ═══════════════════════════════════════════════════ TOP CLIENTS -->
+<div class="card bg-base-200 rounded-2xl p-5 mb-6">
+  <h2 class="font-bold mb-4">Top Clientes — mayor gasto {{ selectedYear() }} <span class="text-xs font-normal text-base-content/40">({{ selectedCurrency() }})</span></h2>
+  @if (topClients().length === 0) {
+    <p class="text-base-content/40 text-sm text-center py-8">Sin datos de clientes para {{ selectedYear() }}</p>
+  } @else {
+    <div class="overflow-x-auto">
+      <table class="table table-sm w-full">
+        <thead>
+          <tr class="text-xs uppercase text-base-content/50">
+            <th>#</th>
+            <th>Cliente</th>
+            <th>Email</th>
+            <th class="text-right">Pagos</th>
+            <th class="text-right">Total ({{ selectedCurrency() }})</th>
+            <th>Último pago</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (c of topClients(); track c._id; let i = $index) {
+            <tr>
+              <td class="text-base-content/40 font-bold">{{ i + 1 }}</td>
+              <td>
+                <div class="flex items-center gap-2">
+                  <div class="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
+                    {{ c.userName?.charAt(0)?.toUpperCase() || '?' }}
+                  </div>
+                  <span class="font-medium text-sm">{{ c.userName }}</span>
+                </div>
+              </td>
+              <td class="text-xs text-base-content/60">{{ c.userEmail }}</td>
+              <td class="text-right text-sm">{{ c.count }}</td>
+              <td class="text-right font-mono font-semibold text-sm">{{ currencySymbol() }}{{ c.total | number:'1.2-2' }}</td>
+              <td class="text-xs text-base-content/50">{{ c.lastPay | slice:0:10 }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+} <!-- end @if loading -->
+
+<!-- ═══════════════════════════════════════════════════ EXCHANGE RATE MODAL -->
+@if (showRateModal()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+    (click)="closeRateModal()">
+    <div class="card bg-base-100 w-full max-w-sm rounded-2xl shadow-2xl p-6"
+      (click)="$event.stopPropagation()">
+
+      <div class="flex items-center justify-between mb-5">
+        <h3 class="font-bold text-lg">Tipos de cambio</h3>
+        <button class="btn btn-ghost btn-sm btn-circle" (click)="closeRateModal()">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <p class="text-xs text-base-content/50 mb-4">
+        Base: <strong>1 USD</strong>. Las tasas indican cuántas unidades de cada moneda equivalen a 1 USD.
+      </p>
+
+      <div class="space-y-2 max-h-80 overflow-y-auto pr-1">
+        @for (f of RATE_FIELDS; track f.key) {
+          <div class="flex items-center gap-3">
+            <span class="w-12 font-mono font-bold text-sm shrink-0">{{ f.label }}</span>
+            @if (f.fixed) {
+              <input class="input input-bordered input-sm flex-1" type="number" value="1" disabled>
+            } @else {
+              <input class="input input-bordered input-sm flex-1" type="number"
+                [step]="f.step" min="0.000001"
+                [value]="rateForm()[f.key]"
+                (change)="updateRateField(f.key, +$any($event.target).value)">
+            }
+            <span class="text-xs text-base-content/40 w-20 text-right shrink-0">{{ f.unit }}</span>
+          </div>
+        }
+      </div>
+      <p class="text-xs text-base-content/40 mt-2">
+        USDT/USDC son estables ≈ 1. BTC/ETH/etc. requieren actualización manual.
+      </p>
+
+      @if (exchangeRates()?.updatedAt) {
+        <p class="text-xs text-base-content/40 mt-4">
+          Última actualización: {{ exchangeRates()?.updatedAt | slice:0:10 }}
+        </p>
+      }
+
+      <div class="flex gap-2 mt-5">
+        <button class="btn btn-ghost btn-sm flex-1" (click)="closeRateModal()">Cancelar</button>
+        <button class="btn btn-primary btn-sm flex-1" (click)="saveRates()" [disabled]="rateSaving()">
+          @if (rateSaving()) {
+            <span class="loading loading-spinner loading-xs"></span>
+          }
+          Guardar
+        </button>
+      </div>
+    </div>
+  </div>
+}

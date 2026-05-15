@@ -20,6 +20,7 @@ import TermsEntity from '../../interfaces/terms.interface';
 import { ContinentsService } from '../../services/continents/continents.service';
 import { ContinentEntity } from '../../interfaces/continent.interface';
 import UserEntity from '../../interfaces/user.interface';
+import { LocaleService } from '../../../shared/services/locale/locale.service';
 @Component({
   selector: 'app-show-client-plans',
   imports: [FormsModule, DecimalPipe, DatePipe, PaymentSummaryComponent, ReactiveFormsModule, NgClass],
@@ -30,6 +31,36 @@ export class ShowClientPlansComponent implements OnInit {
 
   profile = signal<UserEntity| null>(null);
   sanitizer = inject(DomSanitizer);
+  protected localeService = inject(LocaleService);
+
+  /** Resolve the display title for a plan in the active locale */
+  planTitle(plan: PlanEntity): string {
+    const name = this.localeService.displayI18n(plan.title_name_i18n, plan.title_name);
+    const pre  = this.localeService.displayI18n(plan.title_prefix_i18n, plan.title_prefix);
+    const suf  = this.localeService.displayI18n(plan.title_suffix_i18n, plan.title_suffix);
+    return [pre, name, suf].filter(Boolean).join(' ');
+  }
+
+  planDescription(plan: PlanEntity): string {
+    return this.localeService.displayI18n(plan.description_i18n, plan.description);
+  }
+
+  planFeatures(plan: PlanEntity): string[] {
+    const lang = this.localeService.currentLanguageCode();
+    return plan.features_i18n?.[lang] ?? plan.features ?? [];
+  }
+
+  planSuffix(plan: PlanEntity): string {
+    return this.localeService.displayI18n(plan.title_suffix_i18n, plan.title_suffix);
+  }
+
+  planPrefix(plan: PlanEntity): string {
+    return this.localeService.displayI18n(plan.title_prefix_i18n, plan.title_prefix);
+  }
+
+  planName(plan: PlanEntity): string {
+    return this.localeService.displayI18n(plan.title_name_i18n, plan.title_name);
+  }
 
   /** BARA DE PROCESO */
   currentStep: number = 1;
@@ -245,21 +276,12 @@ export class ShowClientPlansComponent implements OnInit {
 
 
   confirmarPago() {
-    console.log("selectedPlan: ", this.selectedPlan)
-    console.log("selectedCountries: ", this.selectedCountries())
-    console.log("selectedBank: ", this.selectedBank)
-    console.log("acceptedTerms: ", this.acceptedTerms, this.Terms())
-    console.log("selectedFile: ", this.selectedFile)
-    console.log("this.monthsToPay: ", this.monthsToPay())
-    console.log("this.totalToPay: ", this.totalToPay())
-     console.log("this.userMissingForm.invalid: ", this.userMissingForm.invalid)
-    if(!!this.userMissingForm.invalid && !this.profile()?.country.id  && !this.profile()?.telephone.length ) {
-      this.showFillMissingFields.set(true)
+    const profileComplete = this.profile()?.country?.id && this.profile()?.telephone?.length;
+    if (!profileComplete && this.userMissingForm.invalid) {
+      this.showFillMissingFields.set(true);
       return;
     }
-    const user_id = this.authService.user()?.id ?? "";
     const countries_ids = this.selectedCountries().map(p => p.id.toString());
-    console.log("countries_ids: ", countries_ids)
     const dataToSend = {
       plan: this.selectedPlan.id,
       countries: JSON.stringify(countries_ids),
@@ -275,33 +297,17 @@ export class ShowClientPlansComponent implements OnInit {
           country: this.selectedCountry().id
         },
       }
-    }
-    console.log("dataToSend: ", dataToSend)
-    this.paymentService.doesPaymentsInitial(user_id, dataToSend, this.selectedFile).subscribe({
+    };
+    this.paymentService.doesPaymentsInitial(dataToSend, this.selectedFile).subscribe({
       next: ({ progress, response }) => {
-        console.log("progress: ", progress)
-        // this.progress = progress;
         if (response) {
-          console.log("response: ", response)
-        }
-        // if (response) this.response = response;
-      },
-      error: (err) => console.error('Error:', err),
-    });
-    this.userService.getMe().subscribe(d => {})
-
           const dialog = document.getElementById('view_select_plans') as HTMLDialogElement;
-          console.log("dialog: ", dialog)
           dialog?.close();
-
-    window.location.reload();
-    //  const dialog = document.getElementById('view_select_plans') as HTMLDialogElement;
-    //   console.log("dialog: ", dialog)
-    //   // dialog?.close();
-    //   this.showVoucher.set(true);
-
-
-
+          window.location.reload();
+        }
+      },
+      error: (err) => console.error('confirmarPago error:', err),
+    });
   }
   onUploadProof(event: Event) {
     console.log("event: ", event)

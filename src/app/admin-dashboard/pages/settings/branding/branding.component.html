@@ -1,0 +1,536 @@
+<!-- BREADCRUMB -->
+<div class="breadcrumbs text-sm pt-2">
+  <ul>
+    <li><a>Panel</a></li>
+    <li><a>Configuración</a></li>
+    <li aria-current="page">Marca / Branding</li>
+  </ul>
+</div>
+
+<!-- Header -->
+<div class="mt-2 flex flex-wrap items-end justify-between gap-4 mb-6">
+  <div>
+    <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">Marca y Branding</h1>
+    <p class="text-sm text-base-content/50 mt-1">Personaliza la identidad visual, tipografía y redes del panel.</p>
+  </div>
+  <button class="btn btn-primary btn-sm gap-2" (click)="save()" [disabled]="saving()">
+    @if (saving()) {
+      <span class="loading loading-spinner loading-xs"></span> Guardando…
+    } @else {
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+      </svg>
+      Guardar cambios
+    }
+  </button>
+</div>
+
+<!-- Toast feedback -->
+@if (saved()) {
+  <div class="alert alert-success mb-4 py-2 text-sm">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    Configuración guardada correctamente.
+  </div>
+}
+@if (errorMsg()) {
+  <div class="alert alert-error mb-4 py-2 text-sm">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    {{ errorMsg() }}
+  </div>
+}
+
+@if (loading()) {
+  <div class="flex justify-center py-20">
+    <span class="loading loading-spinner loading-lg text-primary"></span>
+  </div>
+}
+
+@if (!loading()) {
+  <div class="grid grid-cols-1 xl:grid-cols-4 gap-6">
+
+    <!-- ── LEFT: tab nav ──────────────────────────────────────────────── -->
+    <aside class="xl:col-span-1">
+      <ul class="menu bg-base-100 border rounded-xl p-2 text-sm gap-0.5">
+        <li>
+          <button class="w-full text-left" [class.active]="activeTab() === 'identity'" (click)="setTab('identity')">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z"/></svg>
+            Identidad
+          </button>
+        </li>
+        <li>
+          <button class="w-full text-left" [class.active]="activeTab() === 'typography'" (click)="setTab('typography')">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h10M4 18h6"/></svg>
+            Tipografía
+          </button>
+        </li>
+        <li>
+          <button class="w-full text-left" [class.active]="activeTab() === 'colors'" (click)="setTab('colors')">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
+            Colores
+          </button>
+        </li>
+        <li>
+          <button class="w-full text-left" [class.active]="activeTab() === 'social'" (click)="setTab('social')">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+            Social y contacto
+          </button>
+        </li>
+        <li>
+          <button class="w-full text-left" [class.active]="activeTab() === 'seo'" (click)="setTab('seo')">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            SEO / Meta
+          </button>
+        </li>
+      </ul>
+
+      <!-- Live mini preview -->
+      <div class="mt-4 bg-base-100 border rounded-xl p-4 space-y-3">
+        <p class="text-xs font-semibold uppercase tracking-wider text-base-content/40">Vista previa</p>
+        <!-- Logo preview -->
+        <div class="flex items-center justify-center h-16 bg-base-200 rounded-lg overflow-hidden">
+          @if (previews()['logo']) {
+            <img [src]="previews()['logo']" alt="Logo" class="max-h-12 max-w-full object-contain" />
+          } @else {
+            <span class="text-2xl font-extrabold tracking-tight text-primary">{{ config().shortName || config().name }}</span>
+          }
+        </div>
+        <!-- Name + tagline -->
+        <div class="text-center">
+          <p class="font-bold text-sm leading-tight">{{ config().name || '—' }}</p>
+          <p class="text-xs text-base-content/50 mt-0.5">{{ config().tagline }}</p>
+        </div>
+        <!-- Color swatches -->
+        <div class="flex gap-2 justify-center">
+          <div class="w-6 h-6 rounded-full border border-base-300 shadow-sm" [style.background]="hslPreview(config().colorPrimary)" title="Primary"></div>
+          <div class="w-6 h-6 rounded-full border border-base-300 shadow-sm" [style.background]="hslPreview(config().colorSecondary)" title="Secondary"></div>
+          <div class="w-6 h-6 rounded-full border border-base-300 shadow-sm" [style.background]="hslPreview(config().colorAccent)" title="Accent"></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ── RIGHT: tab content ─────────────────────────────────────────── -->
+    <div class="xl:col-span-3">
+
+      <!-- ════ IDENTIDAD ══════════════════════════════════════════════ -->
+      @if (activeTab() === 'identity') {
+        <div class="space-y-6">
+
+          <!-- Logos -->
+          <div class="card bg-base-100 border shadow-sm">
+            <div class="card-body gap-6">
+              <h2 class="font-bold text-base border-b border-base-200 pb-3">Logos e Imágenes</h2>
+
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+                <!-- Logo principal -->
+                <div class="space-y-2">
+                  <label class="text-sm font-medium">Logo principal</label>
+                  <p class="text-xs text-base-content/40">PNG, SVG, WebP — máx. 2 MB. Fondo transparente recomendado.</p>
+                  <div class="relative flex items-center justify-center h-28 rounded-xl border-2 border-dashed border-base-300 bg-base-200/40 overflow-hidden group">
+                    @if (previews()['logo']) {
+                      <img [src]="previews()['logo']" alt="Logo" class="max-h-24 max-w-full object-contain p-2" />
+                      <button type="button" (click)="removeLogo('logo')"
+                              class="absolute top-1.5 right-1.5 btn btn-xs btn-circle btn-error opacity-0 group-hover:opacity-100 transition-opacity">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                      </button>
+                    } @else {
+                      <label class="flex flex-col items-center gap-1 cursor-pointer text-base-content/40 hover:text-primary transition-colors p-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        <span class="text-xs text-center">Subir logo</span>
+                        <input type="file" class="hidden" accept="image/*" (change)="onFilePick($event, 'logo')" />
+                      </label>
+                    }
+                  </div>
+                  @if (previews()['logo']) {
+                    <label class="btn btn-outline btn-xs w-full cursor-pointer">
+                      Cambiar imagen
+                      <input type="file" class="hidden" accept="image/*" (change)="onFilePick($event, 'logo')" />
+                    </label>
+                  }
+                </div>
+
+                <!-- Logo versión oscura -->
+                <div class="space-y-2">
+                  <label class="text-sm font-medium">Logo (tema oscuro)</label>
+                  <p class="text-xs text-base-content/40">Versión clara para fondos oscuros. Opcional.</p>
+                  <div class="relative flex items-center justify-center h-28 rounded-xl border-2 border-dashed border-base-300 bg-neutral/10 overflow-hidden group">
+                    @if (previews()['logo_dark']) {
+                      <img [src]="previews()['logo_dark']" alt="Logo dark" class="max-h-24 max-w-full object-contain p-2" />
+                      <button type="button" (click)="removeLogo('logo_dark')"
+                              class="absolute top-1.5 right-1.5 btn btn-xs btn-circle btn-error opacity-0 group-hover:opacity-100 transition-opacity">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                      </button>
+                    } @else {
+                      <label class="flex flex-col items-center gap-1 cursor-pointer text-base-content/40 hover:text-primary transition-colors p-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        <span class="text-xs text-center">Subir logo oscuro</span>
+                        <input type="file" class="hidden" accept="image/*" (change)="onFilePick($event, 'logo_dark')" />
+                      </label>
+                    }
+                  </div>
+                  @if (previews()['logo_dark']) {
+                    <label class="btn btn-outline btn-xs w-full cursor-pointer">
+                      Cambiar imagen
+                      <input type="file" class="hidden" accept="image/*" (change)="onFilePick($event, 'logo_dark')" />
+                    </label>
+                  }
+                </div>
+
+                <!-- Favicon / ícono -->
+                <div class="space-y-2">
+                  <label class="text-sm font-medium">Favicon / Ícono</label>
+                  <p class="text-xs text-base-content/40">ICO, PNG 32×32 o SVG. Aparece en la pestaña del navegador.</p>
+                  <div class="relative flex items-center justify-center h-28 rounded-xl border-2 border-dashed border-base-300 bg-base-200/40 overflow-hidden group">
+                    @if (previews()['favicon']) {
+                      <img [src]="previews()['favicon']" alt="Favicon" class="max-h-16 max-w-full object-contain p-2" />
+                      <button type="button" (click)="removeLogo('favicon')"
+                              class="absolute top-1.5 right-1.5 btn btn-xs btn-circle btn-error opacity-0 group-hover:opacity-100 transition-opacity">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                      </button>
+                    } @else {
+                      <label class="flex flex-col items-center gap-1 cursor-pointer text-base-content/40 hover:text-primary transition-colors p-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2zm7 4v6m-3-3h6"/></svg>
+                        <span class="text-xs text-center">Subir favicon</span>
+                        <input type="file" class="hidden" accept="image/*,.ico" (change)="onFilePick($event, 'favicon')" />
+                      </label>
+                    }
+                  </div>
+                  @if (previews()['favicon']) {
+                    <label class="btn btn-outline btn-xs w-full cursor-pointer">
+                      Cambiar favicon
+                      <input type="file" class="hidden" accept="image/*,.ico" (change)="onFilePick($event, 'favicon')" />
+                    </label>
+                  }
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- Nombre y textos -->
+          <div class="card bg-base-100 border shadow-sm">
+            <div class="card-body gap-5">
+              <h2 class="font-bold text-base border-b border-base-200 pb-3">Nombre e Identidad</h2>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                <div class="form-control gap-1">
+                  <label class="label py-0"><span class="label-text font-medium">Nombre del sistema</span></label>
+                  <input type="text" class="input input-bordered input-sm"
+                         placeholder="CarlosVM"
+                         [ngModel]="config().name"
+                         (ngModelChange)="patch('name', $event)" />
+                </div>
+
+                <div class="form-control gap-1">
+                  <label class="label py-0"><span class="label-text font-medium">Nombre corto / abreviatura</span></label>
+                  <input type="text" class="input input-bordered input-sm"
+                         placeholder="CVM"
+                         [ngModel]="config().shortName"
+                         (ngModelChange)="patch('shortName', $event)" />
+                  <label class="label py-0"><span class="label-text-alt text-base-content/40">Se usa cuando no hay espacio para el nombre completo</span></label>
+                </div>
+
+                <div class="form-control gap-1 sm:col-span-2">
+                  <label class="label py-0"><span class="label-text font-medium">Slogan / Tagline</span></label>
+                  <input type="text" class="input input-bordered input-sm"
+                         placeholder="Tu conexión segura"
+                         [ngModel]="config().tagline"
+                         (ngModelChange)="patch('tagline', $event)" />
+                </div>
+
+                <div class="form-control gap-1 sm:col-span-2">
+                  <label class="label py-0"><span class="label-text font-medium">Nombre legal / razón social</span></label>
+                  <input type="text" class="input input-bordered input-sm"
+                         placeholder="Carlos VM S.A.C."
+                         [ngModel]="config().legalName"
+                         (ngModelChange)="patch('legalName', $event)" />
+                  <label class="label py-0"><span class="label-text-alt text-base-content/40">Aparece en facturas, términos y pie de página</span></label>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+        </div>
+      }
+
+      <!-- ════ TIPOGRAFÍA ═════════════════════════════════════════════ -->
+      @if (activeTab() === 'typography') {
+        <div class="card bg-base-100 border shadow-sm">
+          <div class="card-body gap-6">
+            <h2 class="font-bold text-base border-b border-base-200 pb-3">Tipografía</h2>
+            <p class="text-sm text-base-content/50 -mt-2">Selecciona las fuentes del panel. Usa Google Fonts — el nombre debe coincidir exactamente.</p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+
+              <!-- Font primaria -->
+              <div class="space-y-3">
+                <div class="form-control gap-1">
+                  <label class="label py-0"><span class="label-text font-medium">Fuente principal</span></label>
+                  <select class="select select-bordered select-sm"
+                          [ngModel]="config().fontPrimary"
+                          (ngModelChange)="patch('fontPrimary', $event)">
+                    @for (f of fonts; track f) {
+                      <option [value]="f">{{ f }}</option>
+                    }
+                  </select>
+                </div>
+                <div class="p-4 rounded-xl bg-base-200/60 border">
+                  <p class="text-xs text-base-content/40 mb-2 uppercase tracking-wide">Preview</p>
+                  <p class="text-xl font-bold leading-snug" [style.font-family]="config().fontPrimary + ', sans-serif'">
+                    The quick brown fox
+                  </p>
+                  <p class="text-sm text-base-content/60 mt-1" [style.font-family]="config().fontPrimary + ', sans-serif'">
+                    jumps over the lazy dog. 0123456789
+                  </p>
+                </div>
+              </div>
+
+              <!-- Font secundaria -->
+              <div class="space-y-3">
+                <div class="form-control gap-1">
+                  <label class="label py-0"><span class="label-text font-medium">Fuente secundaria / cuerpo</span></label>
+                  <select class="select select-bordered select-sm"
+                          [ngModel]="config().fontSecondary"
+                          (ngModelChange)="patch('fontSecondary', $event)">
+                    @for (f of fonts; track f) {
+                      <option [value]="f">{{ f }}</option>
+                    }
+                  </select>
+                </div>
+                <div class="p-4 rounded-xl bg-base-200/60 border">
+                  <p class="text-xs text-base-content/40 mb-2 uppercase tracking-wide">Preview</p>
+                  <p class="text-base leading-relaxed" [style.font-family]="config().fontSecondary + ', sans-serif'">
+                    Texto de cuerpo. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                    Precio: S/ 29.90 / mes.
+                  </p>
+                </div>
+              </div>
+
+            </div>
+
+            <div class="alert alert-info text-sm py-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              Para que el cambio de fuente surta efecto en el panel, agrega la fuente a <code class="bg-info/20 px-1 rounded">index.html</code> mediante un enlace de Google Fonts.
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- ════ COLORES ════════════════════════════════════════════════ -->
+      @if (activeTab() === 'colors') {
+        <div class="card bg-base-100 border shadow-sm">
+          <div class="card-body gap-6">
+            <h2 class="font-bold text-base border-b border-base-200 pb-3">Colores de marca</h2>
+            <p class="text-sm text-base-content/50 -mt-2">
+              Introduce los valores en formato HSL sin unidades, p.ej. <code class="bg-base-200 px-1 rounded">262 80% 50%</code>.
+              Son compatibles con las variables CSS de DaisyUI.
+            </p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+
+              <!-- Color primario -->
+              <div class="space-y-2">
+                <label class="text-sm font-medium">Color primario</label>
+                <p class="text-xs text-base-content/40">Botones, enlaces activos, badges</p>
+                <div class="flex items-center gap-2">
+                  <div class="w-9 h-9 rounded-lg border border-base-300 shadow-sm shrink-0"
+                       [style.background]="hslPreview(config().colorPrimary)"></div>
+                  <input type="text" class="input input-bordered input-sm flex-1 font-mono text-xs"
+                         placeholder="262 80% 50%"
+                         [ngModel]="config().colorPrimary"
+                         (ngModelChange)="patch('colorPrimary', $event)" />
+                </div>
+                <div class="h-2 rounded-full" [style.background]="hslPreview(config().colorPrimary)"></div>
+              </div>
+
+              <!-- Color secundario -->
+              <div class="space-y-2">
+                <label class="text-sm font-medium">Color secundario</label>
+                <p class="text-xs text-base-content/40">Acentos y elementos complementarios</p>
+                <div class="flex items-center gap-2">
+                  <div class="w-9 h-9 rounded-lg border border-base-300 shadow-sm shrink-0"
+                       [style.background]="hslPreview(config().colorSecondary)"></div>
+                  <input type="text" class="input input-bordered input-sm flex-1 font-mono text-xs"
+                         placeholder="316 70% 50%"
+                         [ngModel]="config().colorSecondary"
+                         (ngModelChange)="patch('colorSecondary', $event)" />
+                </div>
+                <div class="h-2 rounded-full" [style.background]="hslPreview(config().colorSecondary)"></div>
+              </div>
+
+              <!-- Color acento -->
+              <div class="space-y-2">
+                <label class="text-sm font-medium">Color de acento</label>
+                <p class="text-xs text-base-content/40">Highlights, chips, indicadores</p>
+                <div class="flex items-center gap-2">
+                  <div class="w-9 h-9 rounded-lg border border-base-300 shadow-sm shrink-0"
+                       [style.background]="hslPreview(config().colorAccent)"></div>
+                  <input type="text" class="input input-bordered input-sm flex-1 font-mono text-xs"
+                         placeholder="175 60% 40%"
+                         [ngModel]="config().colorAccent"
+                         (ngModelChange)="patch('colorAccent', $event)" />
+                </div>
+                <div class="h-2 rounded-full" [style.background]="hslPreview(config().colorAccent)"></div>
+              </div>
+
+            </div>
+
+            <!-- Preview panel mockup -->
+            <div class="mt-2 p-4 rounded-xl bg-base-200/60 border space-y-3">
+              <p class="text-xs font-semibold uppercase tracking-wide text-base-content/40">Cómo se vería</p>
+              <div class="flex flex-wrap gap-2">
+                <button class="btn btn-sm text-white" [style.background]="hslPreview(config().colorPrimary)">Botón primario</button>
+                <button class="btn btn-sm text-white" [style.background]="hslPreview(config().colorSecondary)">Secundario</button>
+                <span class="badge text-white" [style.background]="hslPreview(config().colorAccent)">Acento</span>
+              </div>
+              <div class="flex gap-2">
+                <div class="h-1.5 rounded-full flex-1" [style.background]="hslPreview(config().colorPrimary)"></div>
+                <div class="h-1.5 rounded-full flex-1 opacity-60" [style.background]="hslPreview(config().colorSecondary)"></div>
+                <div class="h-1.5 rounded-full flex-1 opacity-40" [style.background]="hslPreview(config().colorAccent)"></div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      }
+
+      <!-- ════ SOCIAL ══════════════════════════════════════════════════ -->
+      @if (activeTab() === 'social') {
+        <div class="card bg-base-100 border shadow-sm">
+          <div class="card-body gap-5">
+            <h2 class="font-bold text-base border-b border-base-200 pb-3">Social y Contacto</h2>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+              <div class="form-control gap-1">
+                <label class="label py-0"><span class="label-text font-medium">Sitio web</span></label>
+                <label class="input input-bordered input-sm flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 opacity-50 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 010 20"/></svg>
+                  <input type="url" class="grow" placeholder="https://carlosvm.ru"
+                         [ngModel]="config().website" (ngModelChange)="patch('website', $event)" />
+                </label>
+              </div>
+
+              <div class="form-control gap-1">
+                <label class="label py-0"><span class="label-text font-medium">Email de contacto</span></label>
+                <label class="input input-bordered input-sm flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 opacity-50 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                  <input type="email" class="grow" placeholder="hola@carlosvm.ru"
+                         [ngModel]="config().email" (ngModelChange)="patch('email', $event)" />
+                </label>
+              </div>
+
+              <div class="form-control gap-1">
+                <label class="label py-0"><span class="label-text font-medium">Teléfono / WhatsApp</span></label>
+                <label class="input input-bordered input-sm flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 opacity-50 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                  <input type="tel" class="grow" placeholder="+51 999 999 999"
+                         [ngModel]="config().phone" (ngModelChange)="patch('phone', $event)" />
+                </label>
+              </div>
+
+              <div class="form-control gap-1">
+                <label class="label py-0"><span class="label-text font-medium">Instagram</span></label>
+                <label class="input input-bordered input-sm flex items-center gap-2">
+                  <span class="text-xs opacity-50 shrink-0">&#64;</span>
+                  <input type="text" class="grow" placeholder="carlosvm_ru"
+                         [ngModel]="config().instagram" (ngModelChange)="patch('instagram', $event)" />
+                </label>
+              </div>
+
+              <div class="form-control gap-1">
+                <label class="label py-0"><span class="label-text font-medium">Twitter / X</span></label>
+                <label class="input input-bordered input-sm flex items-center gap-2">
+                  <span class="text-xs opacity-50 shrink-0">&#64;</span>
+                  <input type="text" class="grow" placeholder="carlosvm_ru"
+                         [ngModel]="config().twitter" (ngModelChange)="patch('twitter', $event)" />
+                </label>
+              </div>
+
+              <div class="form-control gap-1">
+                <label class="label py-0"><span class="label-text font-medium">Facebook</span></label>
+                <label class="input input-bordered input-sm flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 opacity-50 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+                  <input type="text" class="grow" placeholder="carlosvm"
+                         [ngModel]="config().facebook" (ngModelChange)="patch('facebook', $event)" />
+                </label>
+              </div>
+
+              <div class="form-control gap-1 sm:col-span-2">
+                <label class="label py-0"><span class="label-text font-medium">YouTube</span></label>
+                <label class="input input-bordered input-sm flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 opacity-50 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M22.54 6.42a2.78 2.78 0 00-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 001.46 6.42 29 29 0 001 12a29 29 0 00.46 5.58 2.78 2.78 0 001.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 001.95-1.96A29 29 0 0023 12a29 29 0 00-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02"/></svg>
+                  <input type="url" class="grow" placeholder="https://youtube.com/@carlosvm"
+                         [ngModel]="config().youtube" (ngModelChange)="patch('youtube', $event)" />
+                </label>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- ════ SEO ════════════════════════════════════════════════════ -->
+      @if (activeTab() === 'seo') {
+        <div class="card bg-base-100 border shadow-sm">
+          <div class="card-body gap-5">
+            <h2 class="font-bold text-base border-b border-base-200 pb-3">SEO / Metadatos</h2>
+            <p class="text-sm text-base-content/50 -mt-2">Aparecen en la etiqueta <code class="bg-base-200 px-1 rounded">&lt;title&gt;</code> y en las vistas previas de redes sociales / buscadores.</p>
+
+            <div class="space-y-4">
+
+              <div class="form-control gap-1">
+                <label class="label py-0">
+                  <span class="label-text font-medium">Meta title</span>
+                  <span class="label-text-alt text-base-content/40">{{ config().metaTitle.length }}/70</span>
+                </label>
+                <input type="text" class="input input-bordered input-sm" maxlength="70"
+                       placeholder="CarlosVM — Panel VPN"
+                       [ngModel]="config().metaTitle"
+                       (ngModelChange)="patch('metaTitle', $event)" />
+              </div>
+
+              <div class="form-control gap-1">
+                <label class="label py-0">
+                  <span class="label-text font-medium">Meta description</span>
+                  <span class="label-text-alt text-base-content/40">{{ config().metaDescription.length }}/160</span>
+                </label>
+                <textarea class="textarea textarea-bordered textarea-sm resize-none" rows="3" maxlength="160"
+                          placeholder="Gestiona tu suscripción VPN, dispositivos y pagos desde un solo lugar."
+                          [ngModel]="config().metaDescription"
+                          (ngModelChange)="patch('metaDescription', $event)"></textarea>
+              </div>
+
+              <!-- Preview card Google -->
+              <div class="p-4 rounded-xl bg-base-200/50 border space-y-1">
+                <p class="text-xs text-base-content/40 uppercase tracking-wide mb-2">Vista previa en Google</p>
+                <p class="text-sm text-blue-500 font-medium truncate">{{ config().website || 'https://carlosvm.ru' }}</p>
+                <p class="text-base font-semibold text-base-content leading-snug">{{ config().metaTitle || config().name || 'Título del sitio' }}</p>
+                <p class="text-sm text-base-content/60 leading-relaxed line-clamp-2">{{ config().metaDescription || 'Descripción del sitio. Aparecerá aquí cuando alguien encuentre tu página en buscadores.' }}</p>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      }
+
+    </div>
+  </div>
+
+  <!-- Sticky save bar (mobile) -->
+  <div class="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-base-100/90 backdrop-blur border-t px-4 py-3 flex items-center justify-between">
+    @if (saved()) {
+      <span class="text-sm text-success font-medium flex items-center gap-1.5">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+        Guardado
+      </span>
+    } @else {
+      <span class="text-sm text-base-content/50">Cambios sin guardar</span>
+    }
+    <button class="btn btn-primary btn-sm" (click)="save()" [disabled]="saving()">
+      @if (saving()) { <span class="loading loading-spinner loading-xs"></span> } Guardar
+    </button>
+  </div>
+}

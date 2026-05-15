@@ -175,11 +175,11 @@
         <div class="absolute top-4 right-4 text-xs font-semibold px-3 py-1 rounded-full shadow-sm transition-all duration-300
                  bg-blue-100 text-blue-800 group-hover:bg-blue-600 group-hover:text-white"
           [class.bg-blue-600]="selectedPlan.id === plan.id" [class.text-white]="selectedPlan.id === plan.id">
-          {{ plan.title_suffix }}
+          {{ planSuffix(plan) }}
         </div>
 
         <!-- Cinta destacada opcional -->
-        @if (plan.title_suffix?.toLowerCase() === 'popular' || plan.featured) {
+        @if (planSuffix(plan).toLowerCase() === 'popular' || plan.featured) {
         <div
           class="absolute top-4 left-4 bg-blue-600 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-md">
           Más popular
@@ -191,11 +191,11 @@
           <header class="mb-4">
             <h3 class="text-2xl font-extrabold transition-colors duration-300"
               [class.text-blue-700]="selectedPlan.id === plan.id" [class.text-gray-900]="selectedPlan.id !== plan.id">
-              {{ plan.title_name }}
+              {{ planName(plan) }}
             </h3>
             <p class="mt-1 text-sm uppercase tracking-wide font-medium transition-colors duration-300"
               [class.text-blue-500]="selectedPlan.id === plan.id" [class.text-gray-500]="selectedPlan.id !== plan.id">
-              {{ plan.title_prefix }}
+              {{ planPrefix(plan) }}
             </p>
           </header>
 
@@ -216,13 +216,12 @@
               A medida
             </div>
             }
-            <p class="mt-2 text-sm text-gray-600 line-clamp-2">{{ plan.description }}</p>
+            <p class="mt-2 text-sm text-gray-600 line-clamp-2">{{ planDescription(plan) }}</p>
           </div>
-
 
           <!-- Características -->
           <ul class="space-y-3 text-sm flex-1">
-            @for (feature of plan.features; track $index) {
+            @for (feature of planFeatures(plan); track $index) {
             <li class="flex items-start gap-3">
               <div class="bg-green-100 text-green-700 rounded-full p-1 flex items-center justify-center w-5 h-5 mt-0.5">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -261,11 +260,11 @@
         <div class="absolute top-4 right-4 text-xs font-semibold px-3 py-1 rounded-full shadow-sm transition-all duration-300
                  bg-blue-100 text-blue-800 group-hover:bg-blue-600 group-hover:text-white"
           [class.bg-blue-600]="selectedPlan.id === plan.id" [class.text-white]="selectedPlan.id === plan.id">
-          {{ plan.title_suffix }}
+          {{ planSuffix(plan) }}
         </div>
 
         <!-- Cinta destacada opcional -->
-        @if (plan.title_suffix?.toLowerCase() === 'popular' || plan.featured) {
+        @if (planSuffix(plan).toLowerCase() === 'popular' || plan.featured) {
         <div
           class="absolute top-4 left-4 bg-blue-600 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-md">
           Más popular
@@ -277,11 +276,11 @@
           <header class="mb-4">
             <h3 class="text-2xl font-extrabold transition-colors duration-300"
               [class.text-blue-700]="selectedPlan.id === plan.id" [class.text-gray-900]="selectedPlan.id !== plan.id">
-              {{ plan.title_name }}
+              {{ planName(plan) }}
             </h3>
             <p class="mt-1 text-sm uppercase tracking-wide font-medium transition-colors duration-300"
               [class.text-blue-500]="selectedPlan.id === plan.id" [class.text-gray-500]="selectedPlan.id !== plan.id">
-              {{ plan.title_prefix }}
+              {{ planPrefix(plan) }}
             </p>
           </header>
 
@@ -302,13 +301,12 @@
               A medida
             </div>
             }
-            <p class="mt-2 text-sm text-gray-600 line-clamp-2">{{ plan.description }}</p>
+            <p class="mt-2 text-sm text-gray-600 line-clamp-2">{{ planDescription(plan) }}</p>
           </div>
-
 
           <!-- Características -->
           <ul class="space-y-3 text-sm flex-1">
-            @for (feature of plan.features; track $index) {
+            @for (feature of planFeatures(plan); track $index) {
             <li class="flex items-start gap-3">
               <div class="bg-green-100 text-green-700 rounded-full p-1 flex items-center justify-center w-5 h-5 mt-0.5">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -459,7 +457,7 @@
             class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-100">
             <div>
               <h4 class="text-xl font-bold text-blue-700 leading-tight">
-                {{ selectedPlan.title_prefix }} {{ selectedPlan.title_name }}
+                {{ planTitle(selectedPlan) }}
               </h4>
               <p class="text-gray-500 text-sm mt-1">Plan activo seleccionado</p>
             </div>
@@ -486,7 +484,7 @@
 
           <!-- Descripción -->
           <p class="text-gray-600 text-sm leading-relaxed border-l-4 border-blue-500 pl-3 bg-blue-50/40 rounded">
-            {{ selectedPlan.description }}
+            {{ planDescription(selectedPlan) }}
           </p>
 
           <!-- Características -->
@@ -495,7 +493,7 @@
               Incluye:
             </h5>
             <ul class="list-disc list-inside text-sm text-gray-700 space-y-1">
-              @for (f of selectedPlan.features; track f) {
+              @for (f of planFeatures(selectedPlan); track f) {
               <li [innerHTML]="f" class="leading-snug"></li>
               }
             </ul>
@@ -658,7 +656,7 @@
             </div>
 
             <div class="bg-blue-100 text-blue-600 text-xs font-semibold px-3 py-1 rounded-full border border-blue-200">
-              VPN Activa
+              🖲️ Activa
             </div>
           </li>
           }
@@ -681,7 +679,7 @@
             </div>
 
             <div class="bg-blue-100 text-blue-600 text-xs font-semibold px-3 py-1 rounded-full border border-blue-200">
-              VPN {{ this.SelectedContinent().isActive ? 'Activa': 'Inactiva' }}
+              Servicio {{ this.SelectedContinent().isActive ? 'Activa': 'Inactiva' }}
             </div>
           </li>
         </ul>
@@ -704,7 +702,7 @@
         </h3>
 
         <p class="text-sm text-gray-600">
-          Antes de confirmar el pago, revisa los términos del servicio VPN.
+          Antes de confirmar el pago, revisa los términos del servicio 🖲️.
         </p>
 
         <button type="button" (click)="showTerms = true" class="mt-4 inline-flex items-center gap-2 px-5 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium
@@ -716,7 +714,7 @@
           <input type="checkbox" id="acceptTerms" [(ngModel)]="acceptedTerms"
             class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
           <label for="acceptTerms" class="text-sm text-gray-700 cursor-pointer">
-            Acepto los términos y condiciones del servicio VPN
+            Acepto los términos y condiciones del servicio 🖲️
           </label>
         </div>
       </div>
@@ -769,7 +767,7 @@
       <div class="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
         <div class="bg-white w-full max-w-2xl mx-4 rounded-2xl shadow-xl overflow-hidden animate-fadeIn">
           <!-- <div class="p-6 border-b flex justify-between items-center">
-            <h3 class="text-xl font-semibold text-gray-800">⚖️ Términos y Condiciones del Servicio VPN</h3>
+            <h3 class="text-xl font-semibold text-gray-800">⚖️ Términos y Condiciones del Servicio 🖲️</h3>
             <button (click)="showTerms = false"
               class="text-gray-500 hover:text-gray-700 text-2xl leading-none">&times;</button>
           </div>
@@ -786,7 +784,7 @@
               <li>Los certificados generados son únicos y vinculados al usuario registrado.</li>
               <li>El reembolso solo aplica por fallas graves no corregidas.</li>
               <li>El proveedor puede actualizar la red o políticas sin previo aviso.</li>
-              <li>El usuario debe cumplir las leyes locales donde utiliza la VPN.</li>
+              <li>El usuario debe cumplir las leyes locales donde utiliza el servicio.</li>
               <li>El proveedor no se hace responsable por errores, problemas y/o cantidad en el proceso de pago.</li>
             </ul>
           </div> -->
@@ -797,7 +795,7 @@
               <div class="flex items-center gap-2">
                 <span class="text-2xl">⚖️</span>
                 <h3 class="text-xl font-semibold text-gray-800">
-                  {{ this.Terms().title }}
+                  {{ localeService.displayI18n(Terms().title_i18n, Terms().title) }}
                 </h3>
               </div>
               <button (click)="showTerms = false"
@@ -809,7 +807,7 @@
             <!-- Descripción -->
             <div class="p-6 text-sm text-gray-700 leading-relaxed">
               <p class="mb-3">
-                {{ this.Terms().description }}
+                {{ localeService.displayI18n(Terms().description_i18n, Terms().description) }}
               </p>
 
               <p class="text-xs text-gray-500">
@@ -867,7 +865,7 @@
       <div class="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
         <div class="bg-white w-full max-w-2xl mx-4 rounded-2xl shadow-xl overflow-hidden animate-fadeIn">
           <div class="p-6 border-b flex justify-between items-center">
-            <h3 class="text-xl font-semibold text-gray-800">⚖️ Voucher del Servicio VPN</h3>
+            <h3 class="text-xl font-semibold text-gray-800">⚖️ Voucher del Servicio 🖲️</h3>
             <button (click)="this.showVoucher.set(false)"
               class="text-gray-500 hover:text-gray-700 text-2xl leading-none">&times;</button>
           </div>
@@ -1083,7 +1081,7 @@
       <div class="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
         <div class="bg-white w-full max-w-2xl mx-4 rounded-2xl shadow-xl overflow-hidden animate-fadeIn">
           <!-- <div class="p-6 border-b flex justify-between items-center">
-            <h3 class="text-xl font-semibold text-gray-800">⚖️ Términos y Condiciones del Servicio VPN</h3>
+            <h3 class="text-xl font-semibold text-gray-800">⚖️ Términos y Condiciones del Servicio 🖲️</h3>
             <button (click)="showTerms = false"
               class="text-gray-500 hover:text-gray-700 text-2xl leading-none">&times;</button>
           </div>
@@ -1100,7 +1098,7 @@
               <li>Los certificados generados son únicos y vinculados al usuario registrado.</li>
               <li>El reembolso solo aplica por fallas graves no corregidas.</li>
               <li>El proveedor puede actualizar la red o políticas sin previo aviso.</li>
-              <li>El usuario debe cumplir las leyes locales donde utiliza la VPN.</li>
+              <li>El usuario debe cumplir las leyes locales donde utiliza el servicio.</li>
               <li>El proveedor no se hace responsable por errores, problemas y/o cantidad en el proceso de pago.</li>
             </ul>
           </div> -->
@@ -1111,7 +1109,7 @@
               <div class="flex items-center gap-2">
                 <span class="text-2xl">⚖️</span>
                 <h3 class="text-xl font-semibold text-gray-800">
-                  {{ this.Terms().title }}
+                  {{ localeService.displayI18n(Terms().title_i18n, Terms().title) }}
                 </h3>
               </div>
               <button (click)="showTerms = false"
@@ -1123,7 +1121,7 @@
             <!-- Descripción -->
             <div class="p-6 text-sm text-gray-700 leading-relaxed">
               <p class="mb-3">
-                {{ this.Terms().description }}
+                {{ localeService.displayI18n(Terms().description_i18n, Terms().description) }}
               </p>
 
               <p class="text-xs text-gray-500">
@@ -1180,7 +1178,7 @@
       <div class="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
         <div class="bg-white w-full max-w-2xl mx-4 rounded-2xl shadow-xl overflow-hidden animate-fadeIn">
           <div class="p-6 border-b flex justify-between items-center">
-            <h3 class="text-xl font-semibold text-gray-800">⚖️ Voucher del Servicio VPN</h3>
+            <h3 class="text-xl font-semibold text-gray-800">⚖️ Voucher del Servicio 🖲️</h3>
             <button (click)="this.showVoucher.set(false)"
               class="text-gray-500 hover:text-gray-700 text-2xl leading-none">&times;</button>
           </div>

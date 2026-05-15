@@ -2,359 +2,675 @@
 <section class="container mx-auto max-w-7xl px-2 md:px-4">
   <div class="breadcrumbs text-sm pt-2">
     <ul>
-      <li><a>Panel</a></li>
-      <li aria-current="page">Dashboard</li>
+      <li><a>{{ 'dashboard.breadcrumb_panel' | translate }}</a></li>
+      <li aria-current="page">{{ 'nav.dashboard' | translate }}</li>
     </ul>
   </div>
   <div class="mt-2 flex flex-wrap items-end justify-between gap-4">
     <div>
-      <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">Resumen global</h1>
-      <p class="text-base-content/70">Estado de servicios, pagos y actividad.</p>
+      <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">{{ 'dashboard.title' | translate }}</h1>
+      <p class="text-base-content/70">{{ 'dashboard.subtitle' | translate }}</p>
     </div>
-    <!-- <div class="flex items-center gap-2">
-            <a href="#/dashboard/users" class="btn btn-outline">Ir a Usuarios</a>
-            <a href="#/dashboard/servers" class="btn btn-outline">Ir a Servidores</a>
-            <a href="#/dashboard/payments" class="btn btn-outline">Ir a Pagos</a>
-          </div> -->
-
-      <div class="ml-auto flex items-center gap-2">
-        <!-- <div class="tooltip" data-tip="Seleccionar todo">
-          <input type="checkbox" class="checkbox checkbox-sm" aria-label="Seleccionar todo" />
-        </div> -->
-
-        <!-- <div class="dropdown dropdown-end">
-          <button tabindex="0" class="btn btn-ghost btn-sm md:btn-md">Acciones</button>
-          <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-64 z-[60]">
-            <li><a>Activar</a></li>
-            <li><a>Desactivar</a></li>
-            <li><a>Suspender</a></li>
-            <li><a>Reactivar</a></li>
-            <li><a>Revocar certificado</a></li>
-            <li><a>Regenerar certificado…</a></li>
-            <li><a>Exportar CSV</a></li>
-            <li><a class="text-error">Eliminar</a></li>
-          </ul>
-        </div> -->
-
-        <!-- Botón Agregar dispositivo -->
-         @if(this.btnAddService()) {
-          <button class="btn btn-primary btn-sm md:btn-md" type="button"
-            (click)="this.addPlanOnlyVPN()">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2">
-              <path d="M12 5v14M5 12h14" />
-            </svg>
-            Agregar Servicio
-          </button>
-         }
-      </div>
+    <div class="ml-auto flex items-center gap-2">
+      <button class="btn btn-primary btn-sm md:btn-md" type="button" (click)="goToPlans()">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2">
+          <path d="M12 5v14M5 12h14" />
+        </svg>
+        {{ activeServices().length === 0 ? 'Contratar servicio' : 'Agregar servicio' }}
+      </button>
+    </div>
   </div>
 </section>
 
-<!-- TABLAS RESUMEN -->
-<!-- <section class="container mx-auto max-w-7xl px-2 md:px-4 mt-4 grid grid-cols-1 xl:grid-cols-2 gap-3">
-  @for(d of this.profile().services; track d.id) {
-  <div class="card bg-base-100 border shadow-sm">
-    <div class="card-body">
-      <div class="flex items-center justify-between">
-        <h3 class="card-title text-base">Dispositivos</h3>
-        <span class="badge">876 activos</span>
-        <button class="btn btn-primary btn-sm" onclick="document.getElementById('add_user')?.showModal()">
-          <svg class="h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-            stroke="currentColor" stroke-width="2">
-            <path d="M12 5v14M5 12h14" />
-          </svg>
-          Agregar
-        </button>
-      </div>
-      <table class="table table-xs">
-        <thead>
-          <tr>
-            <th>Usuario</th>
-            <th>Device</th>
-            <th class="text-right">Estado</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Ana</td>
-            <td>iPhone 14</td>
-            <td class="text-right"><span class="badge badge-success">OK</span></td>
-          </tr>
-          <tr>
-            <td>Luis</td>
-            <td>MacBook</td>
-            <td class="text-right"><span class="badge">Suspend</span></td>
-          </tr>
-        </tbody>
-      </table>
-      <div class="card-actions justify-end">
-        <a class="btn btn-ghost btn-sm" href="#/dashboard/devices">Ver dispositivos</a>
-      </div>
+<!-- Toast -->
+@if (toast()) {
+  <div class="toast toast-top toast-end z-50">
+    <div class="alert" [class.alert-success]="toast()!.ok" [class.alert-error]="!toast()!.ok">
+      <span>{{ toast()!.msg }}</span>
     </div>
   </div>
-  }
-</section> -->
-<section
-  class="container mx-auto max-w-7xl px-3 md:px-6 mt-6
-  grid grid-cols-1 lg:grid-cols-2 gap-6"
->
+}
 
-  @for (plan of this.profile().services; track plan.plan_id) {
+<!-- ── STATS BAR ──────────────────────────────────────────────────────────── -->
+<section class="container mx-auto max-w-7xl px-3 md:px-6 mt-4">
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
 
-  <div
-    class="
-      bg-white border border-gray-200 shadow-[0_4px_14px_rgba(0,0,0,0.06)]
-      rounded-3xl p-7 hover:shadow-[0_8px_24px_rgba(0,0,0,0.12)] transition
-      {{ plan.service_sortName === 'VPN' ? 'lg:col-span-2' : '' }}
-    "
-  >
-
-    <!-- Encabezado -->
-    <div class="flex items-start justify-between mb-2">
-      <div>
-        <h3 class="text-xl font-semibold text-neutral-900 leading-tight">
-          {{ plan.service_sortName }} ·
-          {{ plan.plan_title_prefix }} {{ plan.plan_title_name }}
-        </h3>
-
-        <span class="text-neutral-500 text-sm">
-          {{ plan.plan_title_suffix }}
-        </span>
-         <span
-          class="text-xs px-3 py-1 rounded-full
-          {{ plan.active ? 'bg-green-100 text-green-700'
-                         : 'bg-red-100 text-red-700' }}"
-        >
-          {{ plan.active ? 'Activo' : 'Inactivo' }}
-        </span>
-      </div>
-
-      <div class="flex flex-col items-end gap-1">
-        <span class="text-xs px-3 py-1 rounded-full bg-blue-100 text-blue-700 font-medium">
-          <span class="text-blue-600 font-bold text-lg">
-           {{ plan.startedAt | date:'dd' }}
-          </span>
-          de cada {{ plan.kind }}
-        </span>
-
-        <span class="text-xs px-3 py-1 rounded-full
-          {{ this.getUpToDate(plan) ? 'bg-green-100 text-green-700'
-                         : 'bg-red-100 text-red-700' }}">
-          {{this.getUpToDate(plan)?"🙂 Puntal": "🙁 Impuntual"}}
-        </span>
-        <!-- <span
-          class="text-xs px-3 py-1 rounded-full
-          {{ plan.active ? 'bg-green-100 text-green-700'
-                         : 'bg-red-100 text-red-700' }}"
-        >
-          {{ plan.active ? 'Activo' : 'Inactivo' }}
-        </span> -->
-      </div>
-    </div>
-
-    <!-- Precio -->
-    <div class="flex items-start justify-between mb-2">
-      <div class="">
-        <span class="text-4xl font-bold text-neutral-900">
-          {{ plan.currencySymbol }}{{ plan.price }}
-        </span>
-        <span class="text-sm text-neutral-500">/ {{ plan.kind }}</span>
-      </div>
-      <div class="">
-      <div class="flex flex-col items-end gap-1">
-        <span class="text-xs px-3 py-1 rounded-full"></span>
-        <!-- <span class="text-xs px-3 py-1 rounded-full bg-blue-100 text-blue-700 font-medium">
-          {{this.getUpToDate(plan)?"Al dia": "No esta al dia"}}
-        </span> -->
-
-        <span
-          class="text-xs px-3 py-1 rounded-full
-          {{ plan.active ? 'bg-green-100 text-green-700'
-                         : 'bg-red-100 text-red-700' }}"
-        >
-          {{this.getPaymentAdvance(plan)}} pago(s) adelantado(s)
-        </span>
-      </div>
-      </div>
-    </div>
-  </div>
-
-  }
-
-</section>
-
-
-
-
-<!-- SALUD & MINI GRÁFICAS -->
-<!-- <section class="container mx-auto max-w-7xl px-2 md:px-4 mt-4 grid grid-cols-1 lg:grid-cols-1 gap-3">
-  <div class="card bg-base-100 border shadow-sm">
-    <div class="card-body">
-      <div class="flex items-center justify-between">
-        <h2 class="card-title text-base">Tráfico (Gb · 24h)</h2>
-        <span class="badge">+8%</span>
-      </div>
-      <div class="mt-2">
-        <svg viewBox="0 0 100 40" class="w-full h-24">
-          <defs>
-            <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="currentColor" stop-opacity="0.35" />
-              <stop offset="100%" stop-color="currentColor" stop-opacity="0" />
-            </linearGradient>
-          </defs>
-          <path d="M0,30 L10,28 L20,25 L30,24 L40,20 L50,18 L60,16 L70,14 L80,17 L90,15 L100,12 L100,40 L0,40 Z"
-            fill="url(#g1)"></path>
-          <polyline fill="none" stroke="currentColor" stroke-width="2"
-            points="0,30 10,28 20,25 30,24 40,20 50,18 60,16 70,14 80,17 90,15 100,12"></polyline>
+    <!-- Servicios activos -->
+    <div class="bg-base-100 border rounded-xl p-4 flex items-center gap-3 shadow-sm">
+      <div class="w-10 h-10 rounded-lg bg-success/15 text-success flex items-center justify-center shrink-0">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
         </svg>
       </div>
-      <p class="text-xs opacity-70">Pico 12:00 · 380 Mb/s</p>
-    </div>
-  </div>
-</section> -->
-
-<!-- TABLAS RESUMEN -->
-<section class="container mx-auto max-w-7xl px-2 md:px-4 mt-4 grid grid-cols-1 gap-3">
-
-  <div class="bg-white border rounded-xl shadow-sm">
-    <div class="p-4 pb-2 flex items-center justify-between">
-      <h3 class="font-semibold">Actividad reciente</h3>
-      <span class="badge bg-blue-100 text-blue-700">Sesión actual</span>
+      <div>
+        <p class="text-2xl font-extrabold leading-none">{{ activeServices().length }}</p>
+        <p class="text-xs opacity-60 mt-0.5">Servicio(s) activo(s)</p>
+      </div>
     </div>
 
-    @for (session of this.ListSessions(); track session.id) {
-
-    <div class="border-t px-4 py-3 text-sm">
-
-      <!-- IP -->
-      <div class="flex items-center justify-between mb-2">
-        <div>
-          <span class="font-medium">IP:</span>
-          <span class="opacity-70 ml-1">{{ session.ip }}</span>
-        </div>
-
-        <span class="badge bg-green-100 text-green-700">
-          Conectado
-        </span>
+    <!-- Dispositivos -->
+    <div class="bg-base-100 border rounded-xl p-4 flex items-center gap-3 shadow-sm">
+      <div class="w-10 h-10 rounded-lg bg-primary/15 text-primary flex items-center justify-center shrink-0">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+        </svg>
       </div>
-
-      <!-- Inicio de sesión -->
-      <div class="flex items-center justify-between mb-2">
-        <div>
-          <span class="font-medium">Inicio de sesión:</span>
-          <span class="opacity-70 ml-1">
-            {{ session.createdAt | date:'dd/MM/yyyy HH:mm' }}
-          </span>
-        </div>
-
-        <span class="text-xs opacity-60">
-          token emitido
-        </span>
+      <div>
+        <p class="text-2xl font-extrabold leading-none">{{ devices().length }}</p>
+        <p class="text-xs opacity-60 mt-0.5">Dispositivo(s)</p>
       </div>
+    </div>
 
-      <!-- Expiración -->
-      <div class="flex items-center justify-between mb-2">
-        <div>
-          <span class="font-medium">Expira:</span>
-          <span class="opacity-70 ml-1">
-            {{ session.expiresAt | date:'dd/MM/yyyy HH:mm' }}
-          </span>
-        </div>
-
-        <span class="badge"
-          [ngClass]="session.expiresAt > now
-            ? 'bg-green-100 text-green-700'
-            : 'bg-red-100 text-red-700'">
-
-          {{ session.expiresAt > now ? 'Vigente' : 'Expirado' }}
-        </span>
-
+    <!-- Pagos pendientes -->
+    <div class="bg-base-100 border rounded-xl p-4 flex items-center gap-3 shadow-sm">
+      <div class="w-10 h-10 rounded-lg bg-warning/15 text-warning flex items-center justify-center shrink-0">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/>
+        </svg>
       </div>
-
-      <!-- User Agent -->
-      <div class="mt-3">
-        <span class="font-medium">Navegador / Dispositivo</span>
-        <p class="opacity-70 text-xs mt-1 break-all">
-          {{ session.userAgent }}
+      <div>
+        <p class="text-2xl font-extrabold leading-none">
+          {{ activeServices().length - activeServices().length }}
         </p>
+        <p class="text-xs opacity-60 mt-0.5">Pago(s) pendiente(s)</p>
       </div>
-
     </div>
 
-    }
+    <!-- Vencidos -->
+    <div class="bg-base-100 border rounded-xl p-4 flex items-center gap-3 shadow-sm">
+      <div class="w-10 h-10 rounded-lg bg-error/15 text-error flex items-center justify-center shrink-0">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+      </div>
+      <div>
+        <p class="text-2xl font-extrabold leading-none">{{ expiredServices().length }}</p>
+        <p class="text-xs opacity-60 mt-0.5">Servicio(s) vencido(s)</p>
+      </div>
+    </div>
 
   </div>
+</section>
+
+
+<!-- ── TARJETAS DE SERVICIOS ACTIVOS ──────────────────────────────────────── -->
+<section class="container mx-auto max-w-7xl px-3 md:px-6 mt-6 space-y-4">
+
+  <div class="flex items-center justify-between">
+    <h2 class="text-sm font-bold uppercase tracking-wide opacity-60">
+      Servicios activos ({{ activeServices().length }})
+    </h2>
+    @if (activeServices().length > 0) {
+      <a class="btn btn-ghost btn-xs opacity-60 hover:opacity-100" (click)="goToPlans()">
+        Ver todos mis servicios →
+      </a>
+    }
+  </div>
+
+  @if (activeServices().length === 0 && expiredServices().length === 0) {
+    <div class="card border bg-base-100 shadow-sm">
+      <div class="card-body items-center text-center py-16">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 opacity-30 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path d="M12 15v2m-6 4h12a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2zm10-10V7a4 4 0 0 0-8 0v4h8z"/>
+        </svg>
+        <p class="font-semibold text-lg">Sin servicios activos</p>
+        <p class="text-sm opacity-60 mb-4">Contacta al administrador o añade un nuevo servicio.</p>
+        <button class="btn btn-primary btn-sm" (click)="goToPlans()">Ver catálogo de servicios</button>
+      </div>
+    </div>
+  }
+
+  @for (plan of activeServices(); track plan.plan_id) {
+    <div class="card border bg-base-100 shadow-sm"
+         [class.border-warning]="daysLeft(plan) <= 5">
+      <div class="card-body p-4 md:p-5">
+
+        <!-- Encabezado -->
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <div class="w-11 h-11 rounded-xl bg-primary text-primary-content flex items-center justify-center text-lg font-bold shrink-0">
+              {{ plan.service_sortName ? plan.service_sortName[0] : 'S' }}
+            </div>
+            <div>
+              <h3 class="font-bold text-base leading-tight">
+                {{ plan.service_sortName }} · {{ plan.plan_title_prefix }} {{ plan.plan_title_name }}
+              </h3>
+              <p class="text-xs opacity-60">{{ plan.service_longName }}</p>
+            </div>
+          </div>
+          <div class="flex gap-2 flex-wrap">
+            <span class="badge badge-success badge-sm">Activo</span>
+            @if (daysLeft(plan) <= 7) {
+              <span class="badge badge-warning badge-sm">Vence en {{ daysLeft(plan) }} día(s)</span>
+            }
+            @if (getUpToDate(plan)) {
+              <span class="badge badge-info badge-sm">Al día</span>
+            } @else {
+              <span class="badge badge-error badge-sm">Pago pendiente</span>
+            }
+          </div>
+        </div>
+
+        <div class="divider my-2"></div>
+
+        <!-- Info -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+          <div>
+            <p class="opacity-60 text-xs">Precio</p>
+            <p class="font-semibold">{{ plan.currencySymbol }}{{ plan.price }}<span class="text-xs opacity-60">/{{ plan.kind }}</span></p>
+          </div>
+          <div>
+            <p class="opacity-60 text-xs">Dispositivos</p>
+            <p class="font-semibold">{{ plan.limitDevices }} permitidos</p>
+          </div>
+          <div>
+            <p class="opacity-60 text-xs">Desde</p>
+            <p class="font-semibold">{{ plan.startedAt | date:'dd/MM/yyyy' }}</p>
+          </div>
+          <div>
+            <p class="opacity-60 text-xs">Vence</p>
+            <p class="font-semibold" [class.text-warning]="daysLeft(plan) <= 7">
+              {{ plan.endedAt ? (plan.endedAt | date:'dd/MM/yyyy') : 'Sin fecha límite' }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Servidores -->
+        @if (plan.servers && plan.servers.length > 0) {
+          <div class="mt-2">
+            <div class="flex flex-wrap gap-1">
+              @for (srv of plan.servers; track $index) {
+                @if (srv.visible) {
+                  <span class="badge badge-xs py-1.5 px-2"
+                        [class.badge-ghost]="!srv.access_permmit"
+                        [class.badge-success]="srv.access_permmit">
+                    {{ srv.server_name }}
+                    @if (srv.server_country) {
+                      <span class="opacity-60 ml-1">· {{ srv.server_country }}</span>
+                    }
+                  </span>
+                }
+              }
+            </div>
+          </div>
+        }
+
+        <!-- ── Dispositivos del servicio ────────────────────────────────── -->
+        @let svcDevices = devicesByService().get(plan.service_id) ?? [];
+        @if (svcDevices.length > 0) {
+          <div class="mt-3 border-t pt-3">
+            <p class="text-xs font-semibold opacity-50 uppercase tracking-wide mb-2">
+              Dispositivos ({{ svcDevices.length }})
+            </p>
+            <div class="space-y-2">
+              @for (dev of svcDevices; track dev.id) {
+                <div class="rounded-xl border bg-base-200/50 px-4 py-3">
+
+                  <!-- Device header row -->
+                  <div class="flex items-center justify-between gap-2 flex-wrap">
+                    <div class="flex items-center gap-2">
+                      @if ((dev.typeDevice || '').toLowerCase().includes('móvil') || (dev.typeDevice || '').toLowerCase().includes('movil') || (dev.typeDevice || '').toLowerCase().includes('phone')) {
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-60 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                          <rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18" stroke-linecap="round" stroke-width="2"/>
+                        </svg>
+                      } @else if ((dev.typeDevice || '').toLowerCase().includes('tablet')) {
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-60 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                          <rect x="4" y="2" width="16" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18" stroke-linecap="round" stroke-width="2"/>
+                        </svg>
+                      } @else {
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-60 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                          <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+                        </svg>
+                      }
+                      <div>
+                        <p class="font-semibold text-sm leading-tight">{{ dev.device }}</p>
+                        <p class="text-xs opacity-50">{{ dev.typeDevice }} · {{ dev.protocol | uppercase }}</p>
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                      @if (dev.suspend) {
+                        <span class="badge badge-warning badge-xs">Suspendido</span>
+                      } @else if (dev.active) {
+                        <span class="badge badge-success badge-xs">Activo</span>
+                      } @else {
+                        <span class="badge badge-ghost badge-xs">Inactivo</span>
+                      }
+                    </div>
+                  </div>
+
+                  <!-- S-UI stats -->
+                  @if (dev.protocol === 's-ui') {
+                    @let stats = serviceStats()[plan.service_id];
+                    @let loading = statsLoading().includes(plan.service_id);
+                    @if (loading) {
+                      <div class="mt-2 flex items-center gap-2 text-xs opacity-50">
+                        <span class="loading loading-spinner loading-xs"></span>
+                        Cargando estadísticas...
+                      </div>
+                    } @else if (stats) {
+                      <div class="mt-2 space-y-1.5">
+                        <div class="flex items-center justify-between text-xs mb-0.5">
+                          <span class="font-medium">Consumo de datos</span>
+                          <span class="opacity-70">
+                            {{ stats.gb_usado | number:'1.1-1' }} GB /
+                            {{ stats.gb_total | number:'1.0-0' }} GB
+                          </span>
+                        </div>
+                        <progress class="progress w-full h-2"
+                                  [class]="gbBarClass(stats)"
+                                  [value]="gbPercent(stats)"
+                                  max="100"></progress>
+                        <div class="flex items-center justify-between text-xs opacity-60">
+                          <span>{{ stats.gb_restante | number:'1.1-1' }} GB restantes ({{ gbPercent(stats) }}% usado)</span>
+                          @if (stats.expiry_date) {
+                            <span>Vence {{ stats.expiry_date | date:'dd/MM/yyyy' }}</span>
+                          }
+                        </div>
+                        @if (dev.sub_url) {
+                          <div class="flex items-center gap-2 mt-2 pt-2 border-t border-base-300">
+                            <code class="text-xs opacity-60 truncate flex-1 bg-base-300 rounded px-2 py-1">
+                              {{ dev.sub_url }}
+                            </code>
+                            <button class="btn btn-xs btn-ghost shrink-0"
+                                    title="Copiar URL de suscripción"
+                                    (click)="copyToClipboard(dev.sub_url!)">
+                              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                              </svg>
+                              Copiar URL
+                            </button>
+                          </div>
+                        }
+                      </div>
+                    } @else {
+                      <p class="text-xs opacity-40 mt-2">Estadísticas no disponibles</p>
+                    }
+                  }
+
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Acciones -->
+        <div class="card-actions justify-end mt-3 flex-wrap gap-2">
+          <button class="btn btn-primary btn-sm" (click)="openPayment(plan)"
+                  [disabled]="actionLoading() === plan.service_id">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/>
+            </svg>
+            Pagar mensualidad
+          </button>
+
+          <button class="btn btn-warning btn-sm btn-outline" (click)="openSuspend(plan)"
+                  [disabled]="actionLoading() === plan.service_id">
+            @if (actionLoading() === plan.service_id) {
+              <span class="loading loading-spinner loading-xs"></span>
+            } @else {
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>
+              </svg>
+            }
+            Suspender
+          </button>
+
+          <button class="btn btn-error btn-sm btn-outline" (click)="openCancel(plan)"
+                  [disabled]="actionLoading() === plan.service_id">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+            </svg>
+            Cancelar
+          </button>
+        </div>
+
+      </div>
+    </div>
+  }
+
+  <!-- Servicios vencidos / suspendidos -->
+  @if (expiredServices().length > 0) {
+    <div class="collapse collapse-arrow border rounded-xl bg-base-100 shadow-sm">
+      <input type="checkbox" />
+      <div class="collapse-title font-semibold opacity-60">
+        Servicios vencidos / inactivos ({{ expiredServices().length }})
+      </div>
+      <div class="collapse-content space-y-2 pt-2">
+        @for (plan of expiredServices(); track plan.plan_id) {
+          <div class="flex items-center justify-between gap-3 p-3 border rounded-lg">
+            <div>
+              <p class="font-medium text-sm">{{ plan.service_sortName }} — {{ plan.plan_title_name }}</p>
+              <p class="text-xs opacity-60">
+                Venció: {{ plan.endedAt ? (plan.endedAt | date:'dd/MM/yyyy') : '—' }}
+              </p>
+            </div>
+            <div class="flex gap-2">
+              <button class="btn btn-xs btn-outline btn-success" (click)="openReactivate(plan)"
+                      [disabled]="actionLoading() === plan.service_id">
+                @if (actionLoading() === plan.service_id) {
+                  <span class="loading loading-spinner loading-xs"></span>
+                } @else { Reactivar }
+              </button>
+              <button class="btn btn-xs btn-primary" (click)="openPayment(plan)">Renovar</button>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
 
 </section>
 
 
+<!-- ACTIVIDAD RECIENTE — Sesiones -->
+<section class="container mx-auto max-w-7xl px-2 md:px-4 mt-6 mb-8">
+  <div class="bg-base-100 border rounded-xl shadow-sm overflow-hidden">
 
-
-
-<!-- MODALES RÁPIDOS -->
-<dialog id="add_user" class="modal">
-  <div class="modal-box max-w-2xl">
-    <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button></form>
-    <h3 class="text-lg font-bold">Nuevo usuario</h3>
-    <p class="text-sm opacity-70 mb-3">Crea una cuenta y asigna un rol inicial.</p>
-    <div class="grid gap-3 md:grid-cols-2">
-      <label class="input input-bordered w-full"><input type="text" placeholder="Nombres" class="w-full" /></label>
-      <label class="input input-bordered w-full"><input type="text" placeholder="Apellidos" class="w-full" /></label>
-      <label class="input input-bordered w-full md:col-span-2"><input type="email" placeholder="Email"
-          class="w-full" /></label>
-      <label class="input input-bordered w-full md:col-span-2"><input type="password" placeholder="Contraseña temporal"
-          class="w-full" /></label>
-      <label class="select select-bordered w-full md:col-span-2">
-        <select class="w-full" aria-label="Rol">
-          <option selected>standar</option>
-          <option>soporte</option>
-          <option>admin</option>
-        </select>
-      </label>
+    <!-- Header -->
+    <div class="px-4 py-3 flex items-center justify-between border-b bg-base-200/40">
+      <div class="flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+        </svg>
+        <h3 class="font-semibold text-sm">Actividad reciente — Accesos a tu cuenta</h3>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-xs opacity-50">
+          {{ sessionsTotal() }} acceso{{ sessionsTotal() !== 1 ? 's' : '' }} registrado{{ sessionsTotal() !== 1 ? 's' : '' }}
+        </span>
+        <button class="btn btn-xs btn-ghost" (click)="fillListSessions(sessionsPage())" title="Recargar">
+          @if (sessionsLoading()) {
+            <span class="loading loading-spinner loading-xs"></span>
+          } @else {
+            <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+          }
+        </button>
+      </div>
     </div>
-    <div class="modal-action">
-      <button class="btn btn-ghost" type="button">Cancelar</button>
-      <button class="btn btn-primary" type="button">Crear</button>
-    </div>
-  </div>
-  <form method="dialog" class="modal-backdrop"><button>close</button></form>
-</dialog>
 
-<dialog id="add_server" class="modal">
-  <div class="modal-box max-w-2xl">
-    <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button></form>
-    <h3 class="text-lg font-bold">Nuevo servidor</h3>
-    <p class="text-sm opacity-70 mb-3">Registra un servidor SSH para OpenVPN/WireGuard.</p>
-    <div class="grid gap-3 md:grid-cols-2">
-      <label class="input input-bordered w-full"><input type="text" placeholder="Nombre" class="w-full" /></label>
-      <label class="input input-bordered w-full"><input type="text" placeholder="Ubicación (región)"
-          class="w-full" /></label>
-      <label class="input input-bordered w-full"><input type="text" placeholder="IP" class="w-full" /></label>
-      <label class="input input-bordered w-full"><input type="number" placeholder="Puerto SSH (22)" value="22"
-          class="w-full" /></label>
-      <label class="input input-bordered w-full"><input type="text" placeholder="Usuario SSH" class="w-full" /></label>
-      <label class="input input-bordered w-full md:col-span-2"><input type="text" placeholder="Ruta a llave privada"
-          class="w-full" /></label>
-      <label class="label cursor-pointer justify-start gap-3 md:col-span-2">
-        <input type="checkbox" class="toggle toggle-success" checked />
-        <span>Activo</span>
-      </label>
-    </div>
-    <div class="modal-action">
-      <button class="btn btn-ghost" type="button">Cancelar</button>
-      <button class="btn btn-primary" type="button">Guardar</button>
-    </div>
-  </div>
-  <form method="dialog" class="modal-backdrop"><button>close</button></form>
-</dialog>
+    @if (sessionsLoading() && ListSessions().length === 0) {
+      <div class="flex justify-center py-10">
+        <span class="loading loading-spinner loading-md text-primary"></span>
+      </div>
+    } @else if (ListSessions().length === 0) {
+      <div class="px-4 py-10 text-center text-sm opacity-50">
+        Sin sesiones registradas.
+      </div>
+    } @else {
+      <div class="divide-y">
+        @for (session of ListSessions(); track session.id) {
+          @let ua = parseUserAgent(session.userAgent);
+          @let expired = isSessionExpired(session);
+          <div class="px-4 py-3 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm"
+               [class.opacity-50]="expired">
 
-<!-- Atajo: Ctrl/Cmd + K enfoca búsqueda -->
-<script>
-  document.addEventListener('keydown', (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
-      const input = document.getElementById('global-search');
-      if (input) { e.preventDefault(); input.focus(); }
+            <!-- Estado + IP -->
+            <div class="flex items-center gap-2 min-w-[120px]">
+              @if (expired) {
+                <span class="inline-block w-2 h-2 rounded-full bg-base-300 shrink-0"></span>
+                <span class="badge badge-ghost badge-xs">Expirada</span>
+              } @else {
+                <span class="inline-block w-2 h-2 rounded-full bg-success shrink-0 animate-pulse"></span>
+                <span class="badge badge-success badge-xs">Activa</span>
+              }
+            </div>
+
+            <!-- IP -->
+            <div class="flex items-center gap-1 text-xs">
+              <svg class="h-3.5 w-3.5 opacity-40 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9"/>
+              </svg>
+              <span class="font-mono opacity-70">{{ session.ip || '—' }}</span>
+            </div>
+
+            <!-- Navegador / OS -->
+            <div class="flex items-center gap-1 text-xs">
+              <svg class="h-3.5 w-3.5 opacity-40 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+              </svg>
+              <span class="opacity-70">{{ ua.browser }} / {{ ua.os }}</span>
+            </div>
+
+            <!-- Inicio -->
+            <div class="flex items-center gap-1 text-xs">
+              <svg class="h-3.5 w-3.5 opacity-40 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+              </svg>
+              <span class="opacity-60">Inicio:</span>
+              <span class="opacity-70">{{ session.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+            </div>
+
+            <!-- Expiración -->
+            <div class="flex items-center gap-1 text-xs ml-auto">
+              <svg class="h-3.5 w-3.5 opacity-40 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <span class="opacity-60">{{ expired ? 'Expiró:' : 'Expira:' }}</span>
+              <span [class.text-error]="expired" [class.text-success]="!expired" class="font-medium">
+                {{ session.expiresAt | date:'dd/MM/yyyy HH:mm' }}
+              </span>
+            </div>
+
+          </div>
+        }
+      </div>
+
+      <!-- Paginación -->
+      @if (sessionsPageCount() > 1) {
+        <div class="flex justify-center items-center gap-1 py-3 border-t flex-wrap bg-base-200/20">
+          <button class="btn btn-xs btn-ghost" [disabled]="sessionsPage() <= 1"
+                  (click)="fillListSessions(sessionsPage() - 1)">‹</button>
+          @for (p of sessionsPageNums(); track $index) {
+            @if (p === '…') {
+              <span class="btn btn-xs btn-disabled px-2">…</span>
+            } @else {
+              <button class="btn btn-xs"
+                      [class.btn-primary]="p === sessionsPage()"
+                      [class.btn-ghost]="p !== sessionsPage()"
+                      (click)="fillListSessions(+p)">{{ p }}</button>
+            }
+          }
+          <button class="btn btn-xs btn-ghost" [disabled]="sessionsPage() >= sessionsPageCount()"
+                  (click)="fillListSessions(sessionsPage() + 1)">›</button>
+        </div>
+      }
     }
-  });
-</script>
+
+  </div>
+</section>
+
+
+<!-- ═══ MODAL — Registrar pago ═══ -->
+<dialog id="dash_pay_modal" class="modal">
+  <div class="modal-box max-w-lg">
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+    </form>
+    <h3 class="text-lg font-bold mb-1">Registrar pago</h3>
+    @if (selectedPlan()) {
+      <p class="text-sm opacity-60 mb-4">
+        {{ selectedPlan()!.service_sortName }} — {{ selectedPlan()!.plan_title_name }}
+        · {{ selectedPlan()!.currencySymbol }}{{ selectedPlan()!.price }}/{{ selectedPlan()!.kind }}
+      </p>
+    }
+
+    <form [formGroup]="paymentForm" (ngSubmit)="onPaySubmit()" class="space-y-4" novalidate>
+
+      <!-- Meses -->
+      <div class="form-control">
+        <label class="label"><span class="label-text font-semibold">¿Cuántos meses deseas pagar?</span></label>
+        <div class="flex flex-wrap gap-2 mt-1">
+          @for (n of MONTH_OPTIONS; track n) {
+            <button type="button" class="btn btn-sm"
+                    [class.btn-primary]="months() === n"
+                    [class.btn-outline]="months() !== n"
+                    (click)="setMonths(n)">
+              {{ n }} {{ n === 1 ? 'mes' : 'meses' }}
+            </button>
+          }
+        </div>
+        @if (selectedPlan()) {
+          <div class="mt-3 bg-base-200 rounded-lg px-4 py-3 flex items-center justify-between">
+            <span class="text-sm opacity-70">{{ months() }} × {{ selectedPlan()!.currencySymbol }}{{ selectedPlan()!.price }}</span>
+            <span class="text-xl font-bold text-primary">{{ selectedPlan()!.currencySymbol }}{{ totalPrice() }}</span>
+          </div>
+        }
+      </div>
+
+      <!-- Método -->
+      <div class="form-control">
+        <label class="label"><span class="label-text">Método de pago *</span></label>
+        <div class="grid grid-cols-2 gap-2">
+          @for (m of ['transferencia bancaria', 'efectivo', 'crypto', 'monedero']; track m) {
+            <div [class]="'flex items-center gap-2 border rounded-lg px-3 py-2 cursor-pointer ' + (selectedMethod === m ? 'border-primary bg-primary/5' : '')"
+                 (click)="paymentForm.get('method')?.setValue($any(m))">
+              <input type="radio" formControlName="method" [value]="m" class="radio radio-primary radio-xs" />
+              <span class="text-sm capitalize">{{ m }}</span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Cuenta destino -->
+      @if (requiresBank()) {
+        <div class="form-control">
+          <label class="label"><span class="label-text">Cuenta destino *</span></label>
+          <select formControlName="methodPay" class="select select-bordered select-sm w-full">
+            <option value="">— Seleccionar cuenta —</option>
+            @for (acc of visibleBanks(); track acc.id) {
+              <option [value]="acc.id">{{ bankLabel(acc) }}</option>
+            }
+          </select>
+        </div>
+      }
+
+      <!-- Comprobante -->
+      @if (requiresFile()) {
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text">Comprobante *</span>
+            <span class="label-text-alt opacity-60">imagen o PDF</span>
+          </label>
+          <input type="file" accept="image/*,application/pdf"
+                 class="file-input file-input-bordered file-input-sm w-full"
+                 (change)="onFileChange($event)" />
+          @if (uploadProgress() > 0 && uploadProgress() < 100) {
+            <progress class="progress progress-primary mt-2" [value]="uploadProgress()" max="100"></progress>
+          }
+        </div>
+      }
+
+      <!-- Referencia -->
+      <div class="form-control">
+        <label class="label"><span class="label-text">Referencia u operación</span></label>
+        <input formControlName="note" type="text" class="input input-bordered input-sm w-full"
+               placeholder="Nro de operación, TX hash, referencia..." />
+      </div>
+
+      <div class="modal-action pt-1">
+        <button type="button" class="btn btn-ghost btn-sm"
+                onclick="document.getElementById('dash_pay_modal')?.close()">Cancelar</button>
+        <button type="submit" class="btn btn-primary btn-sm" [disabled]="!canSubmit()">
+          @if (saving()) { <span class="loading loading-spinner loading-xs"></span> }
+          Enviar pago · {{ selectedPlan()?.currencySymbol }}{{ totalPrice() }}
+        </button>
+      </div>
+    </form>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button>close</button></form>
+</dialog>
+
+
+<!-- ═══ MODAL — Suspender ═══ -->
+<dialog id="dash_suspend_modal" class="modal">
+  <div class="modal-box max-w-sm">
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+    </form>
+    <h3 class="text-lg font-bold text-warning">Suspender servicio</h3>
+    @if (targetService()) {
+      <p class="py-3 text-sm">
+        Pausarás temporalmente tu acceso para
+        <strong>{{ targetService()!.service_sortName }} — {{ targetService()!.plan_title_name }}</strong>.
+        Podrás reactivarlo en cualquier momento.
+      </p>
+    }
+    <div class="modal-action">
+      <button class="btn btn-ghost btn-sm"
+              onclick="document.getElementById('dash_suspend_modal')?.close()">Cancelar</button>
+      <button class="btn btn-warning btn-sm" (click)="confirmSuspend()"
+              [disabled]="actionLoading() !== null">
+        @if (actionLoading()) { <span class="loading loading-spinner loading-xs"></span> }
+        Sí, suspender
+      </button>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button>close</button></form>
+</dialog>
+
+
+<!-- ═══ MODAL — Reactivar ═══ -->
+<dialog id="dash_reactivate_modal" class="modal">
+  <div class="modal-box max-w-sm">
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+    </form>
+    <h3 class="text-lg font-bold text-success">Reactivar servicio</h3>
+    @if (targetService()) {
+      <p class="py-3 text-sm">
+        Reactivarás el acceso para
+        <strong>{{ targetService()!.service_sortName }} — {{ targetService()!.plan_title_name }}</strong>.
+      </p>
+    }
+    <div class="modal-action">
+      <button class="btn btn-ghost btn-sm"
+              onclick="document.getElementById('dash_reactivate_modal')?.close()">Cancelar</button>
+      <button class="btn btn-success btn-sm" (click)="confirmReactivate()"
+              [disabled]="actionLoading() !== null">
+        @if (actionLoading()) { <span class="loading loading-spinner loading-xs"></span> }
+        Sí, reactivar
+      </button>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button>close</button></form>
+</dialog>
+
+
+<!-- ═══ MODAL — Cancelar ═══ -->
+<dialog id="dash_cancel_modal" class="modal">
+  <div class="modal-box max-w-sm">
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+    </form>
+    <h3 class="text-lg font-bold text-error">Solicitar cancelación</h3>
+    @if (targetService()) {
+      <p class="py-2 text-sm">
+        Se enviará una solicitud al administrador para cancelar
+        <strong>{{ targetService()!.service_sortName }} — {{ targetService()!.plan_title_name }}</strong>.
+      </p>
+    }
+    <div class="form-control mt-2">
+      <label class="label"><span class="label-text text-sm">Motivo (opcional)</span></label>
+      <textarea class="textarea textarea-bordered textarea-sm w-full" rows="3"
+                placeholder="Describe el motivo..."
+                [value]="cancelReason()"
+                (input)="cancelReason.set($any($event.target).value)"></textarea>
+    </div>
+    <div class="alert alert-warning mt-3 text-xs py-2">
+      El administrador procesará tu solicitud. El servicio no se cancela de inmediato.
+    </div>
+    <div class="modal-action">
+      <button class="btn btn-ghost btn-sm"
+              onclick="document.getElementById('dash_cancel_modal')?.close()">Cancelar</button>
+      <button class="btn btn-error btn-sm" (click)="confirmCancel()"
+              [disabled]="actionLoading() !== null">
+        @if (actionLoading()) { <span class="loading loading-spinner loading-xs"></span> }
+        Enviar solicitud
+      </button>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button>close</button></form>
+</dialog>

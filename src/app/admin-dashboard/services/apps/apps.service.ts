@@ -1,35 +1,29 @@
 import { HttpClient } from '@angular/common/http';
-import { computed, inject, Injectable, signal } from '@angular/core';
-import { catchError, map, Observable, of, tap } from 'rxjs';
-import { rxResource } from '@angular/core/rxjs-interop';
+import { inject, Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
 import AppsEntity from '../../interfaces/apps.interface';
 import { ResponseEntity } from '../../../shared/interfaces/reponse.interface';
-type AuthStatus = 'checking' | 'authenticated' | 'not-authenticated';
-import { environment } from '../../../../environments/environment'
-const baseUrl = environment.apiUrl
+import { environment } from '../../../../environments/environment';
 
-@Injectable({providedIn: 'root'})
+const baseUrl = environment.apiUrl;
+
+@Injectable({ providedIn: 'root' })
 export class AppsService {
-  private _user = signal<AppsEntity|null>(null);
-
   private http = inject(HttpClient);
 
-  user = computed(() => this._user())
-
   get(): Observable<ResponseEntity<AppsEntity[]>> {
-    return this.http.post<ResponseEntity<AppsEntity[]>>(baseUrl+'/apps/get', {});
+    return this.http.post<ResponseEntity<AppsEntity[]>>(baseUrl + '/apps/get', {});
   }
 
-  register(data: AppsEntity): Observable<ResponseEntity<AppsEntity>> {
-    return this.http.post<ResponseEntity<AppsEntity>>(baseUrl+'/apps/create', data);
+  create(data: Partial<AppsEntity>): Observable<ResponseEntity<AppsEntity>> {
+    return this.http.post<ResponseEntity<AppsEntity>>(baseUrl + '/apps/create', data);
   }
 
-  private handlerSuccess(resp: any) {
-    return resp;
+  update(data: Partial<AppsEntity> & { id: string }): Observable<ResponseEntity<AppsEntity>> {
+    return this.http.post<ResponseEntity<AppsEntity>>(baseUrl + '/apps/update', data);
   }
 
-  private handlerError(error: any) {
-    return error;
+  delete(id: string): Observable<ResponseEntity<void>> {
+    return this.http.post<ResponseEntity<void>>(baseUrl + '/apps/delete', { id });
   }
-
 }

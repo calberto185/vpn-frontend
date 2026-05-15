@@ -1,0 +1,398 @@
+<!-- ═══════════════════════════════════════════════════════ TOAST -->
+@if (toast()) {
+  <div class="toast toast-top toast-end z-[200]">
+    <div class="alert" [class.alert-success]="toast()!.ok" [class.alert-error]="!toast()!.ok">
+      <span>{{ toast()!.msg }}</span>
+    </div>
+  </div>
+}
+
+<!-- ═══════════════════════════════════════════════════════ HEADER -->
+<div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+  <div>
+    <h1 class="text-2xl font-bold">Proveedores / Empresas</h1>
+    <p class="text-base-content/60 text-sm mt-0.5">Gestión de empresas y proveedores de servicios</p>
+  </div>
+  @if (canCreate()) {
+    <button class="btn btn-primary btn-sm gap-1" (click)="openCreateModal()">
+      <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+      </svg>
+      Nuevo proveedor
+    </button>
+  }
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ STATS -->
+<div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
+  <div class="stat bg-base-200 rounded-xl p-4">
+    <div class="stat-title text-xs">Total</div>
+    <div class="stat-value text-2xl">{{ total() }}</div>
+  </div>
+  <div class="stat bg-base-200 rounded-xl p-4">
+    <div class="stat-title text-xs">Activos</div>
+    <div class="stat-value text-2xl text-success">{{ active() }}</div>
+  </div>
+  <div class="stat bg-base-200 rounded-xl p-4">
+    <div class="stat-title text-xs">Inactivos</div>
+    <div class="stat-value text-2xl text-error">{{ inactive() }}</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ FILTERS -->
+<div class="flex flex-wrap gap-2 mb-4">
+  <input type="text" class="input input-bordered input-sm w-56"
+    placeholder="Buscar nombre / email…"
+    [value]="searchQuery()"
+    (input)="searchQuery.set($any($event.target).value)" />
+
+  <select class="select select-bordered select-sm" (change)="filterCat.set($any($event.target).value)">
+    <option value="">Todas las categorías</option>
+    @for (cat of categories; track cat.value) {
+      <option [value]="cat.value">{{ cat.label }}</option>
+    }
+  </select>
+
+  <select class="select select-bordered select-sm" (change)="filterActive.set($any($event.target).value === '' ? null : $any($event.target).value === 'true')">
+    <option value="">Todos</option>
+    <option value="true">Activos</option>
+    <option value="false">Inactivos</option>
+  </select>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ TABLE -->
+<div class="overflow-x-auto rounded-xl border border-base-300">
+  <table class="table table-sm table-zebra w-full">
+    <thead>
+      <tr class="text-xs uppercase text-base-content/60">
+        <th>Empresa</th>
+        <th>Categoría</th>
+        <th>Servicio</th>
+        <th>Pagos</th>
+        <th>Contacto</th>
+        <th>Estado</th>
+        <th class="text-right">Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      @if (filtered().length === 0) {
+        <tr><td colspan="7" class="text-center py-10 text-base-content/40">Sin proveedores registrados</td></tr>
+      }
+      @for (sup of filtered(); track sup.id) {
+        <tr>
+          <td>
+            <div class="font-semibold text-sm">{{ sup.name }}</div>
+            @if (sup.legalName) {
+              <div class="text-xs text-base-content/50">{{ sup.legalName }}</div>
+            }
+            @if (sup.email) {
+              <div class="text-xs text-base-content/40">{{ sup.email }}</div>
+            }
+          </td>
+          <td>
+            <span class="badge badge-outline badge-sm">{{ categoryLabel(sup.category) }}</span>
+          </td>
+          <td>
+            @if (sup.serviceName) {
+              <span class="text-sm">{{ sup.serviceName }}</span>
+            } @else {
+              <span class="text-base-content/30 text-xs">—</span>
+            }
+          </td>
+          <td>
+            @if (paymentStats()[sup.id]; as s) {
+              <div class="flex flex-col gap-0.5">
+                <span class="badge badge-sm badge-outline">{{ s.count }} pagos</span>
+                @if (s.pending > 0) {
+                  <span class="badge badge-sm badge-warning">{{ s.pending }} pendiente{{ s.pending > 1 ? 's' : '' }}</span>
+                }
+              </div>
+            } @else {
+              <span class="text-base-content/30 text-xs">Sin pagos</span>
+            }
+          </td>
+          <td>
+            <div class="text-sm">{{ sup.contactName || '—' }}</div>
+            @if (sup.phone) {
+              <div class="text-xs text-base-content/50">{{ sup.phone }}</div>
+            }
+          </td>
+          <td>
+            @if (canUpdate()) {
+              <input type="checkbox" class="toggle toggle-success toggle-sm"
+                [checked]="sup.active" (change)="toggleActive(sup)" />
+            } @else {
+              <span class="badge badge-sm" [class.badge-success]="sup.active" [class.badge-ghost]="!sup.active">
+                {{ sup.active ? 'Activo' : 'Inactivo' }}
+              </span>
+            }
+          </td>
+          <td class="text-right">
+            <div class="flex items-center justify-end gap-1">
+              @if (canUpdate()) {
+                <button class="btn btn-ghost btn-xs" (click)="openEditModal(sup)" title="Editar">
+                  <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                  </svg>
+                </button>
+              }
+              @if (canDelete()) {
+                <button class="btn btn-ghost btn-xs text-error" (click)="openDeleteModal(sup)" title="Desactivar">
+                  <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                  </svg>
+                </button>
+              }
+            </div>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ MODAL CREATE -->
+<dialog id="modal_supplier_create" class="modal">
+  <div class="modal-box max-w-2xl">
+    <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button></form>
+    <h3 class="font-bold text-lg mb-4">Nuevo Proveedor</h3>
+
+    <form [formGroup]="createForm" (ngSubmit)="submitCreate()" class="space-y-4">
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <!-- Name -->
+        <div class="form-control">
+          <label class="label label-text text-xs">Nombre comercial *</label>
+          <input formControlName="name" type="text" class="input input-bordered input-sm"
+            [class.border-red-400]="createForm.get('name')?.invalid && createForm.get('name')?.touched"
+            placeholder="Ej: Amazon AWS" />
+        </div>
+        <!-- Legal name -->
+        <div class="form-control">
+          <label class="label label-text text-xs">Razón social</label>
+          <input formControlName="legalName" type="text" class="input input-bordered input-sm" placeholder="Nombre legal" />
+        </div>
+        <!-- Category -->
+        <div class="form-control">
+          <label class="label label-text text-xs">Categoría</label>
+          <select formControlName="category" class="select select-bordered select-sm">
+            @for (cat of categories; track cat.value) {
+              <option [value]="cat.value">{{ cat.label }}</option>
+            }
+          </select>
+        </div>
+        <!-- Tax ID -->
+        <div class="form-control">
+          <label class="label label-text text-xs">RUC / NIT / VAT</label>
+          <input formControlName="taxId" type="text" class="input input-bordered input-sm" placeholder="ID fiscal" />
+        </div>
+        <!-- Email -->
+        <div class="form-control">
+          <label class="label label-text text-xs">Email</label>
+          <input formControlName="email" type="email" class="input input-bordered input-sm" placeholder="email@empresa.com" />
+        </div>
+        <!-- Phone -->
+        <div class="form-control">
+          <label class="label label-text text-xs">Teléfono</label>
+          <input formControlName="phone" type="text" class="input input-bordered input-sm" placeholder="+1 555 0000" />
+        </div>
+        <!-- Contact name -->
+        <div class="form-control">
+          <label class="label label-text text-xs">Nombre del contacto</label>
+          <input formControlName="contactName" type="text" class="input input-bordered input-sm" placeholder="Persona de contacto" />
+        </div>
+        <!-- Website -->
+        <div class="form-control">
+          <label class="label label-text text-xs">Sitio web</label>
+          <input formControlName="website" type="url" class="input input-bordered input-sm" placeholder="https://empresa.com" />
+        </div>
+      </div>
+
+      <!-- Address -->
+      <div class="form-control">
+        <label class="label label-text text-xs">Dirección</label>
+        <input formControlName="address" type="text" class="input input-bordered input-sm" placeholder="Ciudad, País" />
+      </div>
+
+      <!-- Service section -->
+      <div class="divider text-xs">Servicio asociado</div>
+      <div class="flex items-center gap-2 mb-2">
+        <input type="checkbox" class="toggle toggle-primary toggle-sm"
+          [checked]="useServiceCatalog()"
+          (change)="useServiceCatalog.set(!useServiceCatalog())" />
+        <span class="text-sm">Usar servicio del catálogo</span>
+      </div>
+
+      @if (useServiceCatalog()) {
+        <div class="form-control">
+          <label class="label label-text text-xs">Selecciona del catálogo</label>
+          <select formControlName="serviceId" class="select select-bordered select-sm"
+            (change)="onSelectServiceCreate($any($event.target).value)">
+            <option value="">— Seleccionar servicio —</option>
+            @for (s of servicesList(); track s.id) {
+              <option [value]="s.id">{{ s.sortName }}</option>
+            }
+          </select>
+        </div>
+      } @else {
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="form-control">
+            <label class="label label-text text-xs">Nombre del servicio</label>
+            <input formControlName="serviceName" type="text" class="input input-bordered input-sm"
+              placeholder="Tipo de servicio libre" />
+          </div>
+          <div class="form-control">
+            <label class="label label-text text-xs">Descripción del servicio</label>
+            <input formControlName="serviceDescription" type="text" class="input input-bordered input-sm"
+              placeholder="Descripción breve" />
+          </div>
+        </div>
+      }
+
+      <!-- Notes -->
+      <div class="form-control">
+        <label class="label label-text text-xs">Notas</label>
+        <textarea formControlName="notes" class="textarea textarea-bordered textarea-sm" rows="2"
+          placeholder="Notas adicionales…"></textarea>
+      </div>
+
+      <div class="modal-action mt-2">
+        <button type="button" class="btn btn-ghost btn-sm"
+          onclick="document.getElementById('modal_supplier_create')?.close()">Cancelar</button>
+        <button type="submit" class="btn btn-primary btn-sm" [disabled]="saving()">
+          @if (saving()) { <span class="loading loading-spinner loading-xs"></span> }
+          Guardar
+        </button>
+      </div>
+    </form>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button>close</button></form>
+</dialog>
+
+<!-- ═══════════════════════════════════════════════════════ MODAL EDIT -->
+<dialog id="modal_supplier_edit" class="modal">
+  <div class="modal-box max-w-2xl">
+    <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button></form>
+    <h3 class="font-bold text-lg mb-4">Editar Proveedor</h3>
+
+    <form [formGroup]="editForm" (ngSubmit)="submitEdit()" class="space-y-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div class="form-control">
+          <label class="label label-text text-xs">Nombre comercial *</label>
+          <input formControlName="name" type="text" class="input input-bordered input-sm"
+            [class.border-red-400]="editForm.get('name')?.invalid && editForm.get('name')?.touched" />
+        </div>
+        <div class="form-control">
+          <label class="label label-text text-xs">Razón social</label>
+          <input formControlName="legalName" type="text" class="input input-bordered input-sm" />
+        </div>
+        <div class="form-control">
+          <label class="label label-text text-xs">Categoría</label>
+          <select formControlName="category" class="select select-bordered select-sm">
+            @for (cat of categories; track cat.value) {
+              <option [value]="cat.value">{{ cat.label }}</option>
+            }
+          </select>
+        </div>
+        <div class="form-control">
+          <label class="label label-text text-xs">RUC / NIT / VAT</label>
+          <input formControlName="taxId" type="text" class="input input-bordered input-sm" />
+        </div>
+        <div class="form-control">
+          <label class="label label-text text-xs">Email</label>
+          <input formControlName="email" type="email" class="input input-bordered input-sm" />
+        </div>
+        <div class="form-control">
+          <label class="label label-text text-xs">Teléfono</label>
+          <input formControlName="phone" type="text" class="input input-bordered input-sm" />
+        </div>
+        <div class="form-control">
+          <label class="label label-text text-xs">Nombre del contacto</label>
+          <input formControlName="contactName" type="text" class="input input-bordered input-sm" />
+        </div>
+        <div class="form-control">
+          <label class="label label-text text-xs">Sitio web</label>
+          <input formControlName="website" type="url" class="input input-bordered input-sm" />
+        </div>
+      </div>
+
+      <div class="form-control">
+        <label class="label label-text text-xs">Dirección</label>
+        <input formControlName="address" type="text" class="input input-bordered input-sm" />
+      </div>
+
+      <!-- Service section edit -->
+      <div class="divider text-xs">Servicio asociado</div>
+      <div class="flex items-center gap-2 mb-2">
+        <input type="checkbox" class="toggle toggle-primary toggle-sm"
+          [checked]="useServiceCatalogEdit()"
+          (change)="useServiceCatalogEdit.set(!useServiceCatalogEdit())" />
+        <span class="text-sm">Usar servicio del catálogo</span>
+      </div>
+      @if (useServiceCatalogEdit()) {
+        <div class="form-control">
+          <label class="label label-text text-xs">Selecciona del catálogo</label>
+          <select formControlName="serviceId" class="select select-bordered select-sm"
+            (change)="onSelectServiceEdit($any($event.target).value)">
+            <option value="">— Seleccionar servicio —</option>
+            @for (s of servicesList(); track s.id) {
+              <option [value]="s.id">{{ s.sortName }}</option>
+            }
+          </select>
+        </div>
+      } @else {
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="form-control">
+            <label class="label label-text text-xs">Nombre del servicio</label>
+            <input formControlName="serviceName" type="text" class="input input-bordered input-sm" />
+          </div>
+          <div class="form-control">
+            <label class="label label-text text-xs">Descripción del servicio</label>
+            <input formControlName="serviceDescription" type="text" class="input input-bordered input-sm" />
+          </div>
+        </div>
+      }
+
+      <div class="form-control">
+        <label class="label label-text text-xs">Notas</label>
+        <textarea formControlName="notes" class="textarea textarea-bordered textarea-sm" rows="2"></textarea>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <input type="checkbox" formControlName="active" class="checkbox checkbox-success checkbox-sm" />
+        <span class="text-sm">Activo</span>
+      </div>
+
+      <div class="modal-action mt-2">
+        <button type="button" class="btn btn-ghost btn-sm"
+          onclick="document.getElementById('modal_supplier_edit')?.close()">Cancelar</button>
+        <button type="submit" class="btn btn-primary btn-sm" [disabled]="saving()">
+          @if (saving()) { <span class="loading loading-spinner loading-xs"></span> }
+          Guardar cambios
+        </button>
+      </div>
+    </form>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button>close</button></form>
+</dialog>
+
+<!-- ═══════════════════════════════════════════════════════ MODAL DELETE -->
+<dialog id="modal_supplier_delete" class="modal">
+  <div class="modal-box max-w-sm">
+    <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button></form>
+    <h3 class="font-bold text-lg text-error mb-2">Desactivar Proveedor</h3>
+    <p class="text-sm text-base-content/70">
+      ¿Deseas desactivar a <strong>{{ deleteTarget()?.name }}</strong>?
+      El proveedor se marcará como inactivo pero se conservarán sus datos.
+    </p>
+    <div class="modal-action">
+      <button class="btn btn-ghost btn-sm"
+        onclick="document.getElementById('modal_supplier_delete')?.close()">Cancelar</button>
+      <button class="btn btn-error btn-sm" (click)="confirmDelete()" [disabled]="deleting()">
+        @if (deleting()) { <span class="loading loading-spinner loading-xs"></span> }
+        Desactivar
+      </button>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button>close</button></form>
+</dialog>

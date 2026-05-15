@@ -24,6 +24,14 @@ export class PlansService {
     return this.http.post<ResponseEntity<PlanEntity>>(baseUrl+'/plans/create', data);
   }
 
+  update(data: PlanEntity): Observable<ResponseEntity<PlanEntity>> {
+    return this.http.post<ResponseEntity<PlanEntity>>(baseUrl + '/plans/update', data);
+  }
+
+  delete(id: string): Observable<ResponseEntity<any>> {
+    return this.http.post<ResponseEntity<any>>(baseUrl + '/plans/delete', { id });
+  }
+
   private handlerSuccess(resp: any) {
     return resp;
   }

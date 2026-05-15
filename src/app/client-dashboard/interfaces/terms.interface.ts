@@ -2,38 +2,44 @@ import { CountryEntity } from "./country.interface";
 
 class TermsEntity {
   id = "";
-  country = new CountryEntity()
+  country = new CountryEntity();
   details = [];
-  title = "";
-  description = "";
-  active = true;
+
+  // ── i18n text fields ───────────────────────────────────────────────────────
+  title            = "";          // legacy plain string
+  title_i18n:       Record<string, string> = {};
+  description      = "";
+  description_i18n: Record<string, string> = {};
+
+  // ── operational fields ─────────────────────────────────────────────────────
+  active    = true;
   createdAt = new Date();
   updatedAt = new Date(1);
 
-
   constructor() {}
+
   set({
-    id,
-    country,
-    details,
-    title,
-    description,
-    active,
-    createdAt,
-    updatedAt,
+    id, country, details,
+    title,       title_i18n,
+    description, description_i18n,
+    active, createdAt, updatedAt,
   }: TermsEntity) {
-    this.id = id ?? this.id;
-    this.country = country ?? this.country;
-    this.details = details ?? this.details;
-    this.title = title ?? this.title;
-    this.description = description ?? this.description;
-    this.active = active ?? this.active;
-    this.createdAt = createdAt ?? this.createdAt;
-    this.updatedAt = updatedAt ?? this.updatedAt;
+    this.id               = id               ?? this.id;
+    this.country          = country          ?? this.country;
+    this.details          = details          ?? this.details;
+    this.title            = title            ?? this.title;
+    this.title_i18n       = title_i18n       ?? this.title_i18n;
+    this.description      = description      ?? this.description;
+    this.description_i18n = description_i18n ?? this.description_i18n;
+    this.active           = active           ?? this.active;
+    this.createdAt        = createdAt        ?? this.createdAt;
+    this.updatedAt        = updatedAt        ?? this.updatedAt;
   }
+
   get() {
-    if(!this.country) throw new Error('The country field is required!.');
-    if(!this.title) throw new Error('The title field is required!.');
+    if (!this.country) throw new Error('country es requerido.');
+    const hasTitle = this.title || Object.values(this.title_i18n ?? {}).some(v => !!v);
+    if (!hasTitle) throw new Error('title o title_i18n es requerido.');
     return this;
   }
 }

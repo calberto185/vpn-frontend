@@ -1,3 +1,992 @@
+<!-- BREADCRUMB -->
+<div class="breadcrumbs text-sm pt-2 px-2">
+  <ul><li><a>Panel</a></li><li aria-current="page">Mis Servicios</li></ul>
+</div>
 
-      <!-- <app-show-client-plans></app-show-client-plans> -->
-<div>It's plans</div>
+<!-- Toast -->
+@if (toast()) {
+  <div class="toast toast-top toast-end z-50">
+    <div class="alert" [class.alert-success]="toast()!.ok" [class.alert-error]="!toast()!.ok">
+      <span>{{ toast()!.msg }}</span>
+    </div>
+  </div>
+}
+
+<!-- ── HEADER ─────────────────────────────────────────────────────────────── -->
+<div class="container mx-auto max-w-5xl px-2 md:px-4 mt-4">
+  <div class="flex items-center justify-between gap-3 bg-base-100 border rounded-xl p-4 shadow-sm">
+    <div>
+      <h1 class="text-xl font-extrabold">Mis Servicios</h1>
+      <p class="text-sm opacity-60">Gestiona tus planes, realiza pagos y controla el acceso.</p>
+    </div>
+    <!-- Stats pill -->
+    <div class="flex gap-2 flex-wrap justify-end">
+      <span class="badge badge-success badge-lg gap-1">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+        {{ activeServices().length }} activo(s)
+      </span>
+      @if (expiredServices().length > 0) {
+        <span class="badge badge-warning badge-lg">{{ expiredServices().length }} vencido(s)</span>
+      }
+      @if (availableGroups().length > 0) {
+        <span class="badge badge-ghost badge-lg">{{ availableGroups().length }} disponible(s)</span>
+      }
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<!--  SECCIÓN 1 — Servicios contratados activos                               -->
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<div class="container mx-auto max-w-5xl px-2 md:px-4 mt-6">
+
+  <div class="flex items-center gap-3 mb-3">
+    <h2 class="text-base font-bold uppercase tracking-wide opacity-70">Servicios contratados</h2>
+    @if (activeServices().length > 0) {
+      <span class="badge badge-success badge-sm">{{ activeServices().length }} activo(s)</span>
+    }
+  </div>
+
+  @if (activeServices().length === 0 && expiredServices().length === 0) {
+    <div class="card border bg-base-100 shadow-sm">
+      <div class="card-body items-center text-center py-12">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 opacity-30 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path d="M12 15v2m-6 4h12a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2zm10-10V7a4 4 0 0 0-8 0v4h8z"/>
+        </svg>
+        <p class="font-semibold">Sin servicios contratados</p>
+        <p class="text-sm opacity-60">Explora el catálogo de abajo y solicita el que necesitas.</p>
+      </div>
+    </div>
+  }
+
+  <div class="space-y-4">
+    @for (plan of activeServices(); track plan.plan_id) {
+      <div class="card border bg-base-100 shadow-sm" [class.border-warning]="daysLeft(plan) <= 5">
+        <div class="card-body p-4 md:p-5">
+
+          <!-- Cabecera -->
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <div class="flex items-center gap-3">
+              <div class="w-11 h-11 rounded-xl bg-primary text-primary-content flex items-center justify-center text-lg font-bold shrink-0">
+                {{ plan.service_sortName ? plan.service_sortName[0] : 'S' }}
+              </div>
+              <div>
+                <h2 class="font-bold text-base leading-tight">
+                  {{ plan.service_sortName }} — {{ plan.plan_title_prefix }} {{ plan.plan_title_name }}
+                </h2>
+                <p class="text-xs opacity-60">{{ plan.service_longName }}</p>
+              </div>
+            </div>
+            <div class="flex gap-2 flex-wrap">
+              <span class="badge badge-success badge-sm">Activo</span>
+              @if (plan.global) {
+                <span class="badge badge-info badge-sm">Global</span>
+              }
+              @if (daysLeft(plan) <= 7) {
+                <span class="badge badge-warning badge-sm">Vence en {{ daysLeft(plan) }} día(s)</span>
+              }
+            </div>
+          </div>
+
+          <div class="divider my-2"></div>
+
+          <!-- Info del plan -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+            <div>
+              <p class="opacity-60 text-xs">Precio</p>
+              <p class="font-semibold">{{ plan.currencySymbol }}{{ plan.price }}<span class="text-xs opacity-60">/{{ plan.kind }}</span></p>
+            </div>
+            <div>
+              <p class="opacity-60 text-xs">Dispositivos</p>
+              <p class="font-semibold">{{ plan.limitDevices }} permitidos</p>
+            </div>
+            <div>
+              <p class="opacity-60 text-xs">Desde</p>
+              <p class="font-semibold">{{ plan.startedAt | date:'dd/MM/yyyy' }}</p>
+            </div>
+            <div>
+              <p class="opacity-60 text-xs">Vence</p>
+              <p class="font-semibold" [class.text-warning]="daysLeft(plan) <= 7">
+                {{ plan.endedAt ? (plan.endedAt | date:'dd/MM/yyyy') : 'Sin fecha límite' }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Servidores -->
+          @if (plan.servers && plan.servers.length > 0) {
+            <div class="mt-3">
+              <p class="text-xs font-semibold opacity-60 uppercase mb-1">Servidores ({{ serverCount(plan) }})</p>
+              <div class="flex flex-wrap gap-1">
+                @for (srv of plan.servers; track $index) {
+                  @if (srv.visible) {
+                    <span class="badge badge-sm py-2 px-2"
+                          [class.badge-ghost]="!srv.access_permmit"
+                          [class.badge-success]="srv.access_permmit">
+                      {{ srv.server_name }}
+                      <span class="opacity-60 ml-1">· {{ srv.server_country }}</span>
+                    </span>
+                  }
+                }
+              </div>
+            </div>
+          }
+
+          <!-- Acciones -->
+          <div class="card-actions justify-end mt-3 flex-wrap gap-2">
+            <button class="btn btn-primary btn-sm" (click)="openPayment(plan)"
+                    [disabled]="actionLoading() === plan.service_id">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/>
+              </svg>
+              Pagar mensualidad
+            </button>
+            <button class="btn btn-warning btn-sm btn-outline" (click)="openSuspend(plan)"
+                    [disabled]="actionLoading() === plan.service_id">
+              @if (actionLoading() === plan.service_id) {
+                <span class="loading loading-spinner loading-xs"></span>
+              } @else {
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>
+                </svg>
+              }
+              Suspender
+            </button>
+            <button class="btn btn-error btn-sm btn-outline" (click)="openCancel(plan)"
+                    [disabled]="actionLoading() === plan.service_id">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+              </svg>
+              Cancelar servicio
+            </button>
+          </div>
+
+        </div>
+      </div>
+    }
+
+    <!-- Vencidos / suspendidos -->
+    @if (expiredServices().length > 0) {
+      <div class="collapse collapse-arrow border rounded-xl bg-base-100 shadow-sm">
+        <input type="checkbox" />
+        <div class="collapse-title font-semibold opacity-60">
+          Servicios vencidos / inactivos ({{ expiredServices().length }})
+        </div>
+        <div class="collapse-content space-y-2 pt-2">
+          @for (plan of expiredServices(); track plan.plan_id) {
+            <div class="flex items-center justify-between gap-3 p-3 border rounded-lg">
+              <div>
+                <p class="font-medium text-sm">{{ plan.service_sortName }} — {{ plan.plan_title_name }}</p>
+                <p class="text-xs opacity-60">
+                  Venció: {{ plan.endedAt ? (plan.endedAt | date:'dd/MM/yyyy') : '—' }}
+                </p>
+              </div>
+              <div class="flex gap-2">
+                <button class="btn btn-xs btn-outline btn-success" (click)="openReactivate(plan)"
+                        [disabled]="actionLoading() === plan.service_id">
+                  @if (actionLoading() === plan.service_id) {
+                    <span class="loading loading-spinner loading-xs"></span>
+                  } @else { Reactivar }
+                </button>
+                <button class="btn btn-xs btn-primary" (click)="openPayment(plan)">Renovar</button>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<!--  SECCIÓN 2 — Catálogo: servicios YA contratados (opciones de migración)  -->
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+@if (contractedGroups().length > 0) {
+  <div class="container mx-auto max-w-5xl px-2 md:px-4 mt-8">
+    <div class="divider"></div>
+    <div class="flex items-center gap-3 mb-4">
+      <h2 class="text-base font-bold uppercase tracking-wide opacity-70">Cambiar o ampliar servicios contratados</h2>
+      <span class="badge badge-primary badge-sm">{{ contractedGroups().length }} servicio(s)</span>
+    </div>
+    <p class="text-sm opacity-60 mb-5 -mt-2">
+      Puedes migrar a un plan superior o inferior dentro de cada servicio que ya tienes contratado.
+    </p>
+
+    <div class="space-y-6">
+      @for (group of contractedGroups(); track group.serviceId) {
+        <div class="card border bg-base-100 shadow-sm overflow-hidden">
+
+          <!-- Cabecera del servicio -->
+          <div class="bg-primary/5 border-b px-5 py-4 flex items-center gap-4 flex-wrap">
+            @if (group.picture) {
+              <div class="avatar"><div class="w-12 h-12 rounded-xl"><img [src]="group.picture" [alt]="group.sortName" /></div></div>
+            } @else {
+              <div class="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center text-xl font-bold shrink-0">
+                {{ group.sortName ? group.sortName[0] : 'S' }}
+              </div>
+            }
+            <div class="flex-1 min-w-0">
+              <h3 class="font-bold text-lg leading-tight">{{ group.sortName }}</h3>
+              <p class="text-sm opacity-60 truncate">{{ group.longName }}</p>
+            </div>
+            <div class="flex flex-col items-end gap-1 shrink-0">
+              <span class="badge badge-success badge-sm">Contratado</span>
+              @if (groupHasGlobalUserPlan(group)) {
+                <span class="badge badge-info badge-sm">Global</span>
+              }
+              @if (group.userPlans.length > 1) {
+                <span class="badge badge-secondary badge-sm">{{ group.userPlans.length }} contratos</span>
+              }
+              <span class="badge badge-ghost badge-sm">{{ group.plans.length }} plan(es)</span>
+            </div>
+            <!-- VPN por País button -->
+            @if (isVpnGroup(group)) {
+              <div class="w-full flex justify-start mt-1">
+                <button class="btn btn-outline btn-sm gap-1.5 border-primary/50 text-primary hover:btn-primary"
+                        type="button" (click)="openVpnCountryModal(group)">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/>
+                  </svg>
+                  Contratar servicio VPN por País
+                </button>
+              </div>
+            }
+          </div>
+
+          @if (group.description) {
+            <div class="px-5 pt-3 pb-1">
+              <p class="text-sm opacity-70">{{ group.description }}</p>
+            </div>
+          }
+
+          <!-- Planes contratados actualmente -->
+          @if (group.userPlans.length > 0) {
+            <div class="px-5 pt-3 pb-1">
+              <p class="text-xs font-semibold opacity-50 uppercase tracking-wide mb-2">Plan(es) actual(es)</p>
+              <div class="flex flex-wrap gap-2">
+                @for (up of group.userPlans; track up.plan_id) {
+                  <div class="flex items-center gap-2 bg-success/10 border border-success/30 rounded-lg px-3 py-1.5 text-sm">
+                    <span class="font-semibold">{{ up.plan_title_prefix }} {{ up.plan_title_name }}</span>
+                    <span class="opacity-60">·</span>
+                    <span>{{ up.currencySymbol }}{{ up.price }}/{{ up.kind }}</span>
+                    @if (up.active) {
+                      <span class="badge badge-success badge-xs">Activo</span>
+                    } @else {
+                      <span class="badge badge-ghost badge-xs">Inactivo</span>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- Grid de planes disponibles para migración -->
+          <div class="p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+            @for (plan of group.plans; track plan.id) {
+              @let isContracted = isContractedPlan(group, plan.id);
+              @let label = planActionLabel(group, plan);
+              <div class="border rounded-xl p-4 flex flex-col gap-2 transition"
+                   [class.border-success]="isContracted"
+                   [class.bg-success]="isContracted"
+                   [class.text-success-content]="isContracted"
+                   [class.bg-base-100]="!isContracted">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="font-semibold text-sm">{{ planTitle(plan) }}</span>
+                  @if (isContracted) {
+                    <span class="badge badge-sm bg-white/20 border-0 text-current">Tu plan</span>
+                  }
+                </div>
+                <div>
+                  <span class="text-2xl font-bold">{{ plan.currencySymbol }}{{ plan.price }}</span>
+                  <span class="text-xs opacity-70 ml-1">/ {{ plan.kind }}</span>
+                </div>
+                <p class="text-xs opacity-70">{{ plan.limitDevices }} dispositivo(s)</p>
+                @if (plan.features && plan.features.length > 0) {
+                  <ul class="text-xs opacity-70 space-y-0.5 mt-1">
+                    @for (f of plan.features; track $index) {
+                      <li class="flex items-center gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        {{ f }}
+                      </li>
+                    }
+                  </ul>
+                }
+                <div class="mt-auto pt-2">
+                  @if (isContracted) {
+                    <div class="flex gap-2 flex-wrap">
+                      <button class="btn btn-xs bg-white/20 border-0 text-current hover:bg-white/30 flex-1"
+                              (click)="openPayment(primaryUserPlan(group))">
+                        Pagar
+                      </button>
+                      <button class="btn btn-xs bg-red-500/20 border-0 text-current hover:bg-red-500/30"
+                              (click)="openCancel(primaryUserPlan(group))">
+                        Cancelar
+                      </button>
+                    </div>
+                  } @else if (label) {
+                    <button [class]="'btn btn-sm w-full ' + planActionClass(group, plan)"
+                            (click)="openPaymentFromCatalog(plan)">
+                      {{ label }}
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+}
+
+
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<!--  SECCIÓN 3 — Catálogo: servicios disponibles para contratar              -->
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<div class="container mx-auto max-w-5xl px-2 md:px-4 mt-8 mb-10">
+  <div class="divider"></div>
+  <div class="flex items-center gap-3 mb-4">
+    <h2 class="text-base font-bold uppercase tracking-wide opacity-70">Servicios disponibles para contratar</h2>
+    @if (availableGroups().length > 0) {
+      <span class="badge badge-ghost badge-sm">{{ availableGroups().length }} servicio(s)</span>
+    }
+  </div>
+
+  @if (availableGroups().length === 0) {
+    <div class="card border bg-base-100 shadow-sm">
+      <div class="card-body items-center text-center py-10">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 opacity-30 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+        </svg>
+        <p class="font-semibold">Ya tienes todos los servicios disponibles.</p>
+        <p class="text-sm opacity-60">Puedes ver opciones de mejora en la sección de arriba.</p>
+      </div>
+    </div>
+  }
+
+  <div class="space-y-6">
+    @for (group of availableGroups(); track group.serviceId) {
+      <div class="card border bg-base-100 shadow-sm overflow-hidden">
+
+        <!-- Cabecera del servicio -->
+        <div class="bg-base-200 px-5 py-4 flex items-center gap-4 flex-wrap">
+          @if (group.picture) {
+            <div class="avatar"><div class="w-12 h-12 rounded-xl"><img [src]="group.picture" [alt]="group.sortName" /></div></div>
+          } @else {
+            <div class="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center text-xl font-bold shrink-0">
+              {{ group.sortName ? group.sortName[0] : 'S' }}
+            </div>
+          }
+          <div class="flex-1 min-w-0">
+            <h3 class="font-bold text-lg leading-tight">{{ group.sortName }}</h3>
+            <p class="text-sm opacity-60 truncate">{{ group.longName }}</p>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            @if (groupHasGlobalCatalogPlan(group)) {
+              <span class="badge badge-info badge-sm">Global</span>
+            }
+            <span class="badge badge-ghost badge-sm">{{ group.plans.length }} plan(es)</span>
+          </div>
+          <!-- VPN por País button -->
+          @if (isVpnGroup(group)) {
+            <div class="w-full flex justify-start">
+              <button class="btn btn-outline btn-sm gap-1.5 border-primary/50 text-primary hover:btn-primary"
+                      type="button" (click)="openVpnCountryModal(group)">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/>
+                </svg>
+                Contratar servicio VPN por País
+              </button>
+            </div>
+          }
+        </div>
+
+        @if (group.description) {
+          <div class="px-5 pt-3 pb-1">
+            <p class="text-sm opacity-70">{{ group.description }}</p>
+          </div>
+        }
+
+        <!-- Grid de planes -->
+        <div class="p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+          @for (plan of group.plans; track plan.id) {
+            <div class="border rounded-xl p-4 flex flex-col gap-2 bg-base-100 hover:border-primary/50 transition">
+              <div class="flex items-center justify-between gap-2">
+                <span class="font-semibold text-sm">{{ planTitle(plan) }}</span>
+              </div>
+              <div>
+                <span class="text-2xl font-bold">{{ plan.currencySymbol }}{{ plan.price }}</span>
+                <span class="text-xs opacity-70 ml-1">/ {{ plan.kind }}</span>
+              </div>
+              <p class="text-xs opacity-70">{{ plan.limitDevices }} dispositivo(s)</p>
+              @if (plan.features && plan.features.length > 0) {
+                <ul class="text-xs opacity-70 space-y-0.5 mt-1">
+                  @for (f of plan.features; track $index) {
+                    <li class="flex items-center gap-1">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                      </svg>
+                      {{ f }}
+                    </li>
+                  }
+                </ul>
+              }
+              <div class="mt-auto pt-2">
+                <button class="btn btn-primary btn-sm w-full" (click)="openPaymentFromCatalog(plan)">
+                  {{ plan.button_name || 'Contratar' }}
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     MODAL — VPN por País
+═══════════════════════════════════════════════════════════════════════════ -->
+<dialog id="vpn_country_modal" class="modal">
+  <div class="modal-box w-11/12 max-w-2xl max-h-[92vh] flex flex-col">
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button>
+    </form>
+
+    <!-- Header -->
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/>
+        </svg>
+      </div>
+      <div>
+        <h3 class="text-lg font-bold leading-tight">Contratar VPN por País</h3>
+        <p class="text-xs opacity-60">{{ vpnModalGroup()?.sortName }} · Selecciona el país o países de interés</p>
+      </div>
+    </div>
+
+    <!-- "Select All" toggle + search -->
+    <div class="flex items-center gap-3 mb-3">
+      <label class="flex items-center gap-2 cursor-pointer shrink-0">
+        <input type="checkbox" class="checkbox checkbox-primary checkbox-sm"
+               [checked]="allCountriesSelected()"
+               (change)="toggleAllCountries()" />
+        <span class="text-sm font-medium">Todos los países</span>
+      </label>
+      <label class="input input-bordered input-sm flex items-center gap-2 flex-1">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+        </svg>
+        <input type="text" class="grow" placeholder="Buscar país..."
+               [value]="countrySearch()"
+               (input)="countrySearch.set($any($event.target).value)" />
+      </label>
+    </div>
+
+    <!-- "All selected" info banner -->
+    @if (allCountriesSelected()) {
+      <div class="alert alert-info text-sm py-2 mb-3">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>
+        </svg>
+        <span>Has seleccionado todos los países disponibles. Consulta con soporte para obtener el precio.</span>
+      </div>
+    }
+
+    <!-- Country grid (scrollable) -->
+    <div class="flex-1 overflow-y-auto min-h-0">
+      @if (filteredCountries().length === 0) {
+        <p class="text-center text-sm opacity-50 py-8">No se encontraron países.</p>
+      }
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 pb-2">
+        @for (country of filteredCountries(); track country.id) {
+          @let alreadySelected = isCountrySelected(country.id);
+          <label [class]="'flex items-center gap-2.5 p-2.5 rounded-xl border cursor-pointer transition-all select-none ' +
+            (allCountriesSelected()
+              ? 'opacity-40 cursor-not-allowed border-base-300 bg-base-200'
+              : alreadySelected
+                ? 'border-primary bg-primary/8 font-medium'
+                : 'border-base-300 bg-base-100 hover:border-primary/40')">
+            <input type="checkbox" class="checkbox checkbox-primary checkbox-sm shrink-0"
+                   [checked]="alreadySelected"
+                   [disabled]="allCountriesSelected()"
+                   (change)="toggleCountry(country.id)" />
+            <span class="text-xl leading-none shrink-0">{{ country.flag || '🌐' }}</span>
+            <div class="min-w-0">
+              <p class="text-sm leading-tight truncate">{{ country.countryName }}</p>
+              <p class="text-[10px] opacity-50 truncate">{{ country.languageName }}</p>
+            </div>
+          </label>
+        }
+      </div>
+    </div>
+
+    <div class="divider my-3"></div>
+
+    <!-- ── Results section ─────────────────────────────────────────────────── -->
+
+    <!-- ALL selected → contact support -->
+    @if (allCountriesSelected()) {
+      <div class="flex gap-2 justify-end">
+        <button class="btn btn-ghost btn-sm" type="button" (click)="closeVpnCountryModal()">Salir</button>
+        <button class="btn btn-primary btn-sm gap-1.5" type="button"
+                (click)="contactSupportForPrice()" [disabled]="inquirySending()">
+          @if (inquirySending()) {
+            <span class="loading loading-spinner loading-xs"></span>
+          } @else {
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-3 3-3-3z"/>
+            </svg>
+          }
+          Consultar por el precio
+        </button>
+      </div>
+
+    <!-- ONE country selected -->
+    } @else if (singleSelectedCountry()) {
+      @let country = singleSelectedCountry()!;
+
+      <!-- Country header -->
+      <div class="flex items-center gap-3 mb-3">
+        <span class="text-3xl">{{ country.flag || '🌐' }}</span>
+        <div>
+          <p class="font-bold text-base">{{ country.countryName }}</p>
+          <p class="text-xs opacity-60">{{ country.languageName }}</p>
+        </div>
+      </div>
+
+      <!-- Already in subscription -->
+      @if (selectedCountryAlreadyInVpn()) {
+        <div class="alert alert-success text-sm py-2 mb-3">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+          </svg>
+          <span><strong>{{ country.countryName }}</strong> ya está dentro de tus países de conexión VPN.</span>
+        </div>
+
+      <!-- Plans available for this country -->
+      } @else if (vpnPlansForSelectedCountry().length > 0) {
+        @if (clientHasVpnGroup()) {
+          <p class="text-xs opacity-60 mb-2">Puedes agregar este país a tu suscripción VPN contratando uno de estos planes:</p>
+        } @else {
+          <p class="text-xs opacity-60 mb-2">Planes disponibles para <strong>{{ country.countryName }}</strong>:</p>
+        }
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
+          @for (plan of vpnPlansForSelectedCountry(); track plan.id) {
+            <div class="border rounded-xl p-3 bg-base-100 hover:border-primary/50 flex flex-col gap-1.5">
+              <div class="flex items-center justify-between gap-2">
+                <span class="font-semibold text-sm">{{ planTitle(plan) }}</span>
+                @if (plan.global) {
+                  <span class="badge badge-info badge-xs">Global</span>
+                }
+              </div>
+              <div>
+                <span class="text-lg font-bold">{{ plan.currencySymbol }}{{ plan.price }}</span>
+                <span class="text-xs opacity-60 ml-1">/ {{ plan.kind }}</span>
+              </div>
+              <p class="text-xs opacity-60">{{ plan.limitDevices }} dispositivo(s)</p>
+              <div class="mt-auto pt-1">
+                @if (clientHasVpnGroup()) {
+                  <button class="btn btn-sm btn-secondary w-full gap-1"
+                          type="button"
+                          (click)="openPaymentFromCatalog(plan); closeVpnCountryModal()">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path d="M12 5v14M5 12h14"/>
+                    </svg>
+                    Agregar este país a mi suscripción VPN
+                  </button>
+                } @else {
+                  <button class="btn btn-sm btn-primary w-full"
+                          type="button"
+                          (click)="openPaymentFromCatalog(plan); closeVpnCountryModal()">
+                    {{ plan.button_name || 'Contratar' }}
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+      <!-- No plans for this country → offer to consult -->
+      } @else {
+        <div class="alert text-sm py-2 mb-3">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>
+          </svg>
+          <span>No hay planes VPN disponibles para <strong>{{ country.countryName }}</strong> actualmente. Puedes consultar por el precio y un asesor te contactará.</span>
+        </div>
+        <div class="flex gap-2 justify-end">
+          <button class="btn btn-ghost btn-sm" type="button" (click)="closeVpnCountryModal()">Salir</button>
+          <button class="btn btn-primary btn-sm gap-1.5" type="button"
+                  (click)="contactSupportForPrice()" [disabled]="inquirySending()">
+            @if (inquirySending()) {
+              <span class="loading loading-spinner loading-xs"></span>
+            } @else {
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-3 3-3-3z"/>
+              </svg>
+            }
+            Consultar por el precio
+          </button>
+        </div>
+      }
+
+    <!-- Multiple (>1) selected -->
+    } @else if (selectedCountryIds().size > 1) {
+      <div class="alert text-sm py-2 mb-3">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>
+        </svg>
+        <span>Tienes <strong>{{ selectedCountryIds().size }} países</strong> seleccionados. Selecciona solo uno para ver planes, o consulta el precio para varios países.</span>
+      </div>
+      <div class="flex gap-2 justify-end">
+        <button class="btn btn-ghost btn-sm" type="button" (click)="closeVpnCountryModal()">Salir</button>
+        <button class="btn btn-primary btn-sm gap-1.5" type="button"
+                (click)="contactSupportForPrice()" [disabled]="inquirySending()">
+          @if (inquirySending()) {
+            <span class="loading loading-spinner loading-xs"></span>
+          } @else {
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-3 3-3-3z"/>
+            </svg>
+          }
+          Consultar por el precio
+        </button>
+      </div>
+    } @else {
+      <p class="text-xs opacity-50 text-center">Selecciona un país para ver los planes disponibles.</p>
+    }
+
+  </div>
+  <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
+</dialog>
+
+
+<!-- ═══ MODAL — Registrar pago ═══ -->
+<dialog id="pay_modal" class="modal">
+  <div class="modal-box w-11/12 max-w-xl" [formGroup]="paymentForm">
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button>
+    </form>
+
+    <h3 class="text-lg font-bold mb-1">Registrar pago</h3>
+    @if (selectedPlan()) {
+      <p class="text-sm opacity-60 mb-4">
+        {{ selectedPlan()!.service_sortName }} — {{ selectedPlan()!.plan_title_name }}
+        · {{ selectedPlan()!.currencySymbol }}{{ selectedPlan()!.price }}/{{ selectedPlan()!.kind }}
+      </p>
+    }
+
+    <!-- ── 1. Período ─────────────────────────────────────────────────────── -->
+    <div class="card border bg-base-200/50 mb-4">
+      <div class="card-body p-4 gap-3">
+        <h4 class="font-semibold text-sm flex items-center gap-2">
+          <span class="badge badge-primary badge-sm">1</span>
+          ¿Cuántos {{ selectedPlan()?.kind || 'período(s)' }} deseas pagar?
+        </h4>
+        <div class="flex flex-wrap gap-2">
+          @for (n of MONTH_OPTIONS; track n) {
+            <button type="button"
+                    [class]="'btn btn-sm ' + (months() === n ? 'btn-primary' : 'btn-outline')"
+                    (click)="setMonths(n)">
+              {{ n }}
+            </button>
+          }
+        </div>
+        @if (selectedPlan()) {
+          <div class="flex items-center justify-between bg-base-100 rounded-lg p-3 border mt-1">
+            <span class="text-sm opacity-70">Total a pagar</span>
+            <span class="text-xl font-bold text-primary">
+              {{ selectedPlan()!.currencySymbol }}{{ totalPrice() | number:'1.2-2' }}
+              <span class="text-xs font-normal opacity-60">{{ selectedPlan()!.currencyCode }}</span>
+            </span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- ── 2. Método de pago ───────────────────────────────────────────────── -->
+    <div class="card border bg-base-200/50 mb-4">
+      <div class="card-body p-4 gap-3">
+        <h4 class="font-semibold text-sm flex items-center gap-2">
+          <span class="badge badge-primary badge-sm">2</span> Método de pago
+        </h4>
+
+        @if (visibleBanks().length === 0) {
+          <div class="alert alert-warning text-sm py-2">
+            No hay métodos de pago disponibles. Contacta al administrador.
+          </div>
+        } @else {
+          <div class="grid gap-2">
+            @for (bank of visibleBanks(); track bank.id) {
+              <label [class]="'flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ' +
+                              (selectedBank()?.id === bank.id ? 'border-primary bg-primary/5' : 'border-base-300 bg-base-100 hover:border-primary/50')">
+                <input type="radio" name="bank_radio_plan" class="radio radio-primary radio-sm mt-0.5"
+                       [value]="bank.id"
+                       [checked]="selectedBank()?.id === bank.id"
+                       (change)="selectBank(bank.id)" />
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span class="text-base leading-none">{{ bankTypeIcon(bank) }}</span>
+                    <span class="font-semibold text-sm">{{ bank.name }}</span>
+                    <span class="badge badge-xs badge-ghost">{{ bank.typeAccount }}</span>
+                  </div>
+
+                  @if (selectedBank()?.id === bank.id) {
+                    <div class="mt-2 grid gap-1 text-xs">
+                      @if (isCrypto(bank)) {
+                        <div class="flex gap-2 items-start">
+                          <span class="opacity-60 shrink-0">Dirección:</span>
+                          <span class="font-mono break-all bg-base-200 px-1 py-0.5 rounded select-all">{{ bank.number }}</span>
+                        </div>
+                        @if (bank.network || bank.currency) {
+                          <div class="flex gap-2 flex-wrap">
+                            @if (bank.network) { <span class="badge badge-outline badge-xs">Red: {{ bank.network }}</span> }
+                            @if (bank.currency) { <span class="badge badge-outline badge-xs">{{ bank.currency }}</span> }
+                          </div>
+                        }
+                        @if (bank.qr_code) {
+                          <div class="flex flex-col items-center gap-1 mt-1">
+                            <p class="opacity-60">Escanea para pagar</p>
+                            <img [src]="bank.qr_code" alt="QR" class="w-32 h-32 border rounded-xl object-contain bg-white p-1" />
+                          </div>
+                        }
+                      } @else {
+                        @if (bank.number) {
+                          <div class="flex gap-2">
+                            <span class="opacity-60 shrink-0">Número:</span>
+                            <span class="font-mono">{{ bank.number }}</span>
+                          </div>
+                        }
+                        @if (bank.cardAccount) {
+                          <div class="flex gap-2">
+                            <span class="opacity-60 shrink-0">CCI/CBU:</span>
+                            <span class="font-mono">{{ bank.cardAccount }}</span>
+                          </div>
+                        }
+                      }
+                      @if (bank.note) {
+                        <div class="alert alert-info py-1 mt-1">{{ bank.note }}</div>
+                      }
+                    </div>
+                  }
+                </div>
+              </label>
+            }
+          </div>
+          <input type="hidden" formControlName="bank_id" />
+        }
+      </div>
+    </div>
+
+    <!-- ── 3. Comprobante ─────────────────────────────────────────────────── -->
+    <div class="card border bg-base-200/50 mb-4">
+      <div class="card-body p-4 gap-3">
+        <h4 class="font-semibold text-sm flex items-center gap-2">
+          <span class="badge badge-primary badge-sm">3</span> Comprobante de pago
+        </h4>
+        <div class="border-2 border-dashed rounded-xl p-4 text-center transition-colors"
+             [class.border-primary]="!!selectedFile"
+             [class.border-base-300]="!selectedFile">
+          <input type="file" id="voucher_plan" accept="image/*,application/pdf"
+                 class="hidden" (change)="onFileChange($event)" />
+          <label for="voucher_plan" class="cursor-pointer flex flex-col items-center gap-2">
+            @if (selectedFile) {
+              <svg class="h-7 w-7 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <span class="text-sm font-medium text-success">{{ selectedFile.name }}</span>
+            } @else {
+              <svg class="h-7 w-7 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+              </svg>
+              <span class="text-sm">Seleccionar comprobante</span>
+              <span class="text-xs opacity-50">Imagen o PDF</span>
+            }
+          </label>
+        </div>
+        @if (saving() && uploadProgress() > 0) {
+          <progress class="progress progress-primary w-full" [value]="uploadProgress()" max="100"></progress>
+          <p class="text-xs text-center opacity-60">Subiendo... {{ uploadProgress() }}%</p>
+        }
+      </div>
+    </div>
+
+    <!-- ── 4. Datos personales (si faltan) ───────────────────────────────── -->
+    @if (needsPersonalData()) {
+      <div class="card border border-warning bg-warning/5 mb-4">
+        <div class="card-body p-4 gap-3">
+          <h4 class="font-semibold text-sm text-warning flex items-center gap-2">
+            <span class="badge badge-warning badge-sm">4</span> Datos personales requeridos
+          </h4>
+          <p class="text-xs opacity-70">Tu perfil no tiene país y/o teléfono. Son necesarios para procesar el pago.</p>
+          <div class="grid gap-3 sm:grid-cols-2">
+            <div class="form-control">
+              <label class="label py-0"><span class="label-text text-xs">País de residencia</span></label>
+              <input class="input input-bordered input-sm" placeholder="Nombre del país" formControlName="pd_country" />
+            </div>
+            <div class="form-control">
+              <label class="label py-0"><span class="label-text text-xs">Teléfono</span></label>
+              <input class="input input-bordered input-sm" placeholder="912345678" formControlName="pd_tel_number" type="tel" />
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ── 5. Términos ───────────────────────────────────────────────────── -->
+    <div class="card border bg-base-200/50 mb-4">
+      <div class="card-body p-4 gap-2">
+        <h4 class="font-semibold text-sm flex items-center gap-2">
+          <span class="badge badge-primary badge-sm">{{ needsPersonalData() ? 5 : 4 }}</span>
+          Términos y condiciones
+        </h4>
+        @if (activeTerms().length === 0) {
+          <p class="text-xs opacity-60">No se encontraron términos activos.</p>
+        } @else if (activeTerms().length === 1) {
+          <div class="flex items-start gap-3">
+            <input type="checkbox" class="checkbox checkbox-primary checkbox-sm mt-0.5"
+                   (change)="onTermsCheck($any($event.target).checked)" />
+            <div>
+              <p class="text-sm font-medium">{{ activeTerms()[0].title }}</p>
+              @if (activeTerms()[0].description) {
+                <p class="text-xs opacity-60 mt-0.5">{{ activeTerms()[0].description }}</p>
+              }
+            </div>
+          </div>
+        } @else {
+          <select class="select select-bordered select-sm w-full" formControlName="terms_id">
+            <option value="">Seleccionar términos</option>
+            @for (term of activeTerms(); track term.id) {
+              <option [value]="term.id">{{ term.title }}</option>
+            }
+          </select>
+        }
+      </div>
+    </div>
+
+    <!-- ── Nota ──────────────────────────────────────────────────────────── -->
+    <label class="form-control w-full mb-4">
+      <div class="label py-0"><span class="label-text text-xs">Nota (opcional)</span></div>
+      <textarea class="textarea textarea-bordered textarea-sm w-full" rows="2"
+                formControlName="note" placeholder="Referencia, TX hash, número de operación..."></textarea>
+    </label>
+
+    <!-- ── Acciones ──────────────────────────────────────────────────────── -->
+    <div class="modal-action pt-0">
+      <form method="dialog">
+        <button class="btn btn-ghost btn-sm" type="submit">Cancelar</button>
+      </form>
+      <button class="btn btn-primary btn-sm" type="button"
+              [disabled]="!canSubmit()"
+              (click)="onPaySubmit()">
+        @if (saving()) { <span class="loading loading-spinner loading-xs"></span> Enviando... }
+        @else {
+          <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+          </svg>
+          Enviar pago · {{ selectedPlan()?.currencySymbol }}{{ totalPrice() | number:'1.2-2' }}
+        }
+      </button>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
+</dialog>
+
+
+<!-- ═══ MODAL — Suspender ═══ -->
+<dialog id="suspend_modal" class="modal">
+  <div class="modal-box max-w-sm">
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+    </form>
+    <h3 class="text-lg font-bold text-warning">Suspender servicio</h3>
+    @if (targetService()) {
+      <p class="py-3 text-sm">
+        Pausarás temporalmente tu acceso para
+        <strong>{{ targetService()!.service_sortName }} — {{ targetService()!.plan_title_name }}</strong>.
+        Podrás reactivarlo en cualquier momento desde esta misma página.
+      </p>
+    }
+    <div class="modal-action">
+      <button class="btn btn-ghost btn-sm"
+              onclick="document.getElementById('suspend_modal')?.close()">Cancelar</button>
+      <button class="btn btn-warning btn-sm" (click)="confirmSuspend()"
+              [disabled]="actionLoading() !== null">
+        @if (actionLoading()) { <span class="loading loading-spinner loading-xs"></span> }
+        Sí, suspender
+      </button>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button>close</button></form>
+</dialog>
+
+
+<!-- ═══ MODAL — Reactivar ═══ -->
+<dialog id="reactivate_modal" class="modal">
+  <div class="modal-box max-w-sm">
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+    </form>
+    <h3 class="text-lg font-bold text-success">Reactivar servicio</h3>
+    @if (targetService()) {
+      <p class="py-3 text-sm">
+        Reactivarás el acceso para
+        <strong>{{ targetService()!.service_sortName }} — {{ targetService()!.plan_title_name }}</strong>.
+      </p>
+    }
+    <div class="modal-action">
+      <button class="btn btn-ghost btn-sm"
+              onclick="document.getElementById('reactivate_modal')?.close()">Cancelar</button>
+      <button class="btn btn-success btn-sm" (click)="confirmReactivate()"
+              [disabled]="actionLoading() !== null">
+        @if (actionLoading()) { <span class="loading loading-spinner loading-xs"></span> }
+        Sí, reactivar
+      </button>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button>close</button></form>
+</dialog>
+
+
+<!-- ═══ MODAL — Cancelar ═══ -->
+<dialog id="cancel_modal" class="modal">
+  <div class="modal-box max-w-sm">
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+    </form>
+    <h3 class="text-lg font-bold text-error">Solicitar cancelación</h3>
+    @if (targetService()) {
+      <p class="py-2 text-sm">
+        Se enviará una solicitud al administrador para cancelar
+        <strong>{{ targetService()!.service_sortName }} — {{ targetService()!.plan_title_name }}</strong>.
+      </p>
+    }
+    <div class="form-control mt-2">
+      <label class="label"><span class="label-text text-sm">Motivo (opcional)</span></label>
+      <textarea class="textarea textarea-bordered textarea-sm w-full" rows="3"
+                placeholder="Describe el motivo de cancelación..."
+                [value]="cancelReason()"
+                (input)="cancelReason.set($any($event.target).value)"></textarea>
+    </div>
+    <div class="alert alert-warning mt-3 text-xs py-2">
+      El administrador procesará tu solicitud. El servicio no se cancela de inmediato.
+    </div>
+    <div class="modal-action">
+      <button class="btn btn-ghost btn-sm"
+              onclick="document.getElementById('cancel_modal')?.close()">Cancelar</button>
+      <button class="btn btn-error btn-sm" (click)="confirmCancel()"
+              [disabled]="actionLoading() !== null">
+        @if (actionLoading()) { <span class="loading loading-spinner loading-xs"></span> }
+        Enviar solicitud
+      </button>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button>close</button></form>
+</dialog>

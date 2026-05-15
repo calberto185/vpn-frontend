@@ -1,249 +1,319 @@
-<section class="mx-auto max-w-5xl p-4 md:p-10">
+<!-- ════════════════════════════════════════════════════════════
+     TUTORIAL — Vista cliente (dinámica)
+════════════════════════════════════════════════════════════════ -->
+<div class="min-h-screen bg-base-200/40">
 
-  <!-- Inputs ocultos (hermanos de .tabs-content) -->
-  <input type="radio" name="mainTab" id="Android" class="hidden" checked>
-  <input type="radio" name="mainTab" id="iOS" class="hidden">
-  <input type="radio" name="mainTab" id="Windows" class="hidden">
-  <input type="radio" name="mainTab" id="Linux" class="hidden">
-  <input type="radio" name="mainTab" id="MacOS" class="hidden">
-
-  <!-- Labels como tabs -->
-  <div class="labels mb-0 flex border-b border-gray-100">
-    <label for="Android" class="flex-1 text-center cursor-pointer px-4 py-2 border border-b-0 border-gray-200
-      rounded-t-lg bg-gray-100 hover:bg-gray-200">Android</label>
-    <label for="iOS" class="flex-1 text-center cursor-pointer px-4 py-2 border border-b-0 border-gray-200
-      rounded-t-lg bg-gray-100 hover:bg-gray-200">iOS</label>
-    <label for="Windows" class="flex-1 text-center cursor-pointer px-4 py-2 border border-b-0 border-gray-200
-      rounded-t-lg bg-gray-100 hover:bg-gray-200">Windows</label>
-    <label for="Linux" class="flex-1 text-center cursor-pointer px-4 py-2 border border-b-0 border-gray-200
-      rounded-t-lg bg-gray-100 hover:bg-gray-200">Linux</label>
-    <label for="MacOS" class="flex-1 text-center cursor-pointer px-4 py-2 border border-b-0 border-gray-200
-      rounded-t-lg bg-gray-100 hover:bg-gray-200">MacOS</label>
-  </div>
-
-  <!-- Contenido (hermano de los inputs) -->
-  <div class="tabs-content border border-gray-200 rounded-b-lg bg-white p-5">
-    <div class="android-content hidden">
-      <!-- <p class="text-gray-700">Contenido para Android</p> -->
-
-
-  <section class="mx-auto max-w-5xl p-4 md:p-10">
-    <!-- Hero -->
-    <header class="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
-      <h1 class="text-3xl font-semibold tracking-tight">Guía rápida para conectarte a la VPN</h1>
-      <p class="mt-2 text-gray-600">Sigue estos pasos: crea tu cuenta, elige un plan, agrega dispositivos, descarga tus credenciales <code class="rounded bg-gray-100 px-1">.ovpn</code>, impórtalas y conéctate.</p>
-      <!-- <div class="mt-4 flex flex-wrap gap-3 text-sm text-gray-600">
-        <a class="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 hover:bg-gray-100" [href]="portalUrl" target="_blank">Ir al portal</a>
-        <a class="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 hover:bg-gray-100" [href]="downloadsUrl" target="_blank">Descargas</a>
-        <a class="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 hover:bg-gray-100" [href]="'mailto:' + supportEmail">Contactar soporte</a>
-      </div> -->
-    </header>
-
-    <!-- Paso 1: Crear cuenta -->
-    <article class="mt-8 grid gap-6 md:grid-cols-12">
-      <figure class="md:col-span-5 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-        <img [src]="svg('signup')" alt="Pantalla de registro" class="w-full" />
-      </figure>
-      <div class="md:col-span-7 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-        <h2 class="text-xl font-semibold">1) Crea tu cuenta</h2>
-        <ol class="mt-2 list-decimal space-y-2 pl-5 text-gray-700">
-          <li>Visita <a class="underline" [href]="portalUrl" target="_blank">{{ portalUrl }}</a> y pulsa <strong>Crear cuenta</strong>.</li>
-          <li>Ingresa tus datos: nombres, apellidos, correo y una contraseña segura.</li>
-          <li>Revisa tu bandeja y haz clic en el <strong>enlace de verificación</strong>.</li>
-          <li>Inicia sesión con tu correo y contraseña.</li>
-        </ol>
-        <p class="mt-3 text-sm text-gray-500">Tip: usa una contraseña con 12+ caracteres y activa 2FA si está disponible.</p>
-      </div>
-    </article>
-
-    <!-- Paso 2: Elegir plan -->
-    <article class="mt-4 grid gap-6 md:grid-cols-12">
-      <div class="md:col-span-7 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm order-2 md:order-1">
-        <h2 class="text-xl font-semibold">2) Elige tu plan</h2>
-        <ol class="mt-2 list-decimal space-y-2 pl-5 text-gray-700">
-          <li>En el panel, abre <strong>Planes</strong>.</li>
-          <li>Compara <em>límite de dispositivos</em>, <em>ancho de banda</em> y <em>precio</em>.</li>
-          <li>Pulsa <strong>Suscribirme</strong> y completa el pago (si aplica).</li>
-        </ol>
-        <p class="mt-3 text-sm text-gray-500">Podrás cambiar de plan más adelante sin perder tus dispositivos.</p>
-      </div>
-      <figure class="md:col-span-5 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm order-1 md:order-2">
-        <img [src]="svg('plans')" alt="Selección de plan" class="w-full" />
-      </figure>
-    </article>
-
-    <!-- Paso 3: Agregar dispositivos -->
-    <article class="mt-4 grid gap-6 md:grid-cols-12">
-      <figure class="md:col-span-5 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-        <img [src]="svg('devices')" alt="Agregar dispositivos" class="w-full" />
-      </figure>
-      <div class="md:col-span-7 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-        <h2 class="text-xl font-semibold">3) Agrega tus dispositivos</h2>
-        <ol class="mt-2 list-decimal space-y-2 pl-5 text-gray-700">
-          <li>Entra a <strong>Dispositivos</strong> → <strong>Agregar dispositivo</strong>.</li>
-          <li>Asigna un nombre (ej.: <em>Mac oficina</em>, <em>Android personal</em>).</li>
-          <li>Guarda. El portal generará las credenciales para ese dispositivo.</li>
-        </ol>
-        <p class="mt-3 text-sm text-gray-500">Cada dispositivo tiene su archivo <code>.ovpn</code> único. No lo compartas.</p>
-      </div>
-    </article>
-
-    <!-- Paso 4: Descargar .ovpn -->
-    <article class="mt-4 grid gap-6 md:grid-cols-12">
-      <div class="md:col-span-7 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm order-2 md:order-1">
-        <h2 class="text-xl font-semibold">4) Descarga las credenciales <code>.ovpn</code></h2>
-        <ol class="mt-2 list-decimal space-y-2 pl-5 text-gray-700">
-          <li>En <strong>Dispositivos</strong>, ubica el equipo y pulsa <strong>Descargar .ovpn</strong>.</li>
-          <li>Guarda el archivo en un lugar seguro.</li>
-          <li>(Opcional) Protege el archivo con contraseña del sistema o bóveda.</li>
-        </ol>
-        <p class="mt-3 text-sm text-gray-500">Si tu plan lo permite, también podrás descargar un <em>paquete ZIP</em> con certificados y el <code>.ovpn</code>.</p>
-      </div>
-      <figure class="md:col-span-5 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm order-1 md:order-2">
-        <img [src]="svg('download')" alt="Descargar archivo .ovpn" class="w-full" />
-      </figure>
-    </article>
-
-    <!-- Paso 5: Importar .ovpn (según sistema) -->
-    <article class="mt-4 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-      <div class="flex flex-wrap items-center gap-2">
-        <h2 class="text-xl font-semibold">5) Importa el archivo .ovpn</h2>
-        <nav class="ml-auto flex gap-2 text-sm">
-          <button *ngFor="let o of osList" (click)="os.set(o)" class="rounded-xl border px-2.5 py-1.5" [class.bg-gray-900]="os()===o" [class.text-white]="os()===o">{{ o | titlecase }}</button>
-        </nav>
-      </div>
-
-      <!-- WINDOWS -->
-      <div *ngIf="os()==='windows'" class="mt-3 grid gap-4 md:grid-cols-12">
-        <figure class="md:col-span-5">
-          <img [src]="svg('import')" alt="OpenVPN Connect - Importar" class="w-full" />
-        </figure>
-        <div class="md:col-span-7">
-          <ol class="list-decimal space-y-2 pl-5 text-gray-700">
-            <li>Descarga <strong>OpenVPN Connect</strong> desde Microsoft Store o <a class="underline" [href]="downloadsUrl" target="_blank">Descargas</a>.</li>
-            <li>Ábrelo y pulsa <strong>Import Profile</strong> → <strong>File</strong>.</li>
-            <li>Selecciona tu archivo <code>.ovpn</code> y confirma.</li>
-            <li>Guarda el perfil y verifica que aparezca en la lista.</li>
-          </ol>
+  <!-- Page header -->
+  <div class="bg-base-100 border-b border-base-200 sticky top-16 z-10 shadow-sm">
+    <div class="container mx-auto max-w-6xl px-4 py-3 flex items-center gap-3">
+      <div class="flex-1">
+        <div class="flex items-center gap-2 text-xs text-base-content/50 mb-0.5">
+          <span>Panel</span><span>›</span>
+          <span class="text-base-content/70 font-medium">Tutoriales</span>
         </div>
+        <h1 class="text-lg font-bold leading-none">Guías de configuración</h1>
       </div>
-
-      <!-- MACOS -->
-      <div *ngIf="os()==='macos'" class="mt-3 grid gap-4 md:grid-cols-12">
-        <figure class="md:col-span-5">
-          <img [src]="svg('import')" alt="OpenVPN Connect - Importar" class="w-full" />
-        </figure>
-        <div class="md:col-span-7">
-          <ol class="list-decimal space-y-2 pl-5 text-gray-700">
-            <li>Instala <strong>OpenVPN Connect</strong> para macOS.</li>
-            <li>Abre la app y arrastra tu archivo <code>.ovpn</code> o ve a <em>Import Profile</em>.</li>
-            <li>Confirma y revisa que el perfil quede guardado.</li>
-          </ol>
-        </div>
+      <div class="hidden sm:flex items-center gap-1.5 text-xs bg-primary/5 border border-primary/20 text-primary rounded-full px-3 py-1.5">
+        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><path d="M12 8v5M12 16h.01"/>
+        </svg>
+        Tu URL de suscripción está en Dispositivos
       </div>
-
-      <!-- ANDROID -->
-      <div *ngIf="os()==='android'" class="mt-3 grid gap-4 md:grid-cols-12">
-        <figure class="md:col-span-5">
-          <img [src]="svg('phone')" alt="Android - Importar OVPN" class="w-full" />
-        </figure>
-        <div class="md:col-span-7">
-          <ol class="list-decimal space-y-2 pl-5 text-gray-700">
-            <li>Instala <strong>OpenVPN Connect</strong> desde Google Play.</li>
-            <li>Envía el archivo <code>.ovpn</code> a tu teléfono (Drive, correo o USB).</li>
-            <li>En la app, pulsa <strong>OVPN Profile</strong> y elige el archivo.</li>
-            <li>Asigna un nombre al perfil y guarda.</li>
-          </ol>
-        </div>
-      </div>
-
-      <!-- iOS -->
-      <div *ngIf="os()==='ios'" class="mt-3 grid gap-4 md:grid-cols-12">
-        <figure class="md:col-span-5">
-          <img [src]="svg('phone')" alt="iOS - Importar OVPN" class="w-full" />
-        </figure>
-        <div class="md:col-span-7">
-          <ol class="list-decimal space-y-2 pl-5 text-gray-700">
-            <li>Instala <strong>OpenVPN Connect</strong> desde App Store.</li>
-            <li>Envíate el <code>.ovpn</code> por correo o Archivos (iCloud/Drive).</li>
-            <li>Toca el archivo y elige <em>Copiar a OpenVPN</em>.</li>
-            <li>Importa y guarda el perfil.</li>
-          </ol>
-        </div>
-      </div>
-
-      <!-- LINUX -->
-      <div *ngIf="os()==='linux'" class="mt-3 grid gap-4 md:grid-cols-12">
-        <figure class="md:col-span-5">
-          <img [src]="svg('terminal')" alt="Linux - Terminal" class="w-full" />
-        </figure>
-        <div class="md:col-span-7">
-          <ol class="list-decimal space-y-2 pl-5 text-gray-700">
-            <li>Instala OpenVPN: <code class="rounded bg-gray-100 px-1">sudo apt install openvpn</code> (Debian/Ubuntu) o usa tu gestor de paquetes.</li>
-            <li>Conecta por terminal: <code class="rounded bg-gray-100 px-1">sudo openvpn --config ./perfil.ovpn</code>.</li>
-            <li>O usa tu administrador de redes (NetworkManager) para importar el <code>.ovpn</code>.</li>
-          </ol>
-        </div>
-      </div>
-    </article>
-
-    <!-- Paso 6: Conectar a la VPN -->
-    <article class="mt-4 grid gap-6 md:grid-cols-12">
-      <figure class="md:col-span-5 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-        <img [src]="svg('connect')" alt="Conectar a la VPN" class="w-full" />
-      </figure>
-      <div class="md:col-span-7 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-        <h2 class="text-xl font-semibold">6) Conéctate</h2>
-        <ol class="mt-2 list-decimal space-y-2 pl-5 text-gray-700">
-          <li>Abre tu app de OpenVPN y selecciona el perfil importado.</li>
-          <li>Pulsa <strong>Connect</strong>. Acepta la solicitud de VPN del sistema.</li>
-          <li>Espera a ver el estado <strong>Connected</strong>.</li>
-        </ol>
-        <p class="mt-3 text-sm text-gray-500">Para desconectarte, vuelve a la app y pulsa <strong>Disconnect</strong>.</p>
-      </div>
-    </article>
-
-    <!-- Verificación y Troubleshooting -->
-    <article class="mt-4 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-      <h2 class="text-xl font-semibold">Verifica y soluciona problemas</h2>
-      <div class="mt-2 grid gap-6 md:grid-cols-2">
-        <div>
-          <h3 class="font-medium">Comprobar conexión</h3>
-          <ul class="mt-2 list-disc pl-5 text-gray-700">
-            <li>Abre <em>Mi IP</em> en el navegador: debería cambiar a la IP de {{ companyName }}.</li>
-            <li>Accede a un recurso interno (intranet, Git, base de datos) que requiera VPN.</li>
-            <li>Haz ping a una IP interna autorizada.</li>
-          </ul>
-        </div>
-        <div>
-          <h3 class="font-medium">Si algo falla</h3>
-          <ul class="mt-2 list-disc pl-5 text-gray-700">
-            <li><strong>Perfil inválido:</strong> descarga otra vez el <code>.ovpn</code> desde <a class="underline" [href]="downloadsUrl" target="_blank">Descargas</a>.</li>
-            <li><strong>Credenciales revocadas:</strong> borra el perfil y genera uno nuevo en <em>Dispositivos</em>.</li>
-            <li><strong>Restricción de firewall:</strong> prueba otra red o habilita puertos/UDP 1194 (o el que use tu servidor).</li>
-            <li><strong>DNS interno:</strong> tras conectar, reinicia el navegador o vacía caché DNS.</li>
-          </ul>
-        </div>
-      </div>
-      <p class="mt-4 text-sm text-gray-500">¿Necesitas ayuda? Escríbenos a <a class="underline" [href]="'mailto:' + supportEmail">{{ supportEmail }}</a>.</p>
-    </article>
-  </section>
-
-
-      <!-- <p class="text-gray-700">Contenido para Android</p> -->
-    </div>
-    <div class="ios-content hidden">
-      <p class="text-gray-700">Contenido para iOS</p>
-    </div>
-    <div class="windows-content hidden">
-      <p class="text-gray-700">Contenido para Windows</p>
-    </div>
-    <div class="linux-content hidden">
-      <p class="text-gray-700">Contenido para Linux</p>
-    </div>
-    <div class="macos-content hidden">
-      <p class="text-gray-700">Contenido para MacOS</p>
     </div>
   </div>
 
-</section>
+  <div class="container mx-auto max-w-6xl px-4 py-6">
+
+    @if (loading()) {
+      <div class="flex justify-center py-20">
+        <span class="loading loading-spinner loading-lg text-primary"></span>
+      </div>
+    }
+
+    @if (error()) {
+      <div class="alert alert-error max-w-md mx-auto mt-10">
+        <span>No se pudo cargar el tutorial. Intenta recargar la página.</span>
+      </div>
+    }
+
+    @if (!loading() && !error() && roots().length === 0) {
+      <div class="text-center py-16 text-base-content/40">
+        <div class="text-4xl mb-3">📚</div>
+        <p>Aún no hay guías disponibles. Vuelve pronto.</p>
+      </div>
+    }
+
+    @if (!loading() && !error() && roots().length > 0) {
+      <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
+
+        <!-- Sidebar navigation -->
+        <div class="lg:col-span-1">
+          <div class="card bg-base-100 border border-base-200 shadow-sm sticky top-24">
+            <div class="card-body p-3">
+              <ul class="menu menu-sm p-0 gap-0.5">
+                @for (root of roots(); track root.id) {
+                  <li>
+                    <a class="flex items-center gap-2 rounded px-2 py-2 cursor-pointer hover:bg-base-200 text-sm"
+                       [class.nav-item-active]="isSelected(root.id)"
+                       [class.nav-item-in-path]="isInPath(root.id) && !isSelected(root.id)"
+                       (click)="selectNode(root.id)">
+                      @if (root.iconType === 'image' && root.icon) {
+                        <img [src]="root.icon" class="w-5 h-5 rounded object-cover" alt="" />
+                      } @else { <i [class]="root.icon || 'fa-regular fa-file'"></i> }
+                      <span class="flex-1">{{ root.title }}</span>
+                      @if (childrenOf(root.id).length > 0) {
+                        <span class="text-base-content/30 text-xs">{{ isInPath(root.id) ? '▾' : '▸' }}</span>
+                      }
+                    </a>
+                    @if (isInPath(root.id) && childrenOf(root.id).length > 0) {
+                      <ul class="pl-2 mt-0.5 border-l-2 border-base-200 ml-4 gap-0.5">
+                        @for (child of childrenOf(root.id); track child.id) {
+                          <li>
+                            <a class="flex items-center gap-1.5 rounded px-2 py-1.5 cursor-pointer hover:bg-base-200 text-xs"
+                               [class.nav-item-active]="isSelected(child.id)"
+                               [class.nav-item-in-path]="isInPath(child.id) && !isSelected(child.id)"
+                               (click)="selectNode(child.id)">
+                              @if (child.iconType === 'image' && child.icon) {
+                                <img [src]="child.icon" class="w-4 h-4 rounded object-cover" alt="" />
+                              } @else { <i [class]="child.icon || 'fa-regular fa-file'"></i> }
+                              <span class="flex-1">{{ child.title }}</span>
+                              @if (childrenOf(child.id).length > 0) {
+                                <span class="text-base-content/30 text-xs">{{ isInPath(child.id) ? '▾' : '▸' }}</span>
+                              }
+                            </a>
+                            @if (isInPath(child.id) && childrenOf(child.id).length > 0) {
+                              <ul class="pl-2 mt-0.5 border-l-2 border-base-200 ml-3 gap-0.5">
+                                @for (grand of childrenOf(child.id); track grand.id) {
+                                  <li>
+                                    <a class="flex items-center gap-1 rounded px-2 py-1 cursor-pointer hover:bg-base-200 text-xs"
+                                       [class.nav-item-active]="isSelected(grand.id)"
+                                       [class.nav-item-in-path]="isInPath(grand.id) && !isSelected(grand.id)"
+                                       (click)="selectNode(grand.id)">
+                                      @if (grand.iconType === 'image' && grand.icon) {
+                                        <img [src]="grand.icon" class="w-4 h-4 rounded object-cover" alt="" />
+                                      } @else { <i [class]="grand.icon || 'fa-regular fa-file'"></i> }
+                                      <span class="flex-1">{{ grand.title }}</span>
+                                      @if (childrenOf(grand.id).length > 0) {
+                                        <span class="text-base-content/30 text-xs">{{ isInPath(grand.id) ? '▾' : '▸' }}</span>
+                                      }
+                                    </a>
+                                    @if (isInPath(grand.id) && childrenOf(grand.id).length > 0) {
+                                      <ul class="pl-2 mt-0.5 border-l-2 border-base-200 ml-3 gap-0.5">
+                                        @for (ggrand of childrenOf(grand.id); track ggrand.id) {
+                                          <li>
+                                            <a class="flex items-center gap-1 rounded px-2 py-1 cursor-pointer hover:bg-base-200 text-xs"
+                                               [class.nav-item-active]="isSelected(ggrand.id)"
+                                               [class.nav-item-in-path]="isInPath(ggrand.id) && !isSelected(ggrand.id)"
+                                               (click)="selectNode(ggrand.id)">
+                                              @if (ggrand.iconType === 'image' && ggrand.icon) {
+                                                <img [src]="ggrand.icon" class="w-4 h-4 rounded object-cover" alt="" />
+                                              } @else { <i [class]="ggrand.icon || 'fa-regular fa-file'"></i> }
+                                              <span>{{ ggrand.title }}</span>
+                                            </a>
+                                          </li>
+                                        }
+                                      </ul>
+                                    }
+                                  </li>
+                                }
+                              </ul>
+                            }
+                          </li>
+                        }
+                      </ul>
+                    }
+                  </li>
+                }
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main content -->
+        <div class="lg:col-span-3">
+
+          @if (!selectedNode()) {
+            <div class="card bg-base-100 border border-base-200 shadow-sm p-8 text-center text-base-content/40">
+              <p>Selecciona una guía del menú lateral.</p>
+            </div>
+          }
+
+          <!-- Navigation level: no content but has children → show cards -->
+          @if (selectedNode() && currentChildren().length > 0 && selectedNode()!.content.length === 0) {
+            <div>
+              <h2 class="text-xl font-bold mb-2 flex items-center gap-2">
+                @if (selectedNode()!.iconType === 'image' && selectedNode()!.icon) {
+                  <img [src]="selectedNode()!.icon" class="w-8 h-8 rounded object-cover" alt="" />
+                } @else { <i [class]="(selectedNode()!.icon || 'fa-regular fa-file') + ' text-xl'"></i> }
+                <span>{{ selectedNode()!.title }}</span>
+              </h2>
+              @if (selectedNode()!.description) {
+                <div class="tutorial-content prose prose-sm max-w-none text-base-content/70 mb-4"
+                     [innerHTML]="safeHtml(selectedNode()!.description)"></div>
+              }
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                @for (child of currentChildren(); track child.id) {
+                  <div class="card bg-base-100 border border-base-200 shadow-sm cursor-pointer hover:border-primary/50 hover:shadow-md transition-all"
+                       (click)="selectNode(child.id)">
+                    <div class="card-body p-4">
+                      @if (child.iconType === 'image' && child.icon) {
+                        <img [src]="child.icon" class="w-10 h-10 rounded object-cover mb-2" alt="" />
+                      } @else {
+                        <i [class]="(child.icon || 'fa-regular fa-file') + ' text-2xl mb-2 block'"></i>
+                      }
+                      <h3 class="font-semibold text-sm">{{ child.title }}</h3>
+                      @if (childrenOf(child.id).length > 0) {
+                        <p class="text-xs text-base-content/40 mt-1">{{ childrenOf(child.id).length }} subnivel(es)</p>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- Content blocks -->
+          @if (selectedNode() && selectedNode()!.content.length > 0) {
+            <div class="card bg-base-100 border border-base-200 shadow-sm">
+              <div class="card-body p-5 md:p-6">
+
+                <!-- Breadcrumb -->
+                <nav class="flex items-center gap-1.5 text-xs text-base-content/40 mb-4 flex-wrap">
+                  @for (crumbId of breadcrumb(); track crumbId; let last = $last) {
+                    @if (!last) {
+                      <button class="hover:text-primary transition-colors" (click)="selectNode(crumbId)">{{ getNodeTitle(crumbId) }}</button>
+                      <span>›</span>
+                    } @else {
+                      <span class="text-base-content/70 font-medium">{{ getNodeTitle(crumbId) }}</span>
+                    }
+                  }
+                </nav>
+
+                <h2 class="text-xl font-bold mb-2 flex items-center gap-2">
+                  @if (selectedNode()!.iconType === 'image' && selectedNode()!.icon) {
+                    <img [src]="selectedNode()!.icon" class="w-8 h-8 rounded object-cover" alt="" />
+                  } @else {
+                    <i [class]="(selectedNode()!.icon || 'fa-regular fa-file') + ' text-xl'"></i>
+                  }
+                  <span>{{ selectedNode()!.title }}</span>
+                </h2>
+
+                @if (selectedNode()!.description) {
+                  <div class="tutorial-content prose prose-sm max-w-none text-base-content/70 mb-5 pb-4 border-b border-base-200"
+                       [innerHTML]="safeHtml(selectedNode()!.description)"></div>
+                } @else {
+                  <div class="mb-5"></div>
+                }
+
+                @for (block of selectedNode()!.content; track $index; let bi = $index) {
+
+                  @if (block.type === 'text') {
+                    <div class="tutorial-content prose prose-sm max-w-none mb-4"
+                         [innerHTML]="safeHtml(block.data['html'])"></div>
+                  }
+
+                  @if (block.type === 'image' && block.data['src']) {
+                    <figure class="mb-4">
+                      <img [src]="block.data['src']" [alt]="block.data['alt'] || ''"
+                           class="rounded-lg border border-base-200 max-w-full" />
+                      @if (block.data['caption']) {
+                        <figcaption class="text-xs text-base-content/50 mt-1 text-center">{{ block.data['caption'] }}</figcaption>
+                      }
+                    </figure>
+                  }
+
+                  @if (block.type === 'video' && block.data['url']) {
+                    <div class="mb-4">
+                      @if (block.data['title']) {
+                        <p class="text-sm font-semibold mb-1">{{ block.data['title'] }}</p>
+                      }
+                      <div class="aspect-video rounded-lg overflow-hidden border border-base-200 bg-black">
+                        <iframe [src]="safeUrl(block.data['url'])"
+                                class="w-full h-full"
+                                frameborder="0"
+                                allowfullscreen></iframe>
+                      </div>
+                    </div>
+                  }
+
+                  @if (block.type === 'link' && block.data['href']) {
+                    <div class="mb-3">
+                      <a [href]="block.data['href']" [target]="block.data['target'] || '_blank'"
+                         class="link link-primary text-sm">
+                        {{ block.data['label'] || block.data['href'] }}
+                      </a>
+                    </div>
+                  }
+
+                  @if (block.type === 'button' && block.data['href']) {
+                    <div class="mb-4">
+                      <a [href]="block.data['href']" target="_blank"
+                         [class]="'btn btn-sm btn-' + (block.data['style'] || 'primary')">
+                        {{ block.data['label'] || 'Abrir' }}
+                      </a>
+                    </div>
+                  }
+
+                  @if (block.type === 'tabs' && block.data['items']?.length) {
+                    <div class="mb-4">
+                      <div role="tablist" class="tabs tabs-boxed mb-3 flex-wrap">
+                        @for (tab of block.data['items']; track $index; let ti = $index) {
+                          <button role="tab"
+                            [class]="'tab ' + (getTab(bi + '-tabs') === ti ? 'tab-active' : '')"
+                            (click)="setTab(bi + '-tabs', ti)">
+                            {{ tab['label'] }}
+                          </button>
+                        }
+                      </div>
+                      <div class="tutorial-content prose prose-sm max-w-none bg-base-200/50 rounded-lg p-4"
+                           [innerHTML]="safeHtml(block.data['items'][getTab(bi + '-tabs')]?.['html'] ?? '')">
+                      </div>
+                    </div>
+                  }
+
+                  @if (block.type === 'steps' && block.data['items']?.length) {
+                    <ul class="steps steps-vertical w-full mb-4">
+                      @for (step of block.data['items']; track $index) {
+                        <li class="step step-primary">
+                          <div class="text-left pl-2 pb-2">
+                            <p class="font-semibold text-sm mb-1">{{ step['label'] }}</p>
+                            <div class="tutorial-content prose prose-sm max-w-none text-base-content/80"
+                                 [innerHTML]="safeHtml(step['html'])"></div>
+                          </div>
+                        </li>
+                      }
+                    </ul>
+                  }
+
+                }
+              </div>
+            </div>
+
+            @if (currentChildren().length > 0) {
+              <div class="mt-4">
+                <h3 class="text-sm font-semibold text-base-content/60 mb-2 uppercase tracking-wider">Temas relacionados</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  @for (child of currentChildren(); track child.id) {
+                    <div class="card bg-base-100 border border-base-200 shadow-sm cursor-pointer hover:border-primary/50 transition-all"
+                         (click)="selectNode(child.id)">
+                      <div class="card-body p-3 flex-row items-center gap-3">
+                        @if (child.iconType === 'image' && child.icon) {
+                          <img [src]="child.icon" class="w-6 h-6 rounded object-cover" alt="" />
+                        } @else {
+                          <i [class]="child.icon || 'fa-regular fa-file'"></i>
+                        }
+                        <span class="text-sm font-medium">{{ child.title }}</span>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          }
+
+        </div>
+      </div>
+    }
+
+  </div>
+</div>

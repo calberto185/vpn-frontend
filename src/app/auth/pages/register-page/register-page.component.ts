@@ -6,19 +6,21 @@ import AdminEntity from '../../interfaces/auth-user.interface';
 import { CountryEntity } from '../../interfaces/country.interface';
 import { environment } from '../../../../environments/environment';
 import AdminTelephoneDto from '../../interfaces/AdminTelephone.interface';
+import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 
 @Component({
   selector: 'app-register-page',
-  imports: [RouterLink, ReactiveFormsModule],
+  imports: [RouterLink, ReactiveFormsModule, TranslatePipe],
   templateUrl: './register-page.component.html',
   styleUrl: './register-page.component.css'
 })
 export class RegisterPageComponent implements AfterViewInit, OnInit, DoCheck {
 
   fb = inject(FormBuilder);
-  hasError = signal(false);
+  hasError = signal('');
   isPosting = signal(false);
   isSuccess = signal(false);
+  showPassword = signal(false);
   selectedCountry = signal(new CountryEntity());
   toggleDropdown = signal(false);
   ngZone = inject(NgZone);
@@ -63,18 +65,16 @@ export class RegisterPageComponent implements AfterViewInit, OnInit, DoCheck {
   }
   fillListCountries() {
     this.authService.getAllCountries().subscribe((resp) => {
-      console.log("resp countries: ", resp)
-      this.ListCountries.set(resp.data ?? [])
-    })
+      this.ListCountries.set(resp.data ?? []);
+    });
   }
   // RECAPCHA
   onSubmitRecaptcha(token: string) {
-
     if (this.loginForm.invalid) {
-      this.hasError.set(true);
-      setTimeout(() => {
-        this.hasError.set(false);
-      }, 3000);
+      this.loginForm.markAllAsTouched();
+      this.hasError.set('Por favor completa todos los campos correctamente.');
+      setTimeout(() => { this.hasError.set(''); }, 3000);
+      (window as any).grecaptcha?.reset();
       return;
     }
     const data = this.loginForm.value;
@@ -87,26 +87,45 @@ export class RegisterPageComponent implements AfterViewInit, OnInit, DoCheck {
     modelPhone.phoneCode = this.selectedCountry().phoneCode;
     modelPhone.isActive = true;
     modelPhone.phone = data.telephone || "";
-    dataToSave.telephone = modelPhone?.phone ? [modelPhone] : []
+    dataToSave.telephone = modelPhone?.phone ? [modelPhone] : [];
+
+    this.isPosting.set(true);
     this.authService.register(dataToSave.get(), token).subscribe({
-      next: () => {
+      next: (resp) => {
+        if (resp?.error || resp?.status >= 400) {
+          this.isPosting.set(false);
+          this.isSuccess.set(false);
+          this.hasError.set(resp?.error?.message ?? 'Error al crear la cuenta. Inténtalo de nuevo.');
+          setTimeout(() => { this.hasError.set(''); }, 4000);
+          (window as any).grecaptcha?.reset();
+          return;
+        }
         this.isSuccess.set(true);
-        this.authService.login({ email: dataToSave.email, password: dataToSave.password, recaptcha: token }).subscribe((resp) => {
-          if (resp?.error?.message) {
-            this.hasError.set(resp?.error?.message)
-            setTimeout(() => {
-              this.hasError.set(false)
-            }, 4000);
-            return;
+        this.authService.login({ email: dataToSave.email, password: dataToSave.password, recaptcha: token }).subscribe({
+          next: (loginResp) => {
+            this.isPosting.set(false);
+            if (loginResp?.error?.message || loginResp?.status >= 400) {
+              this.hasError.set(loginResp?.error?.message ?? 'Cuenta creada, pero ocurrió un error al iniciar sesión.');
+              setTimeout(() => { this.hasError.set(''); }, 4000);
+              (window as any).grecaptcha?.reset();
+              return;
+            }
+            this.router.navigateByUrl('/client');
+          },
+          error: (err) => {
+            this.isPosting.set(false);
+            this.hasError.set(err?.error?.message ?? 'Cuenta creada, pero ocurrió un error al iniciar sesión.');
+            setTimeout(() => { this.hasError.set(''); }, 4000);
+            (window as any).grecaptcha?.reset();
           }
-          // this.router.navigateByUrl('/');
-          this.router.navigateByUrl('/client');
-          // this.router.navigateByUrl('/panel/dashboard');
         });
       },
-      error: () => {
+      error: (err) => {
+        this.isPosting.set(false);
         this.isSuccess.set(false);
-        this.hasError.set(true);
+        this.hasError.set(err?.error?.message ?? 'Error al crear la cuenta. Inténtalo de nuevo.');
+        setTimeout(() => { this.hasError.set(''); }, 4000);
+        (window as any).grecaptcha?.reset();
       }
     });
 
@@ -130,11 +149,13 @@ export class RegisterPageComponent implements AfterViewInit, OnInit, DoCheck {
   }
 
   onSubmit() {
+    if (this.loginForm.invalid) {
+      this.loginForm.markAllAsTouched();
+      return;
+    }
     const grecaptcha = (window as any).grecaptcha;
     if (grecaptcha) {
-      grecaptcha.execute(); // Ejecuta el reCAPTCHA invisible
-    } else {
-      console.error('❌ grecaptcha no está inicializado');
+      grecaptcha.execute();
     }
   }
   // AUTHENTICACION CON GOOGLE
@@ -154,24 +175,37 @@ export class RegisterPageComponent implements AfterViewInit, OnInit, DoCheck {
   }
 
   handleCredentialResponse(response: any) {
-    this.authService.registerGoogle({ jwt: response.credential, }).subscribe((resp) => {
-      if (resp?.error?.message) {
-        this.hasError.set(resp?.error?.message)
-        setTimeout(() => {
-          this.hasError.set(false)
-        }, 4000);
-        return;
-      }
-      this.authService.loginGoogle({ jwt: response.credential }).subscribe((resp) => {
-        if (resp?.error?.message) {
-          this.hasError.set(resp?.error?.message)
-          setTimeout(() => {
-            this.hasError.set(false)
-          }, 4000);
+    this.isPosting.set(true);
+    this.authService.registerGoogle({ jwt: response.credential }).subscribe({
+      next: (resp) => {
+        if (resp?.error?.message || resp?.status >= 400) {
+          this.isPosting.set(false);
+          this.hasError.set(resp?.error?.message ?? 'Error al registrarse con Google.');
+          setTimeout(() => { this.hasError.set(''); }, 4000);
           return;
         }
-        this.router.navigateByUrl('/client');
-      });
+        this.authService.loginGoogle({ jwt: response.credential }).subscribe({
+          next: (loginResp) => {
+            this.isPosting.set(false);
+            if (loginResp?.error?.message || loginResp?.status >= 400) {
+              this.hasError.set(loginResp?.error?.message ?? 'Error al iniciar sesión con Google.');
+              setTimeout(() => { this.hasError.set(''); }, 4000);
+              return;
+            }
+            this.router.navigateByUrl('/client');
+          },
+          error: (err) => {
+            this.isPosting.set(false);
+            this.hasError.set(err?.error?.message ?? 'Error al iniciar sesión con Google.');
+            setTimeout(() => { this.hasError.set(''); }, 4000);
+          }
+        });
+      },
+      error: (err) => {
+        this.isPosting.set(false);
+        this.hasError.set(err?.error?.message ?? 'Error al registrarse con Google.');
+        setTimeout(() => { this.hasError.set(''); }, 4000);
+      }
     });
   }
   changeCountry(selected: CountryEntity | any) {

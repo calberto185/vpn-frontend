@@ -17,11 +17,20 @@ export class CountriesService {
 
   user = computed(() => this._user())
 
-  getAllCountries(): Observable<ResponseEntity<CountryEntity[]>> {
-    return this.http.get<ResponseEntity<CountryEntity[]>>(baseUrl+'/countries');
+  getAllCountries(onlyActive = false): Observable<ResponseEntity<CountryEntity[]>> {
+    const params = onlyActive ? '?isActive=true' : '';
+    return this.http.get<ResponseEntity<CountryEntity[]>>(baseUrl+'/countries'+params);
   }
   register(data: CountryEntity): Observable<any> {
     return this.http.post<ResponseEntity<CountryEntity>>(baseUrl+'/countries', data);
+  }
+
+  update(data: CountryEntity): Observable<any> {
+    return this.http.put<ResponseEntity<CountryEntity>>(baseUrl+'/countries', data);
+  }
+
+  delete(id: string): Observable<any> {
+    return this.http.delete<ResponseEntity<any>>(baseUrl+'/countries', { body: { id } });
   }
 
   private handlerSuccess(resp: any) {

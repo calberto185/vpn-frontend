@@ -1,44 +1,60 @@
-<!-- ====== Planes: Gestión ====== -->
+<!-- Toast -->
+@if (toast()) {
+  <div class="toast toast-top toast-end z-50">
+    <div class="alert" [class.alert-success]="toast()!.ok" [class.alert-error]="!toast()!.ok">
+      <span>{{ toast()!.msg }}</span>
+    </div>
+  </div>
+}
 
 <!-- Stats -->
 <section class="container mx-auto max-w-7xl px-2 md:px-4 mt-4">
-  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+
     <div class="stat bg-base-100/80 border rounded-xl shadow-sm">
       <div class="stat-figure text-primary">
-        <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-          stroke-width="2">
-          <path d="M6 3h12v4H6zM6 9h12v12H6z" />
+        <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
         </svg>
       </div>
-      <div class="stat-title">Servicios</div>
-      <div class="stat-value text-2xl">3</div>
-      <div class="stat-desc">desde modelo</div>
+      <div class="stat-title">Total</div>
+      <div class="stat-value text-2xl">{{ totalServices() }}</div>
+      <div class="stat-desc">servicios registrados</div>
     </div>
 
     <div class="stat bg-base-100/80 border rounded-xl shadow-sm">
       <div class="stat-figure text-success">
-        <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-          stroke-width="2">
-          <path d="M5 13l4 4L19 7" />
+        <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path d="M5 13l4 4L19 7"/>
         </svg>
       </div>
       <div class="stat-title">Activos</div>
-      <div class="stat-value text-2xl">2</div>
+      <div class="stat-value text-2xl">{{ activeServices() }}</div>
       <div class="stat-desc">en producción</div>
     </div>
 
     <div class="stat bg-base-100/80 border rounded-xl shadow-sm">
       <div class="stat-figure text-warning">
-        <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-          stroke-width="2">
-          <circle cx="12" cy="12" r="10" />
-          <path d="M12 8v5M12 16h.01" />
+        <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><path d="M12 8v5M12 16h.01"/>
         </svg>
       </div>
       <div class="stat-title">Inactivos</div>
-      <div class="stat-value text-2xl">1</div>
-      <div class="stat-desc">ocultos</div>
+      <div class="stat-value text-2xl">{{ inactiveServices() }}</div>
+      <div class="stat-desc">deshabilitados</div>
     </div>
+
+    <div class="stat bg-base-100/80 border rounded-xl shadow-sm">
+      <div class="stat-figure text-info">
+        <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/>
+        </svg>
+      </div>
+      <div class="stat-title">Visibles</div>
+      <div class="stat-value text-2xl">{{ visibleServices() }}</div>
+      <div class="stat-desc">para clientes</div>
+    </div>
+
   </div>
 </section>
 
@@ -46,59 +62,44 @@
 <section class="container mx-auto max-w-7xl px-2 md:px-4 mt-4">
   <div class="bg-base-100 border rounded-xl p-3 md:p-4 shadow-sm">
     <div class="flex flex-wrap items-center gap-3">
-      <label class="input input-bordered flex items-center gap-2 w-full sm:w-[28rem]" aria-label="Buscar planes">
-        <svg class="h-5 w-5 opacity-70" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-          stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8" />
-          <path d="m21 21-4.3-4.3" />
+
+      <!-- Search -->
+      <label class="input input-bordered flex items-center gap-2 w-full sm:w-64" aria-label="Buscar servicios">
+        <svg class="h-4 w-4 opacity-60" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
         </svg>
-        <input id="search-plans" type="text" placeholder="Buscar por nombre, ID o monto" />
+        <input type="text" class="grow text-sm" placeholder="Buscar por nombre…"
+               [value]="searchQuery()"
+               (input)="searchQuery.set($any($event.target).value)" />
+        @if (searchQuery()) {
+          <button class="btn btn-ghost btn-xs p-0 h-5 w-5 min-h-0" (click)="searchQuery.set('')">✕</button>
+        }
       </label>
 
-      <div class="dropdown">
-        <button tabindex="0" class="btn btn-sm md:btn-md">Estado</button>
-        <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-56 z-[60]">
-          <li><a>Todos</a></li>
-          <li><a>Activos</a></li>
-          <li><a>Inactivos</a></li>
-        </ul>
-      </div>
+      <!-- Active filter -->
+      <select class="select select-bordered select-sm"
+              [value]="filterActive()"
+              (change)="filterActive.set($any($event.target).value)">
+        <option value="">Todos</option>
+        <option value="active">Activos</option>
+        <option value="inactive">Inactivos</option>
+      </select>
 
-      <div class="dropdown">
-        <button tabindex="0" class="btn btn-ghost btn-sm md:btn-md">Orden</button>
-        <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-48 z-[60]">
-          <li><a>Recientes</a></li>
-          <li><a>Antiguos</a></li>
-          <li><a>Monto ↑</a></li>
-          <li><a>Monto ↓</a></li>
-        </ul>
-      </div>
+      <span class="text-xs text-base-content/50">
+        {{ filteredServices().length }} / {{ totalServices() }}
+      </span>
 
-      <div class="ml-auto flex items-center gap-2">
-        <div class="tooltip" data-tip="Seleccionar todo">
-          <input type="checkbox" class="checkbox checkbox-sm" aria-label="Seleccionar todo" />
+      @if (canCreate()) {
+        <div class="ml-auto">
+          <button class="btn btn-primary btn-sm md:btn-md" type="button"
+                  onclick="document.getElementById('add_service')?.showModal()">
+            <svg class="h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path d="M12 5v14M5 12h14"/>
+            </svg>
+            Nuevo servicio
+          </button>
         </div>
-
-        <div class="dropdown dropdown-end">
-          <button tabindex="0" class="btn btn-ghost btn-sm md:btn-md">Acciones</button>
-          <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-64 z-[60]">
-            <li><a>Activar</a></li>
-            <li><a>Desactivar</a></li>
-            <li><a>Exportar CSV</a></li>
-            <li><a class="text-error">Eliminar</a></li>
-          </ul>
-        </div>
-
-        <!-- Botón Agregar Servicio -->
-        <button class="btn btn-primary btn-sm md:btn-md" type="button"
-          onclick="document.getElementById('add_service')?.showModal()">
-          <svg class="h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-            stroke="currentColor" stroke-width="2">
-            <path d="M12 5v14M5 12h14" />
-          </svg>
-          Agregar Servicio
-        </button>
-      </div>
+      }
     </div>
   </div>
 </section>
@@ -109,414 +110,394 @@
     <table class="table table-sm w-full">
       <thead>
         <tr>
-          <th class="w-8"><input type="checkbox" class="checkbox checkbox-xs" aria-label="Seleccionar todas" /></th>
-          <th>Plan</th>
+          <th>Servicio</th>
           <th class="hidden xl:table-cell">Descripción</th>
           <th>País</th>
           <th>Estado</th>
           <th class="hidden 2xl:table-cell">Creado</th>
-          <th class="hidden 2xl:table-cell">Actualizado</th>
-          <th class="text-right w-48">Acciones</th>
+          <th class="text-right w-36">Acciones</th>
         </tr>
       </thead>
       <tbody>
-        @for (p of ListServices(); track p.id) {
-        <tr class="hover">
-          <!-- checkbox fila -->
-          <td>
-            <input type="checkbox" class="checkbox checkbox-xs" [attr.aria-label]="'Seleccionar servicio ' + p.sortName" />
-          </td>
-
-          <!-- Plan + ID -->
-          <td>
-            <div class="flex items-center gap-3">
-              <div class="avatar placeholder">
-                <div class="bg-primary/10 text-primary w-10 h-10 rounded-xl flex items-center justify-center">
-                  {{ (p.sortName || '').slice(0,1).toUpperCase() || 'P' }}
+        @if (filteredServices().length === 0) {
+          <tr><td colspan="6" class="text-center py-12 opacity-50">
+            {{ ListServices().length === 0 ? 'No hay servicios. Crea el primero.' : 'Sin resultados para la búsqueda.' }}
+          </td></tr>
+        }
+        @for (p of filteredServices(); track p.id) {
+          <tr class="hover">
+            <td>
+              <div class="flex items-center gap-3">
+                @if (p.picture) {
+                  <div class="avatar">
+                    <div class="w-10 h-10 rounded-xl">
+                      <img [src]="p.picture" [alt]="svcDisplayName(p)" />
+                    </div>
+                  </div>
+                } @else {
+                  <div class="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0">
+                    {{ svcDisplayName(p).slice(0,1).toUpperCase() || 'S' }}
+                  </div>
+                }
+                <div>
+                  <div class="font-medium leading-tight">{{ svcDisplayName(p) }}</div>
+                  <div class="text-xs opacity-60">{{ localeService.displayI18n(p.longName_i18n, p.longName) }}</div>
                 </div>
               </div>
-              <div>
-                <div class="font-medium leading-tight">{{ p.sortName || '—' }}</div>
-                <div class="text-[11px] opacity-70 break-all">ID: {{ p.id || '—' }}</div>
+            </td>
+            <td class="hidden xl:table-cell text-sm opacity-70 max-w-xs truncate">
+              {{ localeService.displayI18n(p.Description_i18n, p.Description) || '—' }}
+            </td>
+            <td>
+              @if (p.country) {
+                <span class="text-base mr-1">{{ p.country.flag }}</span>{{ p.country.countryName }}
+              } @else { — }
+            </td>
+            <td>
+              <div class="flex flex-col gap-1">
+                @if (p.state) {
+                  <span class="badge badge-success badge-sm">Activo</span>
+                } @else {
+                  <span class="badge badge-ghost badge-sm">Inactivo</span>
+                }
+                @if (p.visible) {
+                  <span class="badge badge-info badge-sm">Visible</span>
+                }
               </div>
-            </div>
-          </td>
-
-          <!-- Descripción -->
-          <td class="hidden xl:table-cell break-words">{{ p.Description || '—' }}</td>
-
-          <!-- País -->
-          <td>
-            @if(p.country) {
-              <div class="flex items-center gap-1">
-                <span class="text-lg">{{ p.country.flag }}</span>
-                <span>{{ p.country.countryName }}</span>
+            </td>
+            <td class="hidden 2xl:table-cell text-xs opacity-60">
+              {{ p.createdAt | date:'dd MMM yyyy' }}
+            </td>
+            <td class="text-right">
+              <div class="flex items-center justify-end gap-1">
+                <button class="btn btn-ghost btn-xs" type="button" (click)="openViewModal(p)" title="Ver">
+                  <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </button>
+                @if (canUpdate()) {
+                  <button class="btn btn-ghost btn-xs" type="button" (click)="openEditModal(p)" title="Editar">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
+                    </svg>
+                  </button>
+                  <button class="btn btn-ghost btn-xs" type="button" (click)="toggleState(p)"
+                          [title]="p.state ? 'Desactivar' : 'Activar'">
+                    @if (p.state) {
+                      <svg class="h-4 w-4 text-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>
+                      </svg>
+                    } @else {
+                      <svg class="h-4 w-4 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/><path d="M10 8l6 4-6 4V8z"/>
+                      </svg>
+                    }
+                  </button>
+                }
+                @if (canDelete()) {
+                  <button class="btn btn-ghost btn-xs text-error" type="button" (click)="openDeleteModal(p)" title="Eliminar">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path d="M3 6h18"/><path d="M8 6v14a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V6"/>
+                      <path d="M10 11v6M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
+                    </svg>
+                  </button>
+                }
               </div>
-            } @else {
-              —
-            }
-          </td>
-
-          <!-- Estado -->
-          <td>
-            @if(p.state) {
-              <span class="badge badge-success">Activo</span>
-            } @else {
-              <span class="badge badge-ghost">Inactivo</span>
-            }
-          </td>
-
-          <!-- Fechas -->
-          <td class="hidden 2xl:table-cell">{{ p.createdAt | date:'dd MMM yyyy · HH:mm' }}</td>
-          <td class="hidden 2xl:table-cell">{{ p.updateAt | date:'dd MMM yyyy · HH:mm' }}</td>
-
-          <!-- Acciones -->
-          <td class="text-right">
-            <div class="flex items-center justify-end gap-1.5">
-              <div class="dropdown dropdown-end">
-                <button class="btn btn-ghost btn-xs">Gestionar</button>
-                <ul class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-44 z-[60]">
-                  <li><a (click)="openViewModal(p)">Ver</a></li>
-                  <li><a (click)="openEditModal(p)">Editar</a></li>
-                  <li><a (click)="toggleState(p)">@if(p.state) {Desactivar} @else {Activar}</a></li>
-                </ul>
-              </div>
-              <button class="btn btn-ghost btn-xs text-error" type="button" (click)="openDeleteModal(p)">
-                <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                  stroke="currentColor" stroke-width="2">
-                  <path d="M3 6h18" />
-                  <path d="M8 6v14a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V6" />
-                  <path d="M10 11v6M14 11v6" />
-                  <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
-                </svg>
-              </button>
-            </div>
-          </td>
-        </tr>
-        } @empty {
-        <tr>
-          <td colspan="8" class="text-center py-10 text-sm opacity-70">No hay Servicios.</td>
-        </tr>
+            </td>
+          </tr>
         }
       </tbody>
     </table>
   </div>
-
-  <!-- Paginación -->
-  <div class="mt-3 flex items-center justify-between">
-    <p class="text-sm opacity-70">Mostrando 1–1 de 1</p>
-    <nav class="join">
-      <button class="btn btn-xs join-item" disabled>«</button>
-      <button class="btn btn-xs join-item btn-active" aria-current="page">1</button>
-      <button class="btn btn-xs join-item" disabled>»</button>
-    </nav>
-  </div>
+  <div class="mt-2 text-xs opacity-50 pl-1">{{ totalServices() }} servicio(s) registrado(s)</div>
 </section>
 
 
-<!-- ====== MODALES ====== -->
-
-<!-- Ver servicio -->
+<!-- ====== MODAL: Ver servicio ====== -->
 <dialog id="view_service" class="modal">
-  <div class="modal-box w-11/12 max-w-4xl">
-    <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
-        aria-label="Cerrar">✕</button></form>
-    <h3 class="text-lg font-bold">Detalle del servicio</h3>
-
-    <div class="grid gap-4 md:grid-cols-3 mt-3">
-      <div class="md:col-span-2 card border bg-base-200/60">
-        <div class="card-body p-4">
-          <h4 class="card-title text-sm">Información</h4>
-          <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-            <span class="opacity-70">ID:</span><span>pl-0001</span>
-            <span class="opacity-70">Nombre:</span><span>Básico</span>
-            <span class="opacity-70">Activo:</span><span>Sí</span>
-            <span class="opacity-70">Monto:</span><span>USD 9.99</span>
-            <span class="opacity-70">Límite de dispositivos:</span><span>2</span>
-            <span class="opacity-70">Creado:</span><span>10 Ago 2025 · 12:00</span>
-            <span class="opacity-70">Actualizado:</span><span>10 Ago 2025 · 12:00</span>
-          </div>
-
-          <div class="mt-3">
-            <h5 class="text-sm font-semibold">HTML (vista previa)</h5>
-            <div class="rounded-lg border bg-base-100 p-3 text-sm overflow-auto">
-              &lt;p&gt;Hasta 2 dispositivos&lt;/p&gt;
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card border bg-base-200/60">
-        <div class="card-body p-4">
-          <h4 class="card-title text-sm">Estado</h4>
-          <div class="flex flex-wrap gap-2">
-            <span class="badge badge-success">Activo</span>
-            <span class="badge badge-ghost">Plan de entrada</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="modal-action">
-      <button class="btn" type="button" onclick="document.getElementById('edit_service')?.showModal()">Editar</button>
-      <button class="btn btn-error btn-outline" type="button"
-        onclick="document.getElementById('delete_service')?.showModal()">Eliminar</button>
-    </div>
-  </div>
-  <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
-</dialog>
-
-<!-- Agregar servicio -->
-<!-- <dialog id="add_service" class="modal">
-  <div class="modal-box max-w-3xl">
-    <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button></form>
-    <h3 class="text-lg font-bold">Nuevo servicio</h3>
-    <p class="text-sm opacity-70 mb-3">Registra un servicio con su precio, límite y contenido HTML.</p>
-
-    <div class="grid gap-3 md:grid-cols-2">
-
-      <label class="input input-bordered w-full md:col-span-2"><input type="text" placeholder="Nombre del servicio" class="w-full" required /></label>
-
-      <label class="input input-bordered w-full">
-        <input type="number" step="0.01" min="0" placeholder="Monto (USD)" class="w-full" required />
-      </label>
-
-      <label class="input input-bordered w-full">
-        <input type="number" step="1" min="0" placeholder="Límite de dispositivos" class="w-full" required />
-      </label>
-
-      <label class="label cursor-pointer justify-start gap-3 md:col-span-2">
-        <input type="checkbox" class="toggle" aria-label="Activo" />
-        <span>Activo</span>
-      </label>
-
-      <label class="textarea textarea-bordered w-full md:col-span-2">
-        <textarea class="w-full" rows="5" placeholder="HTML del servicio (opcional)"></textarea>
-      </label>
-    </div>
-
-    <div class="modal-action">
-      <button class="btn btn-ghost" type="button">Cancelar</button>
-      <button class="btn btn-primary" type="button">Crear</button>
-    </div>
-  </div>
-  <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
-</dialog> -->
-<dialog id="add_service" class="modal">
-  <div class="modal-box max-w-3xl">
-    <!-- Cerrar -->
+  <div class="modal-box w-11/12 max-w-2xl">
     <form method="dialog">
       <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button>
     </form>
+    <h3 class="text-lg font-bold mb-4">Detalle del servicio</h3>
 
-    <!-- Encabezado -->
-    <h3 class="text-lg font-bold">Nuevo servicio</h3>
-    <p class="text-sm opacity-70 mb-3">Registra un servicio con su precio, límite y contenido HTML.</p>
+    @if (viewItem(); as s) {
+      <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+        <span class="opacity-60">ID:</span>
+        <span class="font-mono text-xs break-all">{{ s.id }}</span>
 
-    <!-- Formulario reactivo -->
-    <form class="grid gap-3 md:grid-cols-2" [formGroup]="serviceForm" (ngSubmit)="onSubmit()" novalidate
-      autocomplete="on">
+        <span class="opacity-60">Nombre corto:</span>
+        <span class="font-semibold">{{ localeService.displayI18n(s.sortName_i18n, s.sortName) }}</span>
 
+        <span class="opacity-60">Nombre completo:</span>
+        <span>{{ localeService.displayI18n(s.longName_i18n, s.longName) }}</span>
 
-      <!-- Nombre corto de servicio -->
-      <div class="w-full md:col-span-2">
-        <label for="sortName" class="block text-sm font-medium text-gray-700 mb-1">
-          Nombre corto de Servicio
-        </label>
-        <div
-          class="flex items-center border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-blue-500">
-          <!-- ícono etiqueta/nombre -->
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" viewBox="0 0 24 24"
-            fill="sortName" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h10v10H7z" />
-            <path stroke-linecap="round" stroke-linejoin="round" d="M3 12h3" />
-          </svg>
+        <span class="opacity-60">Descripción:</span>
+        <span>{{ localeService.displayI18n(s.Description_i18n, s.Description) || '—' }}</span>
 
-          <input type="text" id="sortName" placeholder="Nombre corto de servicio"
-            class="w-full outline-none text-gray-700 placeholder-gray-400" formControlName="sortName" required
-            minlength="2" aria-label="Nombre corto de servicio" />
-        </div>
+        <span class="opacity-60">País:</span>
+        <span>{{ s.country?.flag }} {{ s.country?.countryName || '—' }}</span>
 
-        @if (serviceForm.get('sortName')?.touched && serviceForm.get('sortName')?.invalid) {
-        <p class="text-red-500 text-sm mt-1 md:col-span-2">
-          @if (serviceForm.get('sortName')?.errors?.['required']) { Ingrese el nombre corto de servicio. }
-          @if (serviceForm.get('sortName')?.errors?.['minlength']) { Debe tener al menos 2 caracteres. }
-        </p>
+        <span class="opacity-60">Estado:</span>
+        <span>
+          @if (s.state) { <span class="badge badge-success badge-sm">Activo</span> }
+          @else { <span class="badge badge-ghost badge-sm">Inactivo</span> }
+          @if (s.visible) { <span class="badge badge-info badge-sm ml-1">Visible</span> }
+        </span>
+
+        @if (s.picture) {
+          <span class="opacity-60">Imagen:</span>
+          <img [src]="s.picture" [alt]="svcDisplayName(s)" class="w-16 h-16 rounded-xl object-cover" />
         }
+
+        <span class="opacity-60">Creado:</span>
+        <span>{{ s.createdAt | date:'dd MMM yyyy · HH:mm' }}</span>
       </div>
 
-      <!-- Nombre extenso de servicio -->
-      <div class="w-full md:col-span-2">
-        <label for="longName" class="block text-sm font-medium text-gray-700 mb-1">
-          Nombre extenso de Servicio
-        </label>
-        <div
-          class="flex items-center border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-blue-500">
-          <!-- ícono etiqueta/nombre -->
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" viewBox="0 0 24 24"
-            fill="longName" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h10v10H7z" />
-            <path stroke-linecap="round" stroke-linejoin="round" d="M3 12h3" />
-          </svg>
-
-          <input type="text" id="longName" placeholder="Nombre extenso de servicio"
-            class="w-full outline-none text-gray-700 placeholder-gray-400" formControlName="longName" required
-            minlength="2" aria-label="Nombre extenso de servicio" />
-        </div>
-
-        @if (serviceForm.get('longName')?.touched && serviceForm.get('longName')?.invalid) {
-        <p class="text-red-500 text-sm mt-1 md:col-span-2">
-          @if (serviceForm.get('longName')?.errors?.['required']) { Ingrese el nombre extenso de servicio. }
-          @if (serviceForm.get('longName')?.errors?.['minlength']) { Debe tener al menos 2 caracteres. }
-        </p>
-        }
-      </div>
-
-      <!-- Descripcion del servicio -->
-      <div class="w-full md:col-span-2">
-        <label for="Description" class="block text-sm font-medium text-gray-700 mb-1">
-          Description
-        </label>
-        <div
-          class="flex items-center border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-blue-500">
-          <!-- ícono etiqueta/nombre -->
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" viewBox="0 0 24 24"
-            fill="Description" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h10v10H7z" />
-            <path stroke-linecap="round" stroke-linejoin="round" d="M3 12h3" />
-          </svg>
-
-          <input type="text" id="Description" placeholder="Descripción del servicio"
-            class="w-full outline-none text-gray-700 placeholder-gray-400" formControlName="Description" required
-            minlength="2" aria-label="Descripción del servicio" />
-        </div>
-
-        @if (serviceForm.get('Description')?.touched && serviceForm.get('Description')?.invalid) {
-        <p class="text-red-500 text-sm mt-1 md:col-span-2">
-          @if (serviceForm.get('Description')?.errors?.['required']) { Ingrese el nombre extenso de servicio. }
-          @if (serviceForm.get('Description')?.errors?.['minlength']) { Debe tener al menos 2 caracteres. }
-        </p>
-        }
-      </div>
-
-      <!-- País -->
-      <div class="w-full">
-        <label class="block text-sm font-medium text-gray-700 mb-1">País</label>
-        <div class="flex items-center border border-gray-300 rounded-lg px-3 py-2
-             focus-within:ring-2 focus-within:ring-blue-500 bg-white">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" fill="none"
-            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="2" y1="12" x2="22" y2="12"></line>
-            <path d="M12 2a15 15 0 0 1 4 10 15 15 0 0 1-4 10 15 15 0 0 1-4-10 15 15 0 0 1 4-10z"></path>
-          </svg>
-          <select formControlName="country" required class="w-full outline-none text-gray-700 bg-transparent">
-            <option value="" disabled selected hidden>Selecciona tu país</option>
-            @for (item of this.ListCountries(); track item.countryName; let idx = $index) {
-            <option [value]="item.id">{{ item.countryName }}</option>
+      <!-- i18n overview -->
+      @if (activeLangs().length > 1) {
+        <div class="mt-4 border-t pt-3">
+          <p class="text-xs font-semibold opacity-60 mb-2">Contenido por idioma</p>
+          <div class="flex flex-wrap gap-2">
+            @for (lang of activeLangs(); track lang.code) {
+              <div class="badge badge-outline badge-sm gap-1">
+                <span class="font-bold">{{ lang.code }}</span>
+                {{ s.sortName_i18n?.[lang.code] || s.sortName || '—' }}
+              </div>
             }
-          </select>
+          </div>
         </div>
-        @if (serviceForm.get('country')?.touched && serviceForm.get('country')?.invalid) {
-        <p class="text-red-500 text-sm mt-1">Seleccione un país.</p>
-        }
-      </div>
-
-
-      <!-- Activo -->
-      <div class="w-full md:col-span-2">
-        <label class="label cursor-pointer justify-start gap-3">
-          <input type="checkbox" class="toggle" formControlName="state" aria-label="Activo" />
-          <span class="text-gray-700">Activo</span>
-        </label>
-      </div>
-
-
-
-      <!-- Acciones -->
-      <div class="modal-action md:col-span-2">
-        <button class="btn btn-ghost" type="button" (click)="onCancel()">Cancelar</button>
-        <button class="btn btn-primary" type="submit" [disabled]="serviceForm.invalid">Crear</button>
-      </div>
-    </form>
-
-  </div>
-
-  <form method="dialog" class="modal-backdrop">
-    <button aria-label="Cerrar">close</button>
-  </form>
-</dialog>
-
-
-<!-- Editar servicio -->
-<dialog id="edit_service" class="modal">
-  <div class="modal-box max-w-3xl">
-    <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
-        aria-label="Cerrar">✕</button></form>
-    <h3 class="text-lg font-bold">Editar servicio</h3>
-
-    <div class="grid gap-3 md:grid-cols-2 mt-2">
-      <label class="input input-bordered w-full md:col-span-2"><input type="text" value="pl-0001" class="w-full"
-          disabled /></label>
-
-      <label class="input input-bordered w-full md:col-span-2"><input type="text" value="Básico"
-          class="w-full" /></label>
-
-      <label class="input input-bordered w-full">
-        <input type="number" step="0.01" min="0" value="9.99" class="w-full" />
-      </label>
-
-      <label class="input input-bordered w-full">
-        <input type="number" step="1" min="0" value="2" class="w-full" />
-      </label>
-
-      <label class="label cursor-pointer justify-start gap-3 md:col-span-2">
-        <input type="checkbox" class="toggle" checked aria-label="Activo" />
-        <span>Activo</span>
-      </label>
-
-      <label class="textarea textarea-bordered w-full md:col-span-2">
-        <textarea class="w-full" rows="5">&lt;p&gt;Hasta 2 dispositivos&lt;/p&gt;</textarea>
-      </label>
-
-      <div class="grid grid-cols-2 gap-2 md:col-span-2">
-        <label class="input input-bordered w-full">
-          <input type="text" value="10 Ago 2025 · 12:00" class="w-full" disabled />
-        </label>
-        <label class="input input-bordered w-full">
-          <input type="text" value="10 Ago 2025 · 12:00" class="w-full" disabled />
-        </label>
-      </div>
-    </div>
+      }
+    }
 
     <div class="modal-action">
-      <button class="btn btn-ghost" type="button">Cancelar</button>
-      <button class="btn btn-primary" type="button">Guardar</button>
+      <button class="btn btn-sm" type="button" (click)="openEditModal(viewItem()!)">Editar</button>
     </div>
   </div>
   <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
 </dialog>
 
-<!-- Eliminar servicio -->
+
+<!-- ====== MODAL: Agregar servicio ====== -->
+<dialog id="add_service" class="modal">
+  <div class="modal-box max-w-2xl">
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button>
+    </form>
+    <h3 class="text-lg font-bold">Nuevo servicio</h3>
+    <p class="text-sm opacity-70 mb-4">Registra un servicio con su nombre en cada idioma activo.</p>
+
+    <form class="grid gap-3 md:grid-cols-2" [formGroup]="serviceForm" (ngSubmit)="onSubmit()" novalidate>
+
+      <!-- ── Nombre corto (i18n) * ── -->
+      <div class="form-control md:col-span-2">
+        <label class="label py-0">
+          <span class="label-text text-xs font-semibold">Nombre corto *</span>
+          @if (!addSortNameValid()) {
+            <span class="label-text-alt text-error text-xs">Requerido en al menos un idioma</span>
+          }
+        </label>
+        @for (lang of activeLangs(); track lang.code) {
+          <div class="flex items-center gap-2 mb-1">
+            <span class="badge badge-ghost badge-sm w-8 text-center shrink-0">{{ lang.code }}</span>
+            <input class="input input-bordered input-sm w-full"
+                   [class.input-error]="!addSortNameValid()"
+                   [value]="i18nAdd()['sortName']?.[lang.code] ?? ''"
+                   (input)="setI18nAdd('sortName', lang.code, $any($event.target).value)"
+                   placeholder="VPN-PE" />
+          </div>
+        }
+      </div>
+
+      <!-- ── Nombre completo (i18n) ── -->
+      <div class="form-control md:col-span-2">
+        <label class="label py-0"><span class="label-text text-xs font-semibold">Nombre completo</span></label>
+        @for (lang of activeLangs(); track lang.code) {
+          <div class="flex items-center gap-2 mb-1">
+            <span class="badge badge-ghost badge-sm w-8 text-center shrink-0">{{ lang.code }}</span>
+            <input class="input input-bordered input-sm w-full"
+                   [value]="i18nAdd()['longName']?.[lang.code] ?? ''"
+                   (input)="setI18nAdd('longName', lang.code, $any($event.target).value)"
+                   [placeholder]="lang.code === 'en' ? 'Basic Peru VPN' : 'VPN Perú Básico'" />
+          </div>
+        }
+      </div>
+
+      <!-- ── Descripción (i18n) ── -->
+      <div class="form-control md:col-span-2">
+        <label class="label py-0"><span class="label-text text-xs">Descripción</span></label>
+        @for (lang of activeLangs(); track lang.code) {
+          <div class="flex items-start gap-2 mb-1">
+            <span class="badge badge-ghost badge-sm w-8 text-center shrink-0 mt-2">{{ lang.code }}</span>
+            <textarea class="textarea textarea-bordered w-full" rows="2"
+                      [value]="i18nAdd()['Description']?.[lang.code] ?? ''"
+                      (input)="setI18nAdd('Description', lang.code, $any($event.target).value)"
+                      placeholder="Descripción breve del servicio"></textarea>
+          </div>
+        }
+      </div>
+
+      <div class="form-control md:col-span-2">
+        <label class="label py-0"><span class="label-text text-xs">URL de imagen (opcional)</span></label>
+        <input class="input input-bordered w-full" formControlName="picture" placeholder="https://…" />
+      </div>
+
+      <div class="form-control md:col-span-2">
+        <label class="label py-0"><span class="label-text text-xs">País *</span></label>
+        <select class="select select-bordered w-full"
+                [class.select-error]="serviceForm.get('country')?.invalid && serviceForm.get('country')?.touched"
+                formControlName="country">
+          <option value="" disabled>— Seleccionar país —</option>
+          @for (c of ListCountries(); track c.id) {
+            <option [value]="c.id">{{ c.flag }} {{ c.countryName }}</option>
+          }
+        </select>
+      </div>
+
+      <label class="label cursor-pointer justify-start gap-3">
+        <input type="checkbox" class="toggle toggle-success toggle-sm" formControlName="state" />
+        <span class="label-text">Activo</span>
+      </label>
+      <label class="label cursor-pointer justify-start gap-3">
+        <input type="checkbox" class="toggle toggle-primary toggle-sm" formControlName="visible" />
+        <span class="label-text">Visible para clientes</span>
+      </label>
+
+      @if (hasError()) {
+        <div class="alert alert-error md:col-span-2 py-2 text-sm">{{ hasError() }}</div>
+      }
+
+      <div class="modal-action md:col-span-2">
+        <button class="btn btn-ghost btn-sm" type="button"
+                onclick="document.getElementById('add_service')?.close()">Cancelar</button>
+        <button class="btn btn-primary btn-sm" type="submit" [disabled]="serviceForm.invalid || !addSortNameValid() || saving()">
+          @if (saving()) { <span class="loading loading-spinner loading-xs"></span> }
+          Crear servicio
+        </button>
+      </div>
+    </form>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
+</dialog>
+
+
+<!-- ====== MODAL: Editar servicio ====== -->
+<dialog id="edit_service" class="modal">
+  <div class="modal-box max-w-2xl">
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button>
+    </form>
+    <h3 class="text-lg font-bold">Editar servicio</h3>
+
+    <form class="grid gap-3 md:grid-cols-2 mt-4" [formGroup]="editForm" (ngSubmit)="onEditSubmit()" novalidate>
+
+      <!-- ── Nombre corto (i18n) * ── -->
+      <div class="form-control md:col-span-2">
+        <label class="label py-0">
+          <span class="label-text text-xs font-semibold">Nombre corto *</span>
+          @if (!editSortNameValid()) {
+            <span class="label-text-alt text-error text-xs">Requerido en al menos un idioma</span>
+          }
+        </label>
+        @for (lang of activeLangs(); track lang.code) {
+          <div class="flex items-center gap-2 mb-1">
+            <span class="badge badge-ghost badge-sm w-8 text-center shrink-0">{{ lang.code }}</span>
+            <input class="input input-bordered input-sm w-full"
+                   [class.input-error]="!editSortNameValid()"
+                   [value]="i18nEdit()['sortName']?.[lang.code] ?? ''"
+                   (input)="setI18nEdit('sortName', lang.code, $any($event.target).value)"
+                   placeholder="VPN-PE" />
+          </div>
+        }
+      </div>
+
+      <!-- ── Nombre completo (i18n) ── -->
+      <div class="form-control md:col-span-2">
+        <label class="label py-0"><span class="label-text text-xs font-semibold">Nombre completo</span></label>
+        @for (lang of activeLangs(); track lang.code) {
+          <div class="flex items-center gap-2 mb-1">
+            <span class="badge badge-ghost badge-sm w-8 text-center shrink-0">{{ lang.code }}</span>
+            <input class="input input-bordered input-sm w-full"
+                   [value]="i18nEdit()['longName']?.[lang.code] ?? ''"
+                   (input)="setI18nEdit('longName', lang.code, $any($event.target).value)" />
+          </div>
+        }
+      </div>
+
+      <!-- ── Descripción (i18n) ── -->
+      <div class="form-control md:col-span-2">
+        <label class="label py-0"><span class="label-text text-xs">Descripción</span></label>
+        @for (lang of activeLangs(); track lang.code) {
+          <div class="flex items-start gap-2 mb-1">
+            <span class="badge badge-ghost badge-sm w-8 text-center shrink-0 mt-2">{{ lang.code }}</span>
+            <textarea class="textarea textarea-bordered w-full" rows="2"
+                      [value]="i18nEdit()['Description']?.[lang.code] ?? ''"
+                      (input)="setI18nEdit('Description', lang.code, $any($event.target).value)"></textarea>
+          </div>
+        }
+      </div>
+
+      <div class="form-control md:col-span-2">
+        <label class="label py-0"><span class="label-text text-xs">URL de imagen (opcional)</span></label>
+        <input class="input input-bordered w-full" formControlName="picture" placeholder="https://…" />
+      </div>
+
+      <div class="form-control md:col-span-2">
+        <label class="label py-0"><span class="label-text text-xs">País *</span></label>
+        <select class="select select-bordered w-full" formControlName="country">
+          <option value="">— Seleccionar país —</option>
+          @for (c of ListCountries(); track c.id) {
+            <option [value]="c.id">{{ c.flag }} {{ c.countryName }}</option>
+          }
+        </select>
+      </div>
+
+      <label class="label cursor-pointer justify-start gap-3">
+        <input type="checkbox" class="toggle toggle-success toggle-sm" formControlName="state" />
+        <span class="label-text">Activo</span>
+      </label>
+      <label class="label cursor-pointer justify-start gap-3">
+        <input type="checkbox" class="toggle toggle-primary toggle-sm" formControlName="visible" />
+        <span class="label-text">Visible para clientes</span>
+      </label>
+
+      @if (hasError()) {
+        <div class="alert alert-error md:col-span-2 py-2 text-sm">{{ hasError() }}</div>
+      }
+
+      <div class="modal-action md:col-span-2">
+        <button class="btn btn-ghost btn-sm" type="button"
+                onclick="document.getElementById('edit_service')?.close()">Cancelar</button>
+        <button class="btn btn-primary btn-sm" type="submit" [disabled]="editForm.invalid || !editSortNameValid() || saving()">
+          @if (saving()) { <span class="loading loading-spinner loading-sm"></span> }
+          Guardar cambios
+        </button>
+      </div>
+    </form>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>
+</dialog>
+
+
+<!-- ====== MODAL: Eliminar servicio ====== -->
 <dialog id="delete_service" class="modal">
-  <div class="modal-box">
-    <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button></form>
+  <div class="modal-box max-w-sm">
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Cerrar">✕</button>
+    </form>
     <h3 class="text-lg font-bold text-error">Eliminar servicio</h3>
-    <p class="py-2">Esta acción es permanente. ¿Deseas continuar?</p>
+    <p class="py-2 text-sm">
+      ¿Deseas eliminar <strong>{{ editItem() ? svcDisplayName(editItem()!) : '' }}</strong>? Esta acción es permanente.
+    </p>
     <div class="modal-action">
-      <button class="btn" type="button">Cancelar</button>
-      <button class="btn btn-error" type="button">Eliminar</button>
+      <button class="btn btn-ghost btn-sm" type="button"
+              onclick="document.getElementById('delete_service')?.close()">Cancelar</button>
+      <button class="btn btn-error btn-sm" type="button"
+              (click)="confirmDelete()" [disabled]="deleting()">
+        @if (deleting()) { <span class="loading loading-spinner loading-xs"></span> }
+        Eliminar definitivamente
+      </button>
     </div>
   </div>
   <form method="dialog" class="modal-backdrop"><button>close</button></form>
 </dialog>
-
-<!-- Atajo: Ctrl/Cmd + K enfoca búsqueda -->
-<script>
-  document.addEventListener('keydown', (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
-      const input = document.getElementById('search-plans');
-      if (input) { e.preventDefault(); input.focus(); }
-    }
-  });
-</script>

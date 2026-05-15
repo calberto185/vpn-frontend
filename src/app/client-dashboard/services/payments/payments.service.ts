@@ -19,14 +19,18 @@ export class PaymentsService {
 
   user = computed(() => this._user())
 
-  getPayments(user_id: string): Observable<any> {
-    return this.http.post<ResponseEntity<PaymentEntity>>(baseUrl+'/payments/client/get', {});
+  getPayments(): Observable<any> {
+    return this.http.post<ResponseEntity<PaymentEntity>>(baseUrl + '/payments/client/get', {});
   }
 
-  doesPayments(user_id: string, data: PaymentEntity): Observable<any> {
-    return this.http.post<ResponseEntity<PaymentEntity>>(baseUrl+'/payments/'+user_id+'/client/hacer-pago', data);
+  doesPayments(data: PaymentEntity): Observable<any> {
+    return this.http.post<ResponseEntity<PaymentEntity>>(baseUrl + '/payments/client/hacer-pago', data);
   }
-  doesPaymentsInitial(user_id: string, data: {
+
+  editarPago(payment_id: string): Observable<any> {
+    return this.http.post<ResponseEntity<PaymentEntity>>(baseUrl + '/payments/client/editar-pago', { payment_id });
+  }
+  doesPaymentsInitial(data: {
     plan: any
     countries: any
     bank: any
@@ -35,18 +39,12 @@ export class PaymentsService {
     payTo: number
     total: number,
     PersonalData: any
-}, file: File | null,): Observable<{ progress: number; response?: any }> {
+  }, file: File | null): Observable<{ progress: number; response?: any }> {
     const formData = new FormData();
-    if(file == null) throw("No hay file para cargar!.")
-    formData.append('file', file);
-
-    if (user_id) {
-      // Object.entries(data).forEach(([key, value]) => {
-      //   formData.append(key, value);
-      // });
-      formData.append("payment", JSON.stringify(data))
-    }
-    return this.http.post(baseUrl+'/payments/client/hacer-pago-inicial', formData, {
+    if (file == null) throw new Error('No hay file para cargar!.');
+    formData.append('voucher', file);
+    formData.append('payment', JSON.stringify(data));
+    return this.http.post(baseUrl + '/payments/client/hacer-pago-inicial', formData, {
       reportProgress: true,
       observe: 'events',
     }).pipe(

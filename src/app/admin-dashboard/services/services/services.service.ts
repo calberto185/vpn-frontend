@@ -24,6 +24,14 @@ export class ServicesService {
     return this.http.post<ResponseEntity<ServicesEntity>>(baseUrl+'/services/create', data);
   }
 
+  update(data: ServicesEntity): Observable<ResponseEntity<ServicesEntity>> {
+    return this.http.post<ResponseEntity<ServicesEntity>>(baseUrl+'/services/update', data);
+  }
+
+  delete(id: string): Observable<ResponseEntity<any>> {
+    return this.http.post<ResponseEntity<any>>(baseUrl+'/services/delete', { id });
+  }
+
   private handlerSuccess(resp: any) {
     return resp;
   }

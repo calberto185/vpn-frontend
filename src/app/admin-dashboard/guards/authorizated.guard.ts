@@ -1,49 +1,29 @@
-// import { inject } from '@angular/core';
-// import { CanMatchFn, Route, Router, UrlSegment } from '@angular/router';
-// import { firstValueFrom } from 'rxjs';
-// import { AuthService } from '../../auth/services/auth.service';
-
-// export const AuthorizatedGuard: CanMatchFn = async  (
-//   route: Route,
-//   segments: UrlSegment[]
-// ) => {
-//   const authService = inject(AuthService);
-//   const router = inject(Router);
-
-//   const isAuthorizated = authService.isAdmin();
-//   if(isAuthorizated !== true) {
-//     router.navigateByUrl("/panel/dashboard");
-//     return false;
-//   }
-//   return true;
-// }
-// src/app/admin-dashboard/guards/standard.guard.ts
 import { inject } from '@angular/core';
 import { CanMatchFn, Route, Router, UrlSegment } from '@angular/router';
 import { AuthService } from '../../auth/services/auth.service';
 import { firstValueFrom } from 'rxjs';
 
+/**
+ * StandardGuard — protege la ruta /client
+ * Solo acceden usuarios con rol 'client' (o sin rol asignado).
+ * Cualquier usuario con rol de panel (admin, manager, support, etc.) es
+ * redirigido a /panel/dashboard.
+ */
 export const StandardGuard: CanMatchFn = async (
   route: Route,
   segments: UrlSegment[]
 ) => {
   const authService = inject(AuthService);
-  const router = inject(Router);
+  const router      = inject(Router);
 
-  // Si no está autenticado, envíalo al login
-  // (tu AuthenticatedGuard ya lo hace al nivel de ruta, esto es por seguridad)
-  // Si prefieres, elimina este bloque y deja solo el check de rol.
-  // const isLogged = await firstValueFrom(authService.checkStatus());
-  // if (!isLogged) return router.createUrlTree(['/auth/login']);
+  await firstValueFrom(authService.ensureAuthChecked());
 
-  // Permitir solo a rol "standard"
-    await firstValueFrom(authService.checkStatus());
+  const role = authService.role()?.toLowerCase() ?? null;
 
-  const isAdmin = authService.role()?.toLowerCase().includes("admin") ? true : false;
-  // console.log("StandardGuard isAdmin: ", isAdmin)
+  // Un rol de panel es cualquier rol que no sea 'client' y no sea null/vacío
+  const isPanelUser = role !== null && role !== '' && role !== 'client';
 
-  if (isAdmin == true) {
-    // Si NO es standard (por ejemplo, es admin), lo llevamos a su panel
+  if (isPanelUser) {
     router.navigateByUrl('/panel/dashboard');
     return false;
   }

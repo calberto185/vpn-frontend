@@ -4,6 +4,7 @@ import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/
 
 import { routes } from './app.routes';
 import { authInterceptor } from './auth/interceptors/auth.interceptor';
+import { errorInterceptor } from './shared/interceptors/error.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -12,9 +13,9 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(
       withFetch(),
       withInterceptors([
-        authInterceptor,
-       ])
+        authInterceptor,   // 1º: añade token + retry 401
+        errorInterceptor,  // 2º: maneja 5xx, network, 4xx → UI
+      ])
     ),
-
   ]
 };

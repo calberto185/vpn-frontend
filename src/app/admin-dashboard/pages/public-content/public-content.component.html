@@ -1,0 +1,264 @@
+<section class="mt-4 space-y-4">
+  <div class="rounded-xl border bg-base-100 p-5 shadow-sm">
+    <div class="flex flex-wrap items-start justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-extrabold tracking-tight">Contenido Página Pública</h1>
+        <p class="mt-1 text-sm text-base-content/60">
+          Edita textos, CTAs, métricas, bloques multimedia, ventajas y footer de la vista principal del módulo `public`.
+        </p>
+      </div>
+      <div class="flex items-center gap-2">
+        <a class="btn btn-ghost btn-sm gap-1" href="/" target="_blank" rel="noopener">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+            <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+          </svg>
+          Vista previa
+        </a>
+        <button class="btn btn-ghost btn-sm" type="button" (click)="reset()">Restaurar</button>
+        @if (canUpdate()) {
+          <button class="btn btn-primary btn-sm" type="button" [disabled]="saving()" (click)="save()">
+            @if (saving()) {
+              <span class="loading loading-spinner loading-sm"></span>
+            }
+            Guardar cambios
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+
+  @if (hasError()) {
+    <div class="alert alert-error shadow-sm">
+      <span>{{ hasError() }}</span>
+    </div>
+  }
+
+  @if (toast(); as t) {
+    <div class="alert" [class.alert-success]="t.ok" [class.alert-error]="!t.ok">
+      <span>{{ t.msg }}</span>
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="rounded-xl border bg-base-100 p-8 text-center shadow-sm">
+      <span class="loading loading-spinner loading-lg"></span>
+      <p class="mt-3 text-base-content/60">Cargando contenido actual...</p>
+    </div>
+  } @else {
+    <!-- Language tabs -->
+    <div class="rounded-xl border bg-base-100 p-4 shadow-sm">
+      <p class="text-xs font-semibold uppercase tracking-wide text-base-content/50 mb-3">Editando idioma</p>
+      <div class="flex flex-wrap gap-2">
+        @for (tab of availableTabs(); track tab.code) {
+          <button type="button"
+            class="btn btn-sm"
+            [class.btn-primary]="activeTab() === tab.code"
+            [class.btn-ghost]="activeTab() !== tab.code"
+            (click)="switchTab(tab.code)">
+            {{ tab.label }}
+          </button>
+        }
+      </div>
+      <p class="mt-2 text-xs text-base-content/40">
+        Escribe el contenido para el idioma seleccionado. Cambia de pestaña para editar otro idioma. Los cambios se consolidan al guardar.
+      </p>
+    </div>
+
+    <form class="space-y-4" [formGroup]="form">
+      <div class="grid gap-4 lg:grid-cols-2">
+        <div class="rounded-xl border bg-base-100 p-5 shadow-sm">
+          <h2 class="mb-4 text-lg font-bold">Marca y Hero</h2>
+          <div class="grid gap-3">
+            <label class="form-control">
+              <span class="label-text">Marca principal</span>
+              <input class="input input-bordered" formControlName="brandName" />
+            </label>
+            <label class="form-control">
+              <span class="label-text">Marca secundaria</span>
+              <input class="input input-bordered" formControlName="brandAccent" />
+            </label>
+            <label class="form-control">
+              <span class="label-text">Badge hero</span>
+              <input class="input input-bordered" formControlName="heroBadge" />
+            </label>
+            <label class="form-control">
+              <span class="label-text">Título hero</span>
+              <textarea class="textarea textarea-bordered min-h-24" formControlName="heroTitle"></textarea>
+            </label>
+            <label class="form-control">
+              <span class="label-text">Texto acento hero</span>
+              <input class="input input-bordered" formControlName="heroAccentText" />
+            </label>
+            <label class="form-control">
+              <span class="label-text">Descripción hero</span>
+              <textarea class="textarea textarea-bordered min-h-28" formControlName="heroDescription"></textarea>
+            </label>
+            <div class="grid gap-3 md:grid-cols-2">
+              <label class="form-control">
+                <span class="label-text">CTA principal label</span>
+                <input class="input input-bordered" formControlName="heroPrimaryCtaLabel" />
+              </label>
+              <label class="form-control">
+                <span class="label-text">CTA principal route</span>
+                <input class="input input-bordered" formControlName="heroPrimaryCtaRoute" />
+              </label>
+              <label class="form-control">
+                <span class="label-text">CTA secundaria label</span>
+                <input class="input input-bordered" formControlName="heroSecondaryCtaLabel" />
+              </label>
+              <label class="form-control">
+                <span class="label-text">CTA secundaria href</span>
+                <input class="input input-bordered" formControlName="heroSecondaryCtaHref" />
+              </label>
+              <label class="form-control">
+                <span class="label-text">Panel label</span>
+                <input class="input input-bordered" formControlName="heroPanelLabel" />
+              </label>
+              <label class="form-control">
+                <span class="label-text">Panel status</span>
+                <input class="input input-bordered" formControlName="heroPanelStatus" />
+              </label>
+            </div>
+            <label class="form-control">
+              <span class="label-text">Highlights hero, uno por línea</span>
+              <textarea class="textarea textarea-bordered min-h-28" formControlName="heroHighlightsText"></textarea>
+            </label>
+            <label class="form-control">
+              <span class="label-text">Métricas hero en JSON</span>
+              <textarea class="textarea textarea-bordered min-h-40 font-mono text-xs" formControlName="heroMetricsJson"></textarea>
+            </label>
+          </div>
+        </div>
+
+        <div class="rounded-xl border bg-base-100 p-5 shadow-sm">
+          <h2 class="mb-4 text-lg font-bold">Contenido multimedia y stats</h2>
+          <div class="grid gap-3">
+            <label class="form-control">
+              <span class="label-text">Título sección multimedia</span>
+              <input class="input input-bordered" formControlName="mediaTitle" />
+            </label>
+            <label class="form-control">
+              <span class="label-text">Descripción sección multimedia</span>
+              <textarea class="textarea textarea-bordered min-h-28" formControlName="mediaDescription"></textarea>
+            </label>
+            <label class="form-control">
+              <span class="label-text">Items multimedia en JSON</span>
+              <textarea class="textarea textarea-bordered min-h-64 font-mono text-xs" formControlName="mediaItemsJson"></textarea>
+            </label>
+            <label class="form-control">
+              <span class="label-text">Stats en JSON</span>
+              <textarea class="textarea textarea-bordered min-h-40 font-mono text-xs" formControlName="statsJson"></textarea>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid gap-4 lg:grid-cols-2">
+        <div class="rounded-xl border bg-base-100 p-5 shadow-sm">
+          <h2 class="mb-4 text-lg font-bold">Ventajas</h2>
+          <div class="grid gap-3">
+            <label class="form-control">
+              <span class="label-text">Eyebrow</span>
+              <input class="input input-bordered" formControlName="advantagesEyebrow" />
+            </label>
+            <label class="form-control">
+              <span class="label-text">Título</span>
+              <input class="input input-bordered" formControlName="advantagesTitle" />
+            </label>
+            <label class="form-control">
+              <span class="label-text">Descripción</span>
+              <textarea class="textarea textarea-bordered min-h-24" formControlName="advantagesDescription"></textarea>
+            </label>
+            <label class="form-control">
+              <span class="label-text">Items de ventajas en JSON</span>
+              <textarea class="textarea textarea-bordered min-h-64 font-mono text-xs" formControlName="advantagesItemsJson"></textarea>
+            </label>
+          </div>
+        </div>
+
+        <div class="rounded-xl border bg-base-100 p-5 shadow-sm">
+          <h2 class="mb-4 text-lg font-bold">Cómo funciona</h2>
+          <div class="grid gap-3">
+            <label class="form-control">
+              <span class="label-text">Eyebrow</span>
+              <input class="input input-bordered" formControlName="howEyebrow" />
+            </label>
+            <label class="form-control">
+              <span class="label-text">Título</span>
+              <input class="input input-bordered" formControlName="howTitle" />
+            </label>
+            <label class="form-control">
+              <span class="label-text">Descripción</span>
+              <textarea class="textarea textarea-bordered min-h-24" formControlName="howDescription"></textarea>
+            </label>
+            <label class="form-control">
+              <span class="label-text">Pasos en JSON</span>
+              <textarea class="textarea textarea-bordered min-h-64 font-mono text-xs" formControlName="howStepsJson"></textarea>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid gap-4 lg:grid-cols-2">
+        <div class="rounded-xl border bg-base-100 p-5 shadow-sm">
+          <h2 class="mb-4 text-lg font-bold">CTA final</h2>
+          <div class="grid gap-3">
+            <label class="form-control">
+              <span class="label-text">Título CTA</span>
+              <input class="input input-bordered" formControlName="ctaTitle" />
+            </label>
+            <label class="form-control">
+              <span class="label-text">Descripción CTA</span>
+              <textarea class="textarea textarea-bordered min-h-24" formControlName="ctaDescription"></textarea>
+            </label>
+            <div class="grid gap-3 md:grid-cols-2">
+              <label class="form-control">
+                <span class="label-text">Label CTA principal</span>
+                <input class="input input-bordered" formControlName="ctaPrimaryLabel" />
+              </label>
+              <label class="form-control">
+                <span class="label-text">Route CTA principal</span>
+                <input class="input input-bordered" formControlName="ctaPrimaryRoute" />
+              </label>
+              <label class="form-control">
+                <span class="label-text">Label CTA secundaria</span>
+                <input class="input input-bordered" formControlName="ctaSecondaryLabel" />
+              </label>
+              <label class="form-control">
+                <span class="label-text">Href CTA secundaria</span>
+                <input class="input input-bordered" formControlName="ctaSecondaryHref" />
+              </label>
+            </div>
+            <label class="form-control">
+              <span class="label-text">Nota inferior CTA</span>
+              <textarea class="textarea textarea-bordered min-h-24" formControlName="ctaNote"></textarea>
+            </label>
+          </div>
+        </div>
+
+        <div class="rounded-xl border bg-base-100 p-5 shadow-sm">
+          <h2 class="mb-4 text-lg font-bold">Footer</h2>
+          <div class="grid gap-3">
+            <label class="form-control">
+              <span class="label-text">Marca footer</span>
+              <input class="input input-bordered" formControlName="footerBrandName" />
+            </label>
+            <label class="form-control">
+              <span class="label-text">Sufijo footer</span>
+              <input class="input input-bordered" formControlName="footerBrandSuffix" />
+            </label>
+            <label class="form-control">
+              <span class="label-text">Descripción footer</span>
+              <textarea class="textarea textarea-bordered min-h-24" formControlName="footerDescription"></textarea>
+            </label>
+            <label class="form-control">
+              <span class="label-text">Texto inferior footer</span>
+              <textarea class="textarea textarea-bordered min-h-24" formControlName="footerBottomText"></textarea>
+            </label>
+          </div>
+        </div>
+      </div>
+    </form>
+  }
+</section>

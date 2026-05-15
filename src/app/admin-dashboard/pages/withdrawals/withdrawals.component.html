@@ -1,0 +1,622 @@
+<!-- ── Toast ──────────────────────────────────────────────────────────────── -->
+@if (toast()) {
+  <div class="toast toast-top toast-end z-[500]">
+    <div class="alert" [class.alert-success]="toast()!.ok" [class.alert-error]="!toast()!.ok">
+      <span>{{ toast()!.msg }}</span>
+    </div>
+  </div>
+}
+
+<div class="space-y-6">
+
+  <!-- ── Header ─────────────────────────────────────────────────────────── -->
+  <div class="flex flex-wrap items-start justify-between gap-3">
+    <div>
+      <div class="flex items-center gap-2">
+        <h1 class="text-2xl font-bold tracking-tight">Retiros de Dinero</h1>
+        @if (newWithdrawalsCount() > 0) {
+          <span class="badge badge-warning badge-sm animate-pulse cursor-pointer"
+                (click)="newWithdrawalsCount.set(0)" title="Haz clic para marcar como visto">
+            +{{ newWithdrawalsCount() }} nuevo{{ newWithdrawalsCount() === 1 ? '' : 's' }}
+          </span>
+        }
+      </div>
+      <p class="mt-1 text-sm text-base-content/60">
+        Gestiona pagos a empleados, devoluciones, préstamos a clientes y otros retiros operativos.
+      </p>
+    </div>
+    @if (canCreate()) {
+      <button class="btn btn-primary btn-sm gap-2" (click)="openCreateModal()">
+        <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+        </svg>
+        Registrar retiro
+      </button>
+    }
+  </div>
+
+  <!-- ── KPI Cards ──────────────────────────────────────────────────────── -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="stat bg-base-200 rounded-2xl py-4 px-5">
+      <div class="stat-title text-xs">Total registros</div>
+      <div class="stat-value text-2xl">{{ total() }}</div>
+    </div>
+    <div class="stat bg-base-200 rounded-2xl py-4 px-5">
+      <div class="stat-title text-xs">Monto total</div>
+      <div class="stat-value text-2xl text-error">{{ totalAmount() | number:'1.2-2' }}</div>
+      <div class="stat-desc">USD</div>
+    </div>
+    <div class="stat bg-base-200 rounded-2xl py-4 px-5">
+      <div class="stat-title text-xs">Completados</div>
+      <div class="stat-value text-2xl text-success">{{ completedAmount() | number:'1.2-2' }}</div>
+    </div>
+    <div class="stat bg-base-200 rounded-2xl py-4 px-5">
+      <div class="stat-title text-xs">Pendientes</div>
+      <div class="stat-value text-2xl text-warning">{{ pendingAmount() | number:'1.2-2' }}</div>
+    </div>
+  </div>
+
+  <!-- ── Filters ────────────────────────────────────────────────────────── -->
+  <div class="flex flex-wrap items-end gap-3">
+    <div class="form-control min-w-[170px]">
+      <label class="label py-0.5"><span class="label-text text-xs">Tipo de retiro</span></label>
+      <select class="select select-bordered select-sm" [(ngModel)]="filterType">
+        <option value="">Todos los tipos</option>
+        @for (t of withdrawalTypes; track t.value) {
+          <option [value]="t.value">{{ t.icon }} {{ t.label }}</option>
+        }
+      </select>
+    </div>
+    <div class="form-control min-w-[150px]">
+      <label class="label py-0.5"><span class="label-text text-xs">Estado</span></label>
+      <select class="select select-bordered select-sm" [(ngModel)]="filterState">
+        <option value="">Todos los estados</option>
+        @for (s of withdrawalStates; track s.value) {
+          <option [value]="s.value">{{ s.label }}</option>
+        }
+      </select>
+    </div>
+    <div class="form-control w-24">
+      <label class="label py-0.5"><span class="label-text text-xs">Año</span></label>
+      <input type="number" class="input input-bordered input-sm" [(ngModel)]="filterYear" min="2020" max="2099" />
+    </div>
+    <button class="btn btn-outline btn-sm self-end gap-1" (click)="applyFilters()">
+      <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+      </svg>
+      Actualizar
+    </button>
+  </div>
+
+  <!-- ── Table ──────────────────────────────────────────────────────────── -->
+  <div class="overflow-x-auto rounded-2xl border border-base-300">
+    <table class="table table-sm w-full">
+      <thead class="bg-base-200 text-xs">
+        <tr>
+          <th>Tipo / Beneficiario</th>
+          <th>Concepto</th>
+          <th>Período</th>
+          <th>Monto</th>
+          <th>Método</th>
+          <th>Estado</th>
+          <th>Ejecutado</th>
+          <th class="text-right">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (filtered.length === 0) {
+          <tr>
+            <td colspan="8" class="py-12 text-center text-base-content/40 text-sm">
+              Sin retiros registrados para los filtros seleccionados.
+            </td>
+          </tr>
+        }
+        @for (w of filtered; track w.id) {
+          <tr class="hover">
+            <td>
+              <div class="flex items-center gap-2">
+                <span class="text-lg leading-none">{{ typeInfo(w.type)?.icon }}</span>
+                <div>
+                  <div class="font-medium text-sm leading-tight">{{ w.recipient }}</div>
+                  <div class="text-xs text-base-content/50 mt-0.5">{{ typeInfo(w.type)?.label }}</div>
+                </div>
+              </div>
+            </td>
+            <td class="max-w-[200px]">
+              <p class="text-sm truncate" [title]="w.concept">{{ w.concept }}</p>
+              @if (w.reference) {
+                <p class="text-xs text-base-content/40 font-mono truncate">{{ w.reference }}</p>
+              }
+            </td>
+            <td><span class="badge badge-ghost badge-sm font-mono">{{ w.period }}</span></td>
+            <td class="font-semibold text-error">
+              {{ w.amount | number:'1.2-2' }}
+              <span class="text-xs font-normal text-base-content/50">{{ w.currency }}</span>
+            </td>
+            <td class="text-xs text-base-content/60">{{ methodLabel(w.method) }}</td>
+            <td>
+              <span class="badge badge-sm" [ngClass]="stateBadge(w.state)">{{ stateLabel(w.state) }}</span>
+            </td>
+            <td class="text-xs text-base-content/60">
+              @if (w.executedAt) {
+                {{ w.executedAt | date:'dd/MM/yyyy' }}
+              } @else {
+                <span class="opacity-40">—</span>
+              }
+            </td>
+            <td class="text-right">
+              <div class="flex justify-end gap-1">
+                <!-- Receipt / Comprobante -->
+                <button class="btn btn-xs btn-ghost text-primary" (click)="openReceiptModal(w)" title="Ver comprobante y notificar">
+                  <svg class="h-3 w-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                  </svg>
+                </button>
+                @if (canUpdate() && w.state === 'pending') {
+                  <button class="btn btn-xs btn-success gap-1" (click)="markAsCompleted(w)" title="Marcar como completado">
+                    <svg class="h-3 w-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                    </svg>
+                  </button>
+                }
+                @if (canUpdate()) {
+                  <button class="btn btn-xs btn-ghost" (click)="openEditModal(w)" title="Editar">
+                    <svg class="h-3 w-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 0l.172.172a2 2 0 010 2.828L12 16H9v-3z"/>
+                    </svg>
+                  </button>
+                }
+                @if (canDelete()) {
+                  <button class="btn btn-xs btn-ghost text-error" (click)="openDeleteModal(w)" title="Eliminar">
+                    <svg class="h-3 w-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                  </button>
+                }
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- MODAL: CREAR                                                           -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<dialog id="modal_wd_create" class="modal modal-bottom sm:modal-middle">
+  <div class="modal-box w-full max-w-2xl">
+    <h3 class="text-lg font-bold mb-5">Registrar retiro de dinero</h3>
+
+    <form [formGroup]="createForm" (ngSubmit)="submitCreate()" class="space-y-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+        <!-- Tipo -->
+        <div class="form-control">
+          <label class="label py-0.5"><span class="label-text">Tipo de retiro <span class="text-error">*</span></span></label>
+          <select class="select select-bordered select-sm" formControlName="type">
+            @for (t of withdrawalTypes; track t.value) {
+              <option [value]="t.value">{{ t.icon }} {{ t.label }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Estado -->
+        <div class="form-control">
+          <label class="label py-0.5"><span class="label-text">Estado</span></label>
+          <select class="select select-bordered select-sm" formControlName="state">
+            @for (s of withdrawalStates; track s.value) {
+              <option [value]="s.value">{{ s.label }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Beneficiario (autocomplete) -->
+        <div class="form-control sm:col-span-2 relative">
+          <label class="label py-0.5">
+            <span class="label-text">Nombre del beneficiario <span class="text-error">*</span></span>
+          </label>
+          <input type="text" class="input input-bordered input-sm" formControlName="recipient"
+                 placeholder="Buscar cliente, proveedor o escribir nombre..."
+                 (input)="onRecipientInput($event)"
+                 (blur)="hideSuggestions()"
+                 autocomplete="off" />
+          @if (createForm.get('recipient')?.touched && createForm.get('recipient')?.invalid) {
+            <span class="text-xs text-error mt-1">Este campo es requerido</span>
+          }
+          <!-- Suggestions dropdown -->
+          @if (showSuggestions() && recipientSuggestions().length > 0) {
+            <ul class="absolute top-full left-0 right-0 z-50 mt-0.5 bg-base-100 border border-base-300 rounded-xl shadow-xl max-h-48 overflow-y-auto">
+              @for (s of recipientSuggestions(); track s.name) {
+                <li>
+                  <button type="button"
+                          class="w-full flex items-center justify-between gap-2 px-3 py-2 text-sm hover:bg-base-200 text-left"
+                          (mousedown)="selectSuggestion(s)">
+                    <div class="flex items-center gap-2 min-w-0">
+                      <div class="w-7 h-7 rounded-full bg-base-300 flex items-center justify-center text-xs font-bold flex-shrink-0">
+                        {{ s.name.charAt(0).toUpperCase() }}
+                      </div>
+                      <div class="min-w-0">
+                        <p class="font-medium truncate">{{ s.name }}</p>
+                        @if (s.email) {
+                          <p class="text-xs text-base-content/50 truncate">{{ s.email }}</p>
+                        }
+                      </div>
+                    </div>
+                    <span class="badge badge-xs flex-shrink-0" [ngClass]="sourceBadge(s.source)">
+                      {{ sourceLabel(s.source) }}
+                    </span>
+                  </button>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+
+        <!-- Concepto -->
+        <div class="form-control sm:col-span-2">
+          <label class="label py-0.5"><span class="label-text">Concepto / Motivo <span class="text-error">*</span></span></label>
+          <input type="text" class="input input-bordered input-sm" formControlName="concept"
+                 placeholder="Ej. Salario mes de mayo, Devolución factura #123..." />
+          @if (createForm.get('concept')?.touched && createForm.get('concept')?.invalid) {
+            <span class="text-xs text-error mt-1">Este campo es requerido</span>
+          }
+        </div>
+
+        <!-- Monto -->
+        <div class="form-control">
+          <label class="label py-0.5"><span class="label-text">Monto <span class="text-error">*</span></span></label>
+          <input type="number" class="input input-bordered input-sm" formControlName="amount"
+                 placeholder="0.00" step="0.01" min="0.01" />
+          @if (createForm.get('amount')?.touched && createForm.get('amount')?.invalid) {
+            <span class="text-xs text-error mt-1">Monto inválido</span>
+          }
+        </div>
+
+        <!-- Moneda -->
+        <div class="form-control">
+          <label class="label py-0.5"><span class="label-text">Moneda</span></label>
+          <select class="select select-bordered select-sm" formControlName="currency">
+            <option value="USD">USD — Dólar</option>
+            <option value="PEN">PEN — Sol</option>
+            <option value="EUR">EUR — Euro</option>
+            <option value="RUB">RUB — Rublo</option>
+            <option value="USDT">USDT — Tether</option>
+          </select>
+        </div>
+
+        <!-- Método -->
+        <div class="form-control">
+          <label class="label py-0.5"><span class="label-text">Método</span></label>
+          <select class="select select-bordered select-sm" formControlName="method">
+            @for (m of withdrawalMethods; track m.value) {
+              <option [value]="m.value">{{ m.label }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Período -->
+        <div class="form-control">
+          <label class="label py-0.5"><span class="label-text">Período (YYYY-MM)</span></label>
+          <input type="month" class="input input-bordered input-sm" formControlName="period" />
+        </div>
+
+        <!-- Referencia con botón autogenerar -->
+        <div class="form-control sm:col-span-2">
+          <label class="label py-0.5">
+            <span class="label-text">Referencia / N.º Comprobante</span>
+            <span class="label-text-alt text-base-content/40 text-xs">Se autogenera si se deja vacío</span>
+          </label>
+          <div class="flex gap-2">
+            <input type="text" class="input input-bordered input-sm flex-1 font-mono"
+                   formControlName="reference" placeholder="WD-2026-0001" />
+            <button type="button" class="btn btn-outline btn-sm gap-1 whitespace-nowrap"
+                    (click)="generateRef()" [disabled]="refLoading()">
+              @if (refLoading()) {
+                <span class="loading loading-spinner loading-xs"></span>
+              } @else {
+                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+              }
+              Auto
+            </button>
+          </div>
+        </div>
+
+        <!-- Fecha de ejecución -->
+        <div class="form-control">
+          <label class="label py-0.5"><span class="label-text">Fecha de ejecución</span></label>
+          <input type="date" class="input input-bordered input-sm" formControlName="executedAt" />
+        </div>
+
+        <!-- URL Adjunto -->
+        <div class="form-control sm:col-span-2">
+          <label class="label py-0.5"><span class="label-text">URL de comprobante</span></label>
+          <input type="url" class="input input-bordered input-sm" formControlName="attachmentUrl"
+                 placeholder="https://..." />
+        </div>
+
+        <!-- Notas -->
+        <div class="form-control sm:col-span-2">
+          <label class="label py-0.5"><span class="label-text">Notas adicionales</span></label>
+          <textarea class="textarea textarea-bordered textarea-sm resize-none" rows="2"
+                    formControlName="notes" placeholder="Información adicional..."></textarea>
+        </div>
+
+      </div>
+
+      <div class="modal-action mt-2">
+        <button type="button" class="btn btn-ghost btn-sm"
+                onclick="document.getElementById('modal_wd_create').close()">Cancelar</button>
+        <button type="submit" class="btn btn-primary btn-sm" [disabled]="saving()">
+          @if (saving()) { <span class="loading loading-spinner loading-xs"></span> }
+          Registrar
+        </button>
+      </div>
+    </form>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button>close</button></form>
+</dialog>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- MODAL: COMPROBANTE / NOTIFICACIONES (post-create + desde tabla)        -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<dialog id="modal_wd_receipt" class="modal modal-bottom sm:modal-middle">
+  <div class="modal-box w-full max-w-lg">
+    @if (createdWithdrawal(); as w) {
+
+      <!-- Header -->
+      <div class="flex items-start justify-between mb-4">
+        <div>
+          <h3 class="text-lg font-bold text-success flex items-center gap-2">
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            Retiro registrado
+          </h3>
+          <p class="text-sm text-base-content/60 mt-0.5">Ref: <span class="font-mono font-semibold">{{ w.reference }}</span></p>
+        </div>
+        <span class="badge badge-sm" [ngClass]="stateBadge(w.state)">{{ stateLabel(w.state) }}</span>
+      </div>
+
+      <!-- Summary card -->
+      <div class="bg-base-200 rounded-xl p-4 mb-4 space-y-1 text-sm">
+        <div class="flex justify-between">
+          <span class="text-base-content/60">Beneficiario</span>
+          <span class="font-semibold">{{ w.recipient }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-base-content/60">Concepto</span>
+          <span class="text-right max-w-[60%] truncate" [title]="w.concept">{{ w.concept }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-base-content/60">Monto</span>
+          <span class="font-bold text-error text-base">{{ w.currency }} {{ w.amount | number:'1.2-2' }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-base-content/60">Método</span>
+          <span>{{ methodLabel(w.method) }}</span>
+        </div>
+        @if (w.signature) {
+          <div class="pt-2 mt-2 border-t border-base-300">
+            <div class="flex items-center gap-1 text-xs text-base-content/40">
+              <svg class="h-3 w-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+              </svg>
+              Firmado digitalmente
+            </div>
+            <p class="font-mono text-[10px] text-base-content/40 truncate mt-0.5" [title]="w.signature">
+              {{ w.signature }}
+            </p>
+          </div>
+        }
+      </div>
+
+      <!-- Action buttons -->
+      <p class="text-xs font-semibold text-base-content/50 uppercase tracking-wide mb-2">Acciones disponibles</p>
+
+      <div class="space-y-3">
+
+        <!-- PDF Download -->
+        <button class="btn btn-outline btn-sm w-full gap-2" (click)="downloadPdf(w)" [disabled]="pdfGenerating()">
+          @if (pdfGenerating()) {
+            <span class="loading loading-spinner loading-xs"></span>
+          } @else {
+            <svg class="h-4 w-4 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+          }
+          Descargar comprobante PDF (firmado)
+        </button>
+
+        <!-- Email notification -->
+        <div class="border border-base-300 rounded-xl p-3 space-y-2">
+          <p class="text-xs font-semibold flex items-center gap-1.5">
+            <svg class="h-3.5 w-3.5 text-blue-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+            </svg>
+            Notificar por Email
+          </p>
+          <input type="email" class="input input-bordered input-xs w-full"
+                 placeholder="destinatario@ejemplo.com"
+                 [value]="notifyEmailAddr()"
+                 (input)="notifyEmailAddr.set($any($event.target).value)" />
+          <textarea class="textarea textarea-bordered textarea-xs w-full resize-none" rows="2"
+                    placeholder="Mensaje adicional (opcional)..."
+                    [value]="notifyEmailMsg()"
+                    (input)="notifyEmailMsg.set($any($event.target).value)"></textarea>
+          <button class="btn btn-primary btn-xs w-full gap-1" (click)="sendNotifyEmail()" [disabled]="emailSending()">
+            @if (emailSending()) { <span class="loading loading-spinner loading-xs"></span> }
+            Enviar email
+          </button>
+        </div>
+
+        <!-- Panel message -->
+        @if (w.recipientId) {
+          <button class="btn btn-outline btn-sm w-full gap-2" (click)="sendPanelMessage(w)" [disabled]="panelMsgSending()">
+            @if (panelMsgSending()) {
+              <span class="loading loading-spinner loading-xs"></span>
+            } @else {
+              <svg class="h-4 w-4 text-purple-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+              </svg>
+            }
+            Enviar mensaje por el panel
+          </button>
+        }
+
+        <!-- Telegram -->
+        <button class="btn btn-outline btn-sm w-full gap-2" (click)="openTelegram(w)">
+          <svg class="h-4 w-4 text-sky-500" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M11.944 0A12 12 0 1 0 12 24a12 12 0 0 0-.056-24zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+          </svg>
+          Compartir por Telegram
+        </button>
+
+        <!-- WhatsApp -->
+        <button class="btn btn-outline btn-sm w-full gap-2" (click)="openWhatsApp(w)">
+          <svg class="h-4 w-4 text-green-500" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+          </svg>
+          Compartir por WhatsApp
+        </button>
+
+      </div>
+
+      <div class="modal-action mt-4">
+        <button class="btn btn-ghost btn-sm"
+                onclick="document.getElementById('modal_wd_receipt').close()">Cerrar</button>
+      </div>
+    }
+  </div>
+  <form method="dialog" class="modal-backdrop"><button>close</button></form>
+</dialog>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- MODAL: EDITAR                                                          -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<dialog id="modal_wd_edit" class="modal modal-bottom sm:modal-middle">
+  <div class="modal-box w-full max-w-2xl">
+    <h3 class="text-lg font-bold mb-5">Editar retiro</h3>
+
+    <form [formGroup]="editForm" (ngSubmit)="submitEdit()" class="space-y-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+        <div class="form-control">
+          <label class="label py-0.5"><span class="label-text">Tipo</span></label>
+          <select class="select select-bordered select-sm" formControlName="type">
+            @for (t of withdrawalTypes; track t.value) {
+              <option [value]="t.value">{{ t.icon }} {{ t.label }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-control">
+          <label class="label py-0.5"><span class="label-text">Estado</span></label>
+          <select class="select select-bordered select-sm" formControlName="state">
+            @for (s of withdrawalStates; track s.value) {
+              <option [value]="s.value">{{ s.label }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-control sm:col-span-2">
+          <label class="label py-0.5"><span class="label-text">Beneficiario <span class="text-error">*</span></span></label>
+          <input type="text" class="input input-bordered input-sm" formControlName="recipient" />
+        </div>
+
+        <div class="form-control sm:col-span-2">
+          <label class="label py-0.5"><span class="label-text">Concepto <span class="text-error">*</span></span></label>
+          <input type="text" class="input input-bordered input-sm" formControlName="concept" />
+        </div>
+
+        <div class="form-control">
+          <label class="label py-0.5"><span class="label-text">Monto <span class="text-error">*</span></span></label>
+          <input type="number" class="input input-bordered input-sm" formControlName="amount" step="0.01" min="0.01" />
+        </div>
+
+        <div class="form-control">
+          <label class="label py-0.5"><span class="label-text">Moneda</span></label>
+          <select class="select select-bordered select-sm" formControlName="currency">
+            <option value="USD">USD</option><option value="PEN">PEN</option>
+            <option value="EUR">EUR</option><option value="RUB">RUB</option>
+            <option value="USDT">USDT</option>
+          </select>
+        </div>
+
+        <div class="form-control">
+          <label class="label py-0.5"><span class="label-text">Método</span></label>
+          <select class="select select-bordered select-sm" formControlName="method">
+            @for (m of withdrawalMethods; track m.value) {
+              <option [value]="m.value">{{ m.label }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-control">
+          <label class="label py-0.5"><span class="label-text">Período</span></label>
+          <input type="month" class="input input-bordered input-sm" formControlName="period" />
+        </div>
+
+        <div class="form-control">
+          <label class="label py-0.5"><span class="label-text">Referencia</span></label>
+          <input type="text" class="input input-bordered input-sm font-mono" formControlName="reference" />
+        </div>
+
+        <div class="form-control">
+          <label class="label py-0.5"><span class="label-text">Fecha de ejecución</span></label>
+          <input type="date" class="input input-bordered input-sm" formControlName="executedAt" />
+        </div>
+
+        <div class="form-control sm:col-span-2">
+          <label class="label py-0.5"><span class="label-text">URL comprobante</span></label>
+          <input type="url" class="input input-bordered input-sm" formControlName="attachmentUrl" placeholder="https://..." />
+        </div>
+
+        <div class="form-control sm:col-span-2">
+          <label class="label py-0.5"><span class="label-text">Notas</span></label>
+          <textarea class="textarea textarea-bordered textarea-sm resize-none" rows="2" formControlName="notes"></textarea>
+        </div>
+      </div>
+
+      <div class="modal-action mt-2">
+        <button type="button" class="btn btn-ghost btn-sm"
+                onclick="document.getElementById('modal_wd_edit').close()">Cancelar</button>
+        <button type="submit" class="btn btn-primary btn-sm" [disabled]="saving()">
+          @if (saving()) { <span class="loading loading-spinner loading-xs"></span> }
+          Guardar cambios
+        </button>
+      </div>
+    </form>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button>close</button></form>
+</dialog>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- MODAL: ELIMINAR                                                        -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<dialog id="modal_wd_delete" class="modal modal-bottom sm:modal-middle">
+  <div class="modal-box max-w-sm">
+    <h3 class="font-bold text-lg text-error">Eliminar retiro</h3>
+    @if (deleteTarget()) {
+      <p class="py-4 text-sm text-base-content/70">
+        ¿Confirmas eliminar el retiro de
+        <span class="font-semibold text-base-content">{{ deleteTarget()!.recipient }}</span>
+        por <span class="font-semibold text-error">{{ deleteTarget()!.amount | number:'1.2-2' }} {{ deleteTarget()!.currency }}</span>?
+        <br><span class="text-base-content/50 text-xs">Esta acción no se puede deshacer.</span>
+      </p>
+    }
+    <div class="modal-action">
+      <button class="btn btn-ghost btn-sm"
+              onclick="document.getElementById('modal_wd_delete').close()">Cancelar</button>
+      <button class="btn btn-error btn-sm" (click)="confirmDelete()" [disabled]="deleting()">
+        @if (deleting()) { <span class="loading loading-spinner loading-xs"></span> }
+        Eliminar
+      </button>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button>close</button></form>
+</dialog>

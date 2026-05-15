@@ -1,1 +1,293 @@
-<p>systems works!</p>
+<!-- BREADCRUMB -->
+<div class="breadcrumbs text-sm pt-2 px-2">
+  <ul><li><a>Panel</a></li><li aria-current="page">Sistema</li></ul>
+</div>
+
+<!-- Toast -->
+@if (toast()) {
+  <div class="toast toast-top toast-end z-50">
+    <div class="alert" [class.alert-success]="toast()!.ok" [class.alert-error]="!toast()!.ok">
+      <span>{{ toast()!.msg }}</span>
+    </div>
+  </div>
+}
+
+<div class="container mx-auto max-w-5xl px-2 md:px-4 mt-4 space-y-6">
+
+  <div class="mt-2 mb-5">
+    <h1 class="text-2xl font-extrabold tracking-tight">Sistema</h1>
+    <p class="text-base-content/60 text-sm">Herramientas de administración del sistema y automatizaciones.</p>
+  </div>
+
+  <!-- ── Server health ──────────────────────────────────────────────────────── -->
+  <div class="card bg-base-100 border shadow-sm">
+    <div class="card-body">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="card-title text-base">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path d="M9 19v-6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2zm0 0V9a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v10m-6 0a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2m0 0V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2z"/>
+          </svg>
+          Estado del servidor
+        </h2>
+        <div class="flex items-center gap-2">
+          <!-- indicador auto-refresh -->
+          <span class="text-xs text-base-content/40 hidden sm:inline">Auto-refresh 30s</span>
+          <button class="btn btn-ghost btn-xs gap-1" (click)="loadHealth()" [disabled]="healthLoading()">
+            @if (healthLoading()) {
+              <span class="loading loading-spinner loading-xs"></span>
+            } @else {
+              <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+              </svg>
+            }
+            Actualizar
+          </button>
+        </div>
+      </div>
+
+      @if (healthLoading() && !healthData()) {
+        <div class="flex justify-center py-6"><span class="loading loading-spinner loading-md text-primary"></span></div>
+      } @else if (healthData()) {
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+          <div class="stat bg-base-200 rounded-xl p-3">
+            <div class="stat-title text-xs">Uptime</div>
+            <div class="stat-value text-lg text-success">{{ healthData().uptime }}</div>
+          </div>
+          <div class="stat bg-base-200 rounded-xl p-3">
+            <div class="stat-title text-xs">Node.js</div>
+            <div class="stat-value text-lg">{{ healthData().nodeVersion }}</div>
+          </div>
+          <div class="stat bg-base-200 rounded-xl p-3">
+            <div class="stat-title text-xs">Plataforma</div>
+            <div class="stat-value text-lg">{{ healthData().platform }}</div>
+          </div>
+          <div class="stat bg-base-200 rounded-xl p-3">
+            <div class="stat-title text-xs">PID</div>
+            <div class="stat-value text-lg">{{ healthData().pid }}</div>
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <p class="text-xs font-semibold text-base-content/60 uppercase tracking-wide">Memoria</p>
+          <div class="flex items-center gap-3">
+            <span class="text-xs w-28 shrink-0">Heap usado</span>
+            <div class="flex-1 bg-base-300 rounded-full h-2">
+              <div class="bg-primary h-2 rounded-full transition-all"
+                [style.width.%]="memPct(healthData().memory.heapUsedMB, healthData().memory.heapTotalMB)"></div>
+            </div>
+            <span class="text-xs w-24 text-right">{{ healthData().memory.heapUsedMB }} / {{ healthData().memory.heapTotalMB }} MB</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-xs w-28 shrink-0">RSS total</span>
+            <div class="flex-1 bg-base-300 rounded-full h-2">
+              <div class="bg-warning h-2 rounded-full" [style.width.%]="memPct(healthData().memory.rssMB, 512)"></div>
+            </div>
+            <span class="text-xs w-24 text-right">{{ healthData().memory.rssMB }} MB</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-xs w-28 shrink-0">Externo</span>
+            <div class="flex-1 bg-base-300 rounded-full h-2">
+              <div class="bg-info h-2 rounded-full" [style.width.%]="memPct(healthData().memory.externalMB, 512)"></div>
+            </div>
+            <span class="text-xs w-24 text-right">{{ healthData().memory.externalMB }} MB</span>
+          </div>
+        </div>
+      } @else {
+        <p class="text-sm text-base-content/40 text-center py-4">No se pudo obtener el estado del servidor.</p>
+      }
+    </div>
+  </div>
+
+  <!-- ── Cron triggers ──────────────────────────────────────────────────────── -->
+  <div class="card bg-base-100 border shadow-sm">
+    <div class="card-body">
+      <h2 class="card-title text-base">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+        </svg>
+        Tareas programadas (cron)
+      </h2>
+      <p class="text-sm opacity-60 mb-3">Ejecuta manualmente cualquier job del scheduler sin esperar su próxima ejecución automática.</p>
+
+      @if (canUpdate()) {
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="card bg-base-200/50 border">
+            <div class="card-body p-4">
+              <h3 class="font-semibold text-sm">Sincronizar S-UI ↔ DB</h3>
+              <p class="text-xs opacity-60 mb-3">Detecta clientes S-UI sin registro en MongoDB.</p>
+              <button class="btn btn-sm btn-outline btn-primary w-full" (click)="runCron('sync')" [disabled]="cronRunning() !== null">
+                @if (cronRunning() === 'sync') { <span class="loading loading-spinner loading-xs"></span> Ejecutando… }
+                @else { Ejecutar sync }
+              </button>
+            </div>
+          </div>
+          <div class="card bg-base-200/50 border">
+            <div class="card-body p-4">
+              <h3 class="font-semibold text-sm">Recordatorios de vencimiento</h3>
+              <p class="text-xs opacity-60 mb-3">Envía notificaciones Telegram a clientes próximos a vencer.</p>
+              <button class="btn btn-sm btn-outline btn-warning w-full" (click)="runCron('recordatorios')" [disabled]="cronRunning() !== null">
+                @if (cronRunning() === 'recordatorios') { <span class="loading loading-spinner loading-xs"></span> Ejecutando… }
+                @else { Enviar recordatorios }
+              </button>
+            </div>
+          </div>
+          <div class="card bg-base-200/50 border">
+            <div class="card-body p-4">
+              <h3 class="font-semibold text-sm">Suspensión automática</h3>
+              <p class="text-xs opacity-60 mb-3">Suspende clientes vencidos (aplica 1 día de gracia).</p>
+              <button class="btn btn-sm btn-outline btn-error w-full" (click)="runCron('suspender')" [disabled]="cronRunning() !== null">
+                @if (cronRunning() === 'suspender') { <span class="loading loading-spinner loading-xs"></span> Ejecutando… }
+                @else { Suspender vencidos }
+              </button>
+            </div>
+          </div>
+          <div class="card bg-base-200/50 border">
+            <div class="card-body p-4">
+              <h3 class="font-semibold text-sm">Resumen diario al admin</h3>
+              <p class="text-xs opacity-60 mb-3">Envía el resumen del sistema al Telegram del administrador.</p>
+              <button class="btn btn-sm btn-outline btn-info w-full" (click)="runCron('resumen')" [disabled]="cronRunning() !== null">
+                @if (cronRunning() === 'resumen') { <span class="loading loading-spinner loading-xs"></span> Ejecutando… }
+                @else { Enviar resumen }
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+
+      @if (lastResult()) {
+        <div class="alert mt-4 py-2" [class.alert-success]="lastResult()!.ok" [class.alert-error]="!lastResult()!.ok">
+          <span class="text-sm"><strong>{{ lastResult()!.job }}</strong>: {{ lastResult()!.msg }}</span>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- ── App token generator ────────────────────────────────────────────────── -->
+  <div class="card bg-base-100 border shadow-sm">
+    <div class="card-body">
+      <h2 class="card-title text-base">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path d="M15 7a2 2 0 0 1 2 2m4 0a6 6 0 0 1-7.743 5.743L11 17H9v2H7v2H4a1 1 0 0 1-1-1v-2.586a1 1 0 0 1 .293-.707l5.964-5.964A6 6 0 1 1 21 9z"/>
+        </svg>
+        Generar token de aplicación
+      </h2>
+      <p class="text-sm opacity-60 mb-3">Genera un JWT para autenticar aplicaciones externas (n8n, webhooks, bots).</p>
+
+      @if (canUpdate()) {
+        <form [formGroup]="tokenForm" (ngSubmit)="generateToken()" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="form-control">
+            <label class="label"><span class="label-text">Etiqueta</span></label>
+            <input formControlName="label" type="text" class="input input-bordered input-sm" placeholder="n8n producción" />
+          </div>
+          <div class="form-control">
+            <label class="label"><span class="label-text">Host *</span></label>
+            <input formControlName="host" type="text" class="input input-bordered input-sm" placeholder="190.10.10.1" />
+          </div>
+          <div class="form-control">
+            <label class="label"><span class="label-text">Puerto</span></label>
+            <input formControlName="port" type="number" class="input input-bordered input-sm" />
+          </div>
+          <div class="form-control">
+            <label class="label"><span class="label-text">País (nombre)</span></label>
+            <input formControlName="countryName" type="text" class="input input-bordered input-sm" placeholder="Rusia" />
+          </div>
+          <div class="sm:col-span-2 flex justify-end">
+            <button type="submit" class="btn btn-sm btn-warning" [disabled]="tokenForm.invalid">Generar token</button>
+          </div>
+        </form>
+      }
+
+      @if (appToken()) {
+        <div class="mt-4 alert alert-warning alert-soft border border-warning/30">
+          <div class="w-full">
+            <p class="text-xs font-semibold mb-1">Token generado{{ appTokenLabel() ? ' — ' + appTokenLabel() : '' }} (cópialo ahora, no se volverá a mostrar)</p>
+            <div class="flex gap-2 items-center">
+              <input type="text" class="input input-bordered input-sm font-mono flex-1 text-xs" [value]="appToken()!" readonly />
+              <button class="btn btn-sm btn-ghost" (click)="copyToken()">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                </svg>
+                Copiar
+              </button>
+            </div>
+            <p class="text-xs opacity-50 mt-1">Úsalo en el header <code>X-App-Token</code>.</p>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- ── App tokens activos ─────────────────────────────────────────────────── -->
+  <div class="card bg-base-100 border shadow-sm">
+    <div class="card-body">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="card-title text-base">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-info" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2"/>
+          </svg>
+          Tokens activos
+          <span class="badge badge-info badge-sm ml-1">{{ appTokensList().length }}</span>
+        </h2>
+        <button class="btn btn-ghost btn-xs" (click)="loadAppTokens()" [disabled]="tokensLoading()">
+          @if (tokensLoading()) { <span class="loading loading-spinner loading-xs"></span> }
+          @else {
+            <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+          }
+          Actualizar
+        </button>
+      </div>
+
+      @if (tokensLoading() && !appTokensList().length) {
+        <div class="flex justify-center py-4"><span class="loading loading-spinner loading-sm text-primary"></span></div>
+      } @else if (!appTokensList().length) {
+        <p class="text-sm text-base-content/40 text-center py-4">No hay tokens activos.</p>
+      } @else {
+        <div class="overflow-x-auto">
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>Etiqueta</th>
+                <th>Host</th>
+                <th>País</th>
+                <th>Creado</th>
+                <th>Creado por</th>
+                @if (canUpdate()) { <th></th> }
+              </tr>
+            </thead>
+            <tbody>
+              @for (t of appTokensList(); track t.id) {
+                <tr class="hover">
+                  <td class="font-medium">{{ t.label || '—' }}</td>
+                  <td class="font-mono text-xs">{{ t.host }}:{{ t.port }}</td>
+                  <td>
+                    @if (t.countryName) {
+                      <span class="badge badge-ghost badge-sm">{{ t.countryCode }} {{ t.countryName }}</span>
+                    } @else { <span class="text-base-content/30">—</span> }
+                  </td>
+                  <td class="text-xs text-base-content/60">{{ t.createdAt | date:'dd/MM/yy HH:mm' }}</td>
+                  <td class="text-xs text-base-content/60">{{ t.createdBy || '—' }}</td>
+                  @if (canUpdate()) {
+                    <td>
+                      <button class="btn btn-ghost btn-xs text-error"
+                              (click)="revokeToken(t.id)"
+                              [disabled]="revokingTokenId() === t.id">
+                        @if (revokingTokenId() === t.id) {
+                          <span class="loading loading-spinner loading-xs"></span>
+                        } @else {
+                          Revocar
+                        }
+                      </button>
+                    </td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  </div>
+
+</div>

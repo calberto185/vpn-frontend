@@ -11,6 +11,7 @@ import { ClientService } from '../../services/client/client.service';
 import { PaymentsService } from '../../services/payments/payments.service';
 import { BankAccountService } from '../../services/bankAccount/bankAccount.service';
 import { TermsService } from '../../services/terms/terms.service';
+import { CryptoPaymentService, BinanceBybitOrder } from '../../services/crypto/crypto-payment.service';
 import PaymentEntity from '../../interfaces/payment.interface';
 import bankAccountEntity from '../../interfaces/bankAccount.interface';
 import TermsEntity from '../../interfaces/terms.interface';
@@ -31,10 +32,19 @@ export class PaymentsComponent implements OnInit, OnDestroy {
   private paymentsService = inject(PaymentsService);
   private bankService     = inject(BankAccountService);
   private termsService    = inject(TermsService);
+  private cryptoSvc       = inject(CryptoPaymentService);
   private fb              = inject(FormBuilder);
   private route           = inject(ActivatedRoute);
   private router          = inject(Router);
   private http            = inject(HttpClient);
+
+  // ── Crypto payment state ───────────────────────────────────────────────────
+  txHash           = signal('');
+  cryptoSubmitting = signal(false);
+  // Binance/Bybit Pay order result (QR + link)
+  gatewayOrder     = signal<BinanceBybitOrder | null>(null);
+  gatewayLoading   = signal(false);
+  gatewayError     = signal('');
 
   // ── State ──────────────────────────────────────────────────────────────────
   profile         = signal<UserEntity>(new UserEntity());
@@ -339,6 +349,9 @@ export class PaymentsComponent implements OnInit, OnDestroy {
     this.months.set(1);
     this.selectedFile = null;
     this.uploadProgress.set(0);
+    this.txHash.set('');
+    this.gatewayOrder.set(null);
+    this.gatewayError.set('');
     this.paymentForm.reset({
       plan_id:  defaultPlan?.plan_id ?? '',
       bank_id:  '',
@@ -360,6 +373,9 @@ export class PaymentsComponent implements OnInit, OnDestroy {
     const bank = this.visibleBanks().find(b => b.id === bankId) ?? null;
     this.selectedBank.set(bank);
     this.paymentForm.patchValue({ bank_id: bankId });
+    this.txHash.set('');
+    this.gatewayOrder.set(null);
+    this.gatewayError.set('');
   }
 
   onTermsCheck(checked: boolean) {
@@ -377,6 +393,16 @@ export class PaymentsComponent implements OnInit, OnDestroy {
            ['binance_pay', 'bybit_pay'].includes(bank.typeAccount);
   }
 
+  /** Binance Pay / Bybit Pay — have automated QR order flow */
+  isGatewayCrypto(bank: bankAccountEntity | null): boolean {
+    return bank?.typeAccount === 'binance_pay' || bank?.typeAccount === 'bybit_pay';
+  }
+
+  /** Manual crypto (USDT, BTC, ETH…) — requires TX hash from client */
+  isManualCrypto(bank: bankAccountEntity | null): boolean {
+    return !!bank && bank.typeAccount.startsWith('crypto_');
+  }
+
   bankTypeIcon(bank: bankAccountEntity): string {
     if (this.isCrypto(bank)) return '₿';
     if (bank.typeAccount === 'cash') return '💵';
@@ -386,7 +412,77 @@ export class PaymentsComponent implements OnInit, OnDestroy {
   }
 
   canSubmit(): boolean {
-    return !this.paymentForm.invalid && !this.saving() && !!this.selectedFile;
+    const bank = this.selectedBank();
+    if (this.paymentForm.invalid || this.saving()) return false;
+    // Gateway crypto (Binance/Bybit): gateway flow handles its own submit
+    if (this.isGatewayCrypto(bank)) return false;
+    // Manual crypto: TX hash required instead of file
+    if (this.isManualCrypto(bank)) return this.txHash().trim().length > 0;
+    // Bank transfer / cash: file required
+    return !!this.selectedFile;
+  }
+
+  /** Submit for manual crypto (USDT, BTC, etc.) using TX hash */
+  onCryptoSubmit() {
+    const plan = this.selectedPlan();
+    const bank = this.selectedBank();
+    if (!plan || !bank || this.cryptoSubmitting()) return;
+    const hash = this.txHash().trim();
+    if (!hash) { this.showToast('Ingresa el TX Hash de la transacción', false); return; }
+
+    this.cryptoSubmitting.set(true);
+    this.cryptoSvc.registerPayment({
+      methodId: bank.id,
+      planId:   plan.plan_id,
+      amount:   this.totalPrice(),
+      txHash:   hash,
+      payTo:    this.months(),
+      network:  (bank as any).network,
+    }).subscribe({
+      next: () => {
+        this.cryptoSubmitting.set(false);
+        this.showToast('Pago cripto registrado. Verificación en curso (24-48h).', true);
+        this.txHash.set('');
+        (document.getElementById('pay_modal') as HTMLDialogElement | null)?.close();
+        this.paymentForm.reset();
+        this.loadPayments();
+      },
+      error: (err: any) => {
+        this.cryptoSubmitting.set(false);
+        this.showToast(err?.error?.message ?? 'Error al registrar el pago cripto', false);
+      },
+    });
+  }
+
+  /** Create Binance Pay or Bybit Pay order and show QR */
+  onGatewayPayClick() {
+    const plan = this.selectedPlan();
+    const bank = this.selectedBank();
+    if (!plan || !bank || this.gatewayLoading()) return;
+
+    this.gatewayOrder.set(null);
+    this.gatewayError.set('');
+    this.gatewayLoading.set(true);
+
+    const obs$ = bank.typeAccount === 'binance_pay'
+      ? this.cryptoSvc.createBinanceOrder(plan.plan_id, this.months())
+      : this.cryptoSvc.createBybitOrder(plan.plan_id, this.months());
+
+    obs$.subscribe({
+      next: (resp: any) => {
+        this.gatewayLoading.set(false);
+        this.gatewayOrder.set(resp?.data ?? null);
+        if (resp?.data?.payment_id) {
+          // Show success and close; payment tracked by payment_id
+          this.showToast('Orden creada. Completa el pago en tu app.', true);
+          this.loadPayments();
+        }
+      },
+      error: (err: any) => {
+        this.gatewayLoading.set(false);
+        this.gatewayError.set(err?.error?.message ?? 'Error al crear la orden');
+      },
+    });
   }
 
   onPaySubmit() {

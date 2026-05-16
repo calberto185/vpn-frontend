@@ -194,6 +194,9 @@
                     @if (canDelete() && !truthy(c.revoked)) {
                       <li><button type="button" class="text-error" (click)="openDialog('revoke_cert', c)">Revocar</button></li>
                     }
+                    @if (canDelete()) {
+                      <li><button type="button" class="text-error font-semibold" (click)="openDialog('delete_cert', c)">Eliminar</button></li>
+                    }
                   </ul>
                 </div>
               </div>
@@ -679,8 +682,11 @@
     <h3 class="text-lg font-bold text-error">Eliminar certificado</h3>
     <p class="py-3">Esta acción no se puede deshacer.</p>
     <div class="modal-action">
-      <button class="btn btn-ghost" type="button" onclick="document.getElementById('delete_cert')?.close()">Cancelar</button>
-      <button class="btn btn-error" type="button" (click)="confirmDelete(modalData)">Eliminar</button>
+      <button class="btn btn-ghost" type="button" [disabled]="deleting()" onclick="document.getElementById('delete_cert')?.close()">Cancelar</button>
+      <button class="btn btn-error" type="button" [disabled]="deleting()" (click)="confirmDelete(modalData)">
+        @if (deleting()) { <span class="loading loading-spinner loading-xs"></span> }
+        Eliminar
+      </button>
     </div>
   </div>
   <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>

@@ -491,52 +491,151 @@
       </div>
     </div>
 
-    <!-- ── 3. Comprobante ────────────────────────────────────────────────── -->
-    <div class="card border bg-base-200/50 mb-4">
-      <div class="card-body p-4 gap-3">
-        <h4 class="font-semibold text-sm flex items-center gap-2">
-          <span class="badge badge-primary badge-sm">3</span> Comprobante de pago
-        </h4>
+    <!-- ── 3. Comprobante / Pago ──────────────────────────────────────────── -->
+    @if (!isGatewayCrypto(selectedBank())) {
+      <div class="card border bg-base-200/50 mb-4">
+        <div class="card-body p-4 gap-3">
+          <h4 class="font-semibold text-sm flex items-center gap-2">
+            <span class="badge badge-primary badge-sm">3</span>
+            @if (isManualCrypto(selectedBank())) { TX Hash de la transacción }
+            @else { Comprobante de pago }
+          </h4>
 
-        @if (selectedBank()) {
-          <p class="text-xs opacity-60">
-            @if (isCrypto(selectedBank()!)) {
-              Adjunta una captura de pantalla de la transacción desde tu billetera.
-            } @else {
-              Adjunta la imagen o PDF del voucher de transferencia / depósito.
-            }
-          </p>
-        }
-
-        <div class="border-2 border-dashed rounded-xl p-4 text-center transition-colors"
-             [class.border-primary]="!!selectedFile"
-             [class.border-base-300]="!selectedFile">
-          <input type="file" id="voucher_input" accept="image/*,application/pdf"
-                 class="hidden" (change)="onFileChange($event)" />
-          <label for="voucher_input" class="cursor-pointer flex flex-col items-center gap-2">
-            @if (selectedFile) {
-              <svg class="h-8 w-8 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          <!-- Manual crypto: TX hash input -->
+          @if (isManualCrypto(selectedBank())) {
+            <p class="text-xs opacity-60">
+              Tras enviar los fondos, pega el hash de transacción (TXID) que aparece en tu billetera.
+            </p>
+            <div class="form-control">
+              <label class="input input-bordered flex items-center gap-2 font-mono text-xs">
+                <svg class="h-4 w-4 opacity-50 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+                </svg>
+                <input type="text" placeholder="Pega aquí el TX Hash / TXID…"
+                       [value]="txHash()"
+                       (input)="txHash.set($any($event.target).value.trim())"
+                       class="grow" autocomplete="off" spellcheck="false" />
+                @if (txHash()) {
+                  <svg class="h-4 w-4 text-success shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path d="M5 13l4 4L19 7"/>
+                  </svg>
+                }
+              </label>
+              @if (!txHash()) {
+                <span class="label-text-alt text-warning mt-1">Requerido para enviar el pago</span>
+              }
+            </div>
+            <div class="alert alert-info py-2 text-xs">
+              <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/><path d="M12 8v5M12 16h.01"/>
               </svg>
-              <span class="text-sm font-medium text-success">{{ selectedFile.name }}</span>
-              <span class="text-xs opacity-60">Haz clic para cambiar el archivo</span>
-            } @else {
-              <svg class="h-8 w-8 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
-              </svg>
-              <span class="text-sm font-medium">Seleccionar comprobante</span>
-              <span class="text-xs opacity-50">Imagen (JPG, PNG) o PDF · máx. 100 MB</span>
+              El pago será verificado en 24-48h. Recibirás confirmación en tu historial.
+            </div>
+          } @else {
+            <!-- Traditional voucher upload -->
+            @if (selectedBank()) {
+              <p class="text-xs opacity-60">Adjunta la imagen o PDF del voucher de transferencia / depósito.</p>
             }
-          </label>
+            <div class="border-2 border-dashed rounded-xl p-4 text-center transition-colors"
+                 [class.border-primary]="!!selectedFile"
+                 [class.border-base-300]="!selectedFile">
+              <input type="file" id="voucher_input" accept="image/*,application/pdf"
+                     class="hidden" (change)="onFileChange($event)" />
+              <label for="voucher_input" class="cursor-pointer flex flex-col items-center gap-2">
+                @if (selectedFile) {
+                  <svg class="h-8 w-8 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  <span class="text-sm font-medium text-success">{{ selectedFile.name }}</span>
+                  <span class="text-xs opacity-60">Haz clic para cambiar el archivo</span>
+                } @else {
+                  <svg class="h-8 w-8 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                  </svg>
+                  <span class="text-sm font-medium">Seleccionar comprobante</span>
+                  <span class="text-xs opacity-50">Imagen (JPG, PNG) o PDF · máx. 100 MB</span>
+                }
+              </label>
+            </div>
+            <!-- Upload progress -->
+            @if (saving() && uploadProgress() > 0) {
+              <progress class="progress progress-primary w-full" [value]="uploadProgress()" max="100"></progress>
+              <p class="text-xs text-center opacity-60">Subiendo... {{ uploadProgress() }}%</p>
+            }
+          }
         </div>
-
-        <!-- Upload progress -->
-        @if (saving() && uploadProgress() > 0) {
-          <progress class="progress progress-primary w-full" [value]="uploadProgress()" max="100"></progress>
-          <p class="text-xs text-center opacity-60">Subiendo... {{ uploadProgress() }}%</p>
-        }
       </div>
-    </div>
+    }
+
+    <!-- ── 3 (Gateway). Pagar con Binance Pay / Bybit Pay ─────────────────── -->
+    @if (isGatewayCrypto(selectedBank())) {
+      <div class="card border bg-base-200/50 mb-4">
+        <div class="card-body p-4 gap-3">
+          <h4 class="font-semibold text-sm flex items-center gap-2">
+            <span class="badge badge-primary badge-sm">3</span>
+            Pago con {{ selectedBank()?.typeAccount === 'binance_pay' ? 'Binance Pay' : 'Bybit Pay' }}
+          </h4>
+
+          @if (!gatewayOrder()) {
+            <p class="text-xs opacity-60">
+              Se generará una orden de pago con QR y enlace válido por 15 minutos.
+            </p>
+            @if (gatewayError()) {
+              <div class="alert alert-error py-2 text-xs">{{ gatewayError() }}</div>
+            }
+            <button type="button" class="btn btn-primary w-full gap-2"
+                    [disabled]="paymentForm.get('plan_id')?.invalid || gatewayLoading()"
+                    (click)="onGatewayPayClick()">
+              @if (gatewayLoading()) {
+                <span class="loading loading-spinner loading-sm"></span> Generando orden…
+              } @else {
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path d="M12 4v16m8-8H4"/>
+                </svg>
+                Generar orden de pago
+              }
+            </button>
+          } @else {
+            <!-- Order created successfully -->
+            <div class="flex flex-col items-center gap-3 py-2">
+              <div class="badge badge-success gap-1">
+                <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path d="M5 13l4 4L19 7"/>
+                </svg>
+                Orden generada
+              </div>
+
+              @if (gatewayOrder()!.qr_code) {
+                <div class="flex flex-col items-center gap-1">
+                  <p class="text-xs opacity-60">Escanea con tu app</p>
+                  <img [src]="gatewayOrder()!.qr_code" alt="QR de pago"
+                       class="w-44 h-44 border rounded-xl object-contain bg-white p-2" />
+                </div>
+              }
+
+              @if (gatewayOrder()!.universal_url || gatewayOrder()!.pay_url) {
+                <a [href]="gatewayOrder()!.universal_url || gatewayOrder()!.pay_url"
+                   target="_blank" rel="noopener"
+                   class="btn btn-outline btn-sm gap-1 w-full">
+                  <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/>
+                    <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/>
+                  </svg>
+                  Abrir en {{ selectedBank()?.typeAccount === 'binance_pay' ? 'Binance' : 'Bybit' }}
+                </a>
+              }
+
+              <div class="alert alert-info py-2 text-xs">
+                <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/><path d="M12 8v5M12 16h.01"/>
+                </svg>
+                Orden válida 15 minutos. El pago se confirmará automáticamente.
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
 
     <!-- ── 4. Datos personales (si faltan) ───────────────────────────────── -->
     @if (needsPersonalData()) {
@@ -564,7 +663,9 @@
     <div class="card border bg-base-200/50 mb-4">
       <div class="card-body p-4 gap-2">
         <h4 class="font-semibold text-sm flex items-center gap-2">
-          <span class="badge badge-primary badge-sm">{{ needsPersonalData() ? 5 : 4 }}</span> Términos y condiciones
+          <span class="badge badge-primary badge-sm">
+            {{ isGatewayCrypto(selectedBank()) ? (needsPersonalData() ? 4 : 3) : (needsPersonalData() ? 5 : 4) }}
+          </span> Términos y condiciones
         </h4>
 
         @if (activeTerms().length === 0) {
@@ -605,18 +706,37 @@
       <form method="dialog">
         <button class="btn btn-ghost" type="submit">Cancelar</button>
       </form>
-      <button class="btn btn-primary" type="button"
-              [disabled]="!canSubmit()"
-              (click)="onPaySubmit()">
-        @if (saving()) {
-          <span class="loading loading-spinner loading-sm"></span> Enviando...
-        } @else {
-          <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
-          </svg>
-          Enviar pago
-        }
-      </button>
+
+      @if (isManualCrypto(selectedBank())) {
+        <!-- Manual crypto: submit with TX hash -->
+        <button class="btn btn-primary" type="button"
+                [disabled]="!txHash().trim() || cryptoSubmitting()"
+                (click)="onCryptoSubmit()">
+          @if (cryptoSubmitting()) {
+            <span class="loading loading-spinner loading-sm"></span> Enviando…
+          } @else {
+            <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+            </svg>
+            Confirmar pago cripto
+          }
+        </button>
+      } @else if (!isGatewayCrypto(selectedBank())) {
+        <!-- Traditional voucher payment -->
+        <button class="btn btn-primary" type="button"
+                [disabled]="!canSubmit()"
+                (click)="onPaySubmit()">
+          @if (saving()) {
+            <span class="loading loading-spinner loading-sm"></span> Enviando...
+          } @else {
+            <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+            </svg>
+            Enviar pago
+          }
+        </button>
+      }
+      <!-- Gateway crypto: submit button is inside the card section above -->
     </div>
   </div>
   <form method="dialog" class="modal-backdrop"><button aria-label="Cerrar">close</button></form>

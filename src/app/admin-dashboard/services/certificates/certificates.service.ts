@@ -35,6 +35,10 @@ export class CertificatesService {
     return this.http.post<ResponseEntity<CertificateEntity>>(baseUrl+'/vpn/certificates/revocar', data);
   }
 
+  eliminar(data: Pick<CertificateEntity, 'user_id' | 'device_id' | 'server_id'>): Observable<any> {
+    return this.http.post<ResponseEntity<void>>(baseUrl+'/vpn/certificates/eliminar', data);
+  }
+
   downloadCertificate(data: Partial<CertificateEntity>): Observable<HttpResponse<Blob>> {
     return this.http.post(baseUrl+'/vpn/certificates/descargar', data, {
 

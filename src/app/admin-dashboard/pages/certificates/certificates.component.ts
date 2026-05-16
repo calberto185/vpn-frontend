@@ -501,8 +501,32 @@ export class CertificatesComponent implements OnInit, OnDestroy {
     });
   }
 
-  confirmDelete(_c?: CertificateEntity | null) {
-    // stub — no backend endpoint yet
+  deleting = signal(false);
+
+  confirmDelete(c?: CertificateEntity | null) {
+    if (!c) return;
+    const payload = {
+      user_id:   (c as any).user_id   ?? '',
+      device_id: (c as any).device_id ?? '',
+      server_id: (c as any).server_id ?? '',
+    };
+    if (!payload.user_id || !payload.device_id || !payload.server_id) {
+      this.loadingService.warn('Error', 'Faltan datos del certificado para eliminarlo.');
+      return;
+    }
+    this.deleting.set(true);
+    this.certificateService.eliminar(payload).subscribe({
+      next: () => {
+        this.deleting.set(false);
+        this.loadingService.success('Eliminado', 'Certificado eliminado correctamente.');
+        this.fillCertificates();
+        (document.getElementById('delete_cert') as HTMLDialogElement)?.close();
+      },
+      error: err => {
+        this.deleting.set(false);
+        this.loadingService.warn('Error', err?.error?.message ?? 'Error al eliminar el certificado.');
+      },
+    });
   }
 
   /** Total certificates to be created from current server selections */

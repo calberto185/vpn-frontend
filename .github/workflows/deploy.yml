@@ -11,11 +11,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Descargar el código
+      # 1. Descargar código
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 2. Configurar Node.js con cache de npm
+      # 2. Node.js con cache
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -26,45 +26,49 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
 
-      # 4. Compilar Angular (rápido en GitHub Actions)
+      # 4. Compilar Angular en GitHub Actions (rápido)
       - name: Build Angular
         run: npm run build -- --configuration production
 
-      # 5. Copiar el dist compilado al VPS
-      - name: Copy dist to VPS
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host:     ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key:      ${{ secrets.VPS_SSH_KEY }}
-          source:   "dist/"
-          target:   "/root/frontend/"
+      # 5. Configurar clave SSH para rsync
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
 
-      # 6. SSH al VPS: copiar nginx.conf + Dockerfile y levantar el contenedor
+      # 6. Crear directorio en VPS si no existe
+      - name: Prepare VPS directory
+        run: |
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no \
+            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
+            "mkdir -p /root/frontend/dist"
+
+      # 7. Copiar dist al VPS via rsync
+      - name: Rsync dist to VPS
+        run: |
+          rsync -avz --delete \
+            -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" \
+            dist/ \
+            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/root/frontend/dist/
+
+      # 8. Copiar Dockerfile, nginx.conf y docker-compose al VPS
+      - name: Rsync config files to VPS
+        run: |
+          rsync -avz \
+            -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" \
+            Dockerfile nginx.conf docker-compose.yml \
+            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/root/frontend/
+
+      # 9. Levantar contenedor en VPS
       - name: Deploy on VPS
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host:     ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key:      ${{ secrets.VPS_SSH_KEY }}
-          script: |
+        run: |
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no \
+            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
             set -e
             cd /root/frontend
-
-            # Primera vez: clonar para tener Dockerfile y nginx.conf
-            if [ ! -f "Dockerfile" ]; then
-              echo "▶ Clonando archivos de configuración..."
-              git clone -b master https://github.com/calberto185/vpn-frontend.git /tmp/vpn-frontend-tmp
-              cp /tmp/vpn-frontend-tmp/Dockerfile .
-              cp /tmp/vpn-frontend-tmp/nginx.conf .
-              cp /tmp/vpn-frontend-tmp/docker-compose.yml .
-              rm -rf /tmp/vpn-frontend-tmp
-            fi
-
-            echo "▶ Levantando contenedor Nginx..."
             docker compose up -d --build --remove-orphans
-
-            echo "▶ Limpiando imágenes antiguas..."
             docker image prune -f
-
-            echo "✅ Frontend desplegado correctamente"
+            echo "✅ Frontend desplegado"
+          EOF

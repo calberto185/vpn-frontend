@@ -8,7 +8,7 @@
 # Archivos locales o de desarrollo (NO subir)
 src/environments/environment.local.ts
 src/environments/environment.development.ts
-src/environments/environment.production.ts
+# environment.production.ts se commitea intencionalmente (solo contiene valores públicos de cliente)
 
 # Compiled output
 /dist

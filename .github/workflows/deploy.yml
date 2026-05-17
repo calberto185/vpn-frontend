@@ -7,39 +7,64 @@ on:
 
 jobs:
   deploy:
-    name: SSH Deploy
+    name: Build & Deploy
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy via SSH
+      # 1. Descargar el código
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 2. Configurar Node.js con cache de npm
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      # 3. Instalar dependencias
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      # 4. Compilar Angular (rápido en GitHub Actions)
+      - name: Build Angular
+        run: npm run build -- --configuration production
+
+      # 5. Copiar el dist compilado al VPS
+      - name: Copy dist to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host:     ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key:      ${{ secrets.VPS_SSH_KEY }}
+          source:   "dist/"
+          target:   "/root/frontend/"
+
+      # 6. SSH al VPS: copiar nginx.conf + Dockerfile y levantar el contenedor
+      - name: Deploy on VPS
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host:        ${{ secrets.VPS_HOST }}
-          username:    ${{ secrets.VPS_USER }}
-          key:         ${{ secrets.VPS_SSH_KEY }}
-          # Angular build tarda ~3 min — aumentar timeout
-          command_timeout: 10m
+          host:     ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key:      ${{ secrets.VPS_SSH_KEY }}
           script: |
             set -e
+            cd /root/frontend
 
-            REPO_DIR="/root/frontend"
-            REPO_URL="https://github.com/calberto185/vpn-frontend.git"
-
-            # Primera vez: clonar; siguientes: pull
-            if [ ! -d "$REPO_DIR/.git" ]; then
-              echo "▶ Primera vez: clonando repo..."
-              git clone -b master "$REPO_URL" "$REPO_DIR"
-            else
-              echo "▶ Actualizando código..."
-              git -C "$REPO_DIR" pull origin master
+            # Primera vez: clonar para tener Dockerfile y nginx.conf
+            if [ ! -f "Dockerfile" ]; then
+              echo "▶ Clonando archivos de configuración..."
+              git clone -b master https://github.com/calberto185/vpn-frontend.git /tmp/vpn-frontend-tmp
+              cp /tmp/vpn-frontend-tmp/Dockerfile .
+              cp /tmp/vpn-frontend-tmp/nginx.conf .
+              cp /tmp/vpn-frontend-tmp/docker-compose.yml .
+              rm -rf /tmp/vpn-frontend-tmp
             fi
 
-            cd "$REPO_DIR"
-
-            echo "▶ Rebuilding containers (Angular compile inside Docker)..."
+            echo "▶ Levantando contenedor Nginx..."
             docker compose up -d --build --remove-orphans
 
-            echo "▶ Cleaning unused images..."
+            echo "▶ Limpiando imágenes antiguas..."
             docker image prune -f
 
-            echo "✅ Frontend desplegado"
+            echo "✅ Frontend desplegado correctamente"

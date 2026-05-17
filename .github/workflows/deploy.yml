@@ -1,0 +1,45 @@
+name: Deploy Frontend to VPS
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    name: SSH Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host:        ${{ secrets.VPS_HOST }}
+          username:    ${{ secrets.VPS_USER }}
+          key:         ${{ secrets.VPS_SSH_KEY }}
+          # Angular build tarda ~3 min — aumentar timeout
+          command_timeout: 10m
+          script: |
+            set -e
+
+            REPO_DIR="/root/frontend"
+            REPO_URL="https://github.com/calberto185/vpn-frontend.git"
+
+            # Primera vez: clonar; siguientes: pull
+            if [ ! -d "$REPO_DIR/.git" ]; then
+              echo "▶ Primera vez: clonando repo..."
+              git clone -b master "$REPO_URL" "$REPO_DIR"
+            else
+              echo "▶ Actualizando código..."
+              git -C "$REPO_DIR" pull origin master
+            fi
+
+            cd "$REPO_DIR"
+
+            echo "▶ Rebuilding containers (Angular compile inside Docker)..."
+            docker compose up -d --build --remove-orphans
+
+            echo "▶ Cleaning unused images..."
+            docker image prune -f
+
+            echo "✅ Frontend desplegado"
